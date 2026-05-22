@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/x-icon" href="../../Assets/KBLOGOonly.ico"/>
+  <title>Community Campaigns � KAPITBISIG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <!-- FIX: Added missing Category stylesheet -->
+  <link rel="stylesheet" href="../CSS/Category.css"/>
+</head>
+<body data-category-name="Community">
+
+<!-- ══════ NAV ══════ -->
+<nav id="mainNav">
+  <a href="Landingpage.html" class="nav-logo">
+    <div class="nav-logo-img-wrap">
+      <img src="../../Assets/KBLOGOonly.png" alt="KapitBisig Logo" onerror="this.style.display='none';"/>
+    </div>
+    <span class="nav-logo-text">KAPIT<span>BISIG</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="Landingpage.html">Home</a></li>
+    <li><a href="Landingpage.html#campaigns" class="active">Campaigns</a></li>
+    <li><a href="Landingpage.html#organizations">Organizations</a></li>
+    <li><a href="Landingpage.html#FAQs">FAQs</a></li>
+    <li><a href="SignIn.html" class="nav-signin">Sign In</a></li>
+    <li><a href="Signup.html" class="nav-signup">Sign Up</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- mobile drawer -->
+<div class="nav-drawer" id="navDrawer" aria-hidden="true" role="navigation">
+  <a href="Landingpage.html" onclick="closeDrawer()">Home</a>
+  <a href="Landingpage.html#campaigns" onclick="closeDrawer()">Campaigns</a>
+  <a href="Landingpage.html#organizations" onclick="closeDrawer()">Organizations</a>
+  <a href="Landingpage.html#FAQs" onclick="closeDrawer()">FAQs</a>
+  <a href="SignIn.html" class="drawer-signin" onclick="closeDrawer()">Sign In</a>
+  <a href="Signup.html" class="drawer-signup" onclick="closeDrawer()">Sign Up</a>
+</div>
+
+<!-- ══════ PAGE HERO ══════ -->
+<section class="page-hero">
+  <div class="page-hero-shapes">
+    <div class="ph-shape ph-shape-1"></div>
+    <div class="ph-shape ph-shape-2"></div>
+    <div class="ph-shape ph-shape-3"></div>
+    <div class="ph-shape ph-shape-4"></div>
+    <div class="ph-shape ph-shape-5"></div>
+  </div>
+  <div class="page-hero-content">
+    <div class="page-hero-breadcrumb">
+      <a href="Landingpage.html">Home</a>
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      <a href="Landingpage.html#campaigns">Campaigns</a>
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>Education</span>
+    </div>
+    <br>
+    <div class="page-hero-eyebrow">
+      <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Communities and Other Campaigns
+    </div>
+    <h1 class="page-hero-title">BUILD<br/>OUR<span>  FUTURE</span></h1>
+    <p class="page-hero-desc">Small acts of kindness, lasting community impact in Barangay 105, Tondo, Manila.</p>
+    <div class="page-hero-stats">
+      <div class="phs">
+        <div class="phs-num" id="heroTotal">₱0</div>
+        <div class="phs-label">Total Raised</div>
+      </div>
+      <div class="phs">
+        <div class="phs-num" id="heroDonors">0</div>
+        <div class="phs-label">Total Donors</div>
+      </div>
+      <div class="phs">
+        <div class="phs-num" id="heroCampaigns">0</div>
+        <div class="phs-label">Active Campaigns</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FEATURED SECTION ══════ -->
+<section class="featured-section">
+  <p class="section-label reveal">Spotlight</p>
+  <h2 class="section-title reveal reveal-delay-1">Featured <strong>Campaigns</strong></h2>
+  <p class="section-desc reveal reveal-delay-2">These high-impact campaigns need your support most right now.</p>
+  <div class="featured-grid reveal reveal-delay-2" id="featuredGrid">
+    <!-- Injected by JS -->
+  </div>
+</section>
+
+<!-- ══════ SEARCH & FILTER ══════ -->
+<div class="filter-section">
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        type="text"
+        class="search-input"
+        id="searchInput"
+        placeholder="Search education campaigns…"
+        oninput="filterCampaigns()"
+        autocomplete="off"
+      />
+    </div>
+    <select class="filter-select" id="filterStatus" onchange="filterCampaigns()">
+      <option value="">All Statuses</option>
+      <option value="ongoing">Ongoing</option>
+      <option value="completed">Completed</option>
+    </select>
+    <select class="filter-select" id="filterSort" onchange="filterCampaigns()">
+      <option value="newest">Newest First</option>
+      <option value="oldest">Oldest First</option>
+      <option value="most-funded">Most Funded</option>
+      <option value="least-funded">Least Funded</option>
+    </select>
+  </div>
+  <div class="filter-results-label" id="resultsLabel" style="padding-bottom:0;"></div>
+</div>
+
+<!-- ══════ CAMPAIGNS LISTING ══════ -->
+<section class="campaigns-listing">
+  <div class="campaigns-grid" id="campaignsGrid">
+    <!-- Injected by JS -->
+  </div>
+</section>
+
+<!-- ══════ CTA ══════ -->
+<section class="cta-section">
+  <p class="section-label reveal" style="color:var(--sky-light);">Build Our Future</p>
+  <h2 class="section-title reveal reveal-delay-1">Community Impact Starts Here</h2>
+  <p class="section-desc reveal reveal-delay-2">
+    Your donation today can put a child in school tomorrow. Every peso you give to education campaigns in Barangay 105 goes directly to those who need it most.
+  </p>
+  <a href="Campaign.html?category=Community" class="btn-sky reveal reveal-delay-3">Donate Now</a>
+</section>
+
+<!-- ════════ FOOTER ════════ -->
+<footer>
+  <div class="footer-main">
+
+    <!-- Brand + Social -->
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <div class="footer-logo-img-wrap">
+          <img src="../../Assets/KBLOGOonly.png" alt="KapitBisig" onerror="this.style.display='none';"/>
+        </div>
+        <span class="footer-logo-text">KAPIT<span>BISIG</span></span>
+      </div>
+      <p class="footer-tagline">A dedicated crowdfunding platform empowering NGOs in Barangay 105, Tondo, Manila.</p>
+      <div class="footer-social">
+        <!-- Facebook -->
+        <a href="#" class="footer-social-btn" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <!-- X / Twitter -->
+        <a href="#" class="footer-social-btn" aria-label="X (Twitter)">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <!-- Instagram -->
+        <a href="#" class="footer-social-btn" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
+        <!-- YouTube -->
+        <a href="#" class="footer-social-btn" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" style="fill:var(--navy)"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Contact Info -->
+    <div class="footer-col">
+      <p class="footer-col-title">Contact Us</p>
+      <div class="footer-contact-list">
+        <div class="footer-contact-item">
+          <div class="footer-contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <p class="footer-contact-text"><a href="mailto:support@kapitbisig.ph">support@kapitbisig.ph</a></p>
+        </div>
+        <div class="footer-contact-item">
+          <div class="footer-contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.93 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.84 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.08 6.08l1.29-1.29a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <p class="footer-contact-text"><a href="tel:+6328123456">(02) 8123-4567</a></p>
+        </div>
+        <div class="footer-contact-item">
+          <div class="footer-contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <p class="footer-contact-text">123 Bayanihan Street, Makati City,<br/>Metro Manila, Philippines 1200</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-title">Quick Links</p>
+      <ul class="footer-links-list">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#campaigns">Campaigns</a></li>
+        <li><a href="#organizations">Organizations</a></li>
+        <li><a href="#FAQs">FAQs</a></li>
+        <li><a href="#hero">Donate Now</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2026 Kapitbisig. Barangay 105, Tondo, Manila.</p>
+    <ul class="footer-bottom-links">
+      <li><a href="AdminLogIn.html">Admin Login</a></li>
+      <li><a href="Privacy-policy.html">Privacy Policy</a></li>
+      <li><a href="Terms-and-Conditions.html">Terms of Use</a></li>
+    </ul>
+  </div>
+</footer>
+
+
+<!-- ════════════════════════════════════════════════════
+     COOKIE BANNER
+════════════════════════════════════════════════════ -->
+<div id="kb-cookie-banner" role="dialog" aria-label="Cookie Consent" aria-live="polite">
+  <div class="kb-banner-inner">
+
+    <button class="kb-banner-close" onclick="dismissBanner()" aria-label="Dismiss banner">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div class="kb-banner-layout">
+
+      <!-- Icon -->
+      <div class="kb-banner-icon-wrap" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="8"  cy="9"  r="1.2" fill="var(--sky-light)" stroke="none"/>
+          <circle cx="14" cy="7"  r="0.9" fill="var(--sky-light)" stroke="none"/>
+          <circle cx="16" cy="13" r="1.2" fill="var(--sky-light)" stroke="none"/>
+          <circle cx="10" cy="15" r="0.9" fill="var(--sky-light)" stroke="none"/>
+          <path d="M12 2a10 10 0 0 1 0 20"/>
+        </svg>
+      </div>
+
+      <!-- Text -->
+      <div class="kb-banner-text">
+        <p class="kb-banner-title">We use cookies to improve your experience 🍪</p>
+        <p class="kb-banner-desc">
+          KapitBisig uses essential, analytics, and marketing cookies to keep the platform running smoothly and help us understand how you use it.
+          By clicking <strong style="color:rgba(255,255,255,0.78);">Accept</strong>, you agree to our cookie policy.
+          See our <a href="Privacy-policy.html">Privacy Policy</a> for full details.
+        </p>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="kb-banner-actions">
+        <button class="kb-btn kb-btn-accept" onclick="acceptAll()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Accept
+        </button>
+        <button class="kb-btn kb-btn-manage" onclick="openPreferences()">
+          <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Manage Preferences
+        </button>
+        <button class="kb-btn kb-btn-learn" onclick="openPrivacyModal()">
+          Learn More
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     PREFERENCES MODAL OVERLAY
+════════════════════════════════════════════════════ -->
+<div class="kb-overlay" id="kb-pref-overlay" onclick="handlePrefOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="kb-pref-title">
+
+  <div class="kb-pref-modal">
+    <button class="kb-modal-close" onclick="closePreferences()" aria-label="Close preferences">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div class="kb-modal-header">
+      <span class="kb-modal-tag">Cookie Settings</span>
+      <h2 class="kb-modal-title" id="kb-pref-title">Manage Your Preferences</h2>
+      <p class="kb-modal-subtitle">Control which cookies you allow. Essential cookies are always active as they are required for the platform to function properly.</p>
+    </div>
+    <div class="kb-divider"></div>
+
+    <div class="kb-cookie-list">
+
+      <!-- Essential -->
+      <div class="kb-cookie-row">
+        <div class="kb-cookie-icon essential">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="kb-cookie-info">
+          <p class="kb-cookie-name">
+            Essential Cookies
+            <span class="kb-badge-required">Always On</span>
+          </p>
+          <p class="kb-cookie-desc">These cookies are necessary for the website to function and cannot be switched off. They are usually set in response to actions you take such as logging in, filling forms, or setting privacy preferences.</p>
+        </div>
+        <div class="kb-toggle-wrap">
+          <label class="kb-toggle" aria-label="Essential cookies — always enabled">
+            <input type="checkbox" id="toggle-essential" checked disabled/>
+            <span class="kb-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Analytics -->
+      <div class="kb-cookie-row">
+        <div class="kb-cookie-icon analytics">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="kb-cookie-info">
+          <p class="kb-cookie-name">Analytics Cookies</p>
+          <p class="kb-cookie-desc">These help us understand how visitors interact with KapitBisig by collecting information anonymously. This lets us improve the platform and the experience for all users.</p>
+        </div>
+        <div class="kb-toggle-wrap">
+          <label class="kb-toggle" aria-label="Toggle analytics cookies">
+            <input type="checkbox" id="toggle-analytics"/>
+            <span class="kb-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Marketing -->
+      <div class="kb-cookie-row">
+        <div class="kb-cookie-icon marketing">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="kb-cookie-info">
+          <p class="kb-cookie-name">Marketing Cookies</p>
+          <p class="kb-cookie-desc">These cookies track your visits across websites to show you relevant campaigns and ads for causes you care about. They help us measure the effectiveness of our outreach programs.</p>
+        </div>
+        <div class="kb-toggle-wrap">
+          <label class="kb-toggle" aria-label="Toggle marketing cookies">
+            <input type="checkbox" id="toggle-marketing"/>
+            <span class="kb-slider"></span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="kb-pref-footer">
+      <button class="kb-btn-sm reject" onclick="rejectNonEssential()">
+        Reject Non-Essential
+      </button>
+      <button class="kb-btn-sm save" onclick="savePreferences()">
+        Save Preferences
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     PRIVACY MODAL OVERLAY
+════════════════════════════════════════════════════ -->
+<div class="kb-overlay" id="kb-privacy-overlay" onclick="handlePrivacyOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="kb-privacy-title">
+
+  <div class="kb-privacy-modal">
+    <button class="kb-modal-close" onclick="closePrivacyModal()" aria-label="Close privacy modal">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div class="kb-privacy-header">
+      <h2 class="kb-privacy-title" id="kb-privacy-title">Privacy Policy</h2>
+      <p class="kb-privacy-subtitle">How we collect, use, and protect your personal information.</p>
+    </div>
+
+    <div class="kb-privacy-content">
+      <h3>Cookies and Tracking</h3>
+      <p>We use cookies and similar technologies to enhance your experience on KapitBisig. Cookies are small text files that are stored on your device when you visit our website.</p>
+
+      <h3>Types of Cookies We Use</h3>
+      <ul>
+        <li><strong>Essential Cookies:</strong> Required for the website to function properly. These cannot be disabled.</li>
+        <li><strong>Analytics Cookies:</strong> Help us understand how visitors use our platform to improve performance and user experience.</li>
+        <li><strong>Marketing Cookies:</strong> Used to deliver relevant advertisements and track campaign effectiveness.</li>
+      </ul>
+
+      <h3>Your Choices</h3>
+      <p>You can manage your cookie preferences at any time using the cookie banner or by clicking "Manage Preferences" in our footer. You can also disable cookies through your browser settings, though this may affect website functionality.</p>
+
+      <h3>Data Protection</h3>
+      <p>We are committed to protecting your privacy and complying with applicable data protection laws. For more information about how we handle your data, please read our full Privacy Policy.</p>
+    </div>
+
+    <div class="kb-privacy-footer">
+      <button class="kb-btn kb-btn-accept" onclick="closePrivacyModal()">
+        I Understand
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     TOAST NOTIFICATION
+════════════════════════════════════════════════════ -->
+<div class="kb-toast" id="kb-toast">
+  <div class="kb-toast-icon">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <span class="kb-toast-msg" id="kb-toast-msg">Preferences saved!</span>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════
+     COOKIE CONSENT SCRIPT
+════════════════════════════════════════════════════ -->
+
+
+  <script src="../JS/Category.js"></script>
+<script src="../JS/Common.js"></script>
+</body>
+</html>

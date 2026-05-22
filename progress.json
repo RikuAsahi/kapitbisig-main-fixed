@@ -1,0 +1,257 @@
+{
+  "project": "KapitBisig NGO Crowdfunding Platform",
+  "repository": "https://github.com/RikuAsahi/KB-CLEAN-VER",
+  "version": "1.0.0",
+  "last_updated": "2026-05-20",
+  "recent_fixes": [
+    "Landing page live campaigns grid made fully dynamic — campaignModel.findAll/findById/findByStatus/findByNgoId all LEFT JOIN ngo_profiles so ngoName is returned in every campaign response.",
+    "First-run database seeder (src/seed.js) added — auto-creates 1 admin user, 1 NGO user, 1 verified NGO profile, and 6 active campaigns across all categories on empty DB startup.",
+    "Test-account seeder (src/seedTest.js) added — run via `npm run seed:test` to upsert testadmin@kapitbisig.ph and testngo@kapitbisig.ph; INSERT IGNORE so safe to re-run.",
+    "Sign-in separation: SignIn.html is now donor-only (admin/NGO are rejected and redirected to AdminLogIn.html). AdminLogIn.html now accepts ngo role in addition to admin/superadmin. Cross-portal links added to both pages."
+  ],
+  "overall_status": "in_progress",
+  "overall_completion_percent": 89,
+
+  "legend": {
+    "status_values": ["not_started", "in_progress", "blocked", "complete"],
+    "priority_values": ["P0", "P1", "P2"],
+    "P0": "Blocker — must be done before launch",
+    "P1": "High priority — core feature",
+    "P2": "Nice to have"
+  },
+
+  "modules": [
+    {
+      "id": "auth_signup",
+      "name": "Sign Up / Registration",
+      "priority": "P0",
+      "status": "in_progress",
+      "completion_percent": 78,
+      "notes": "Backend signup, Gmail validation, post-signup redirect to Profile, and auth-aware nav (hide Sign In/Sign Up, show Profile) are all complete. Blocked on Google and Facebook OAuth app registration.",
+      "tasks": [
+        { "id": "su-01", "task": "Frontend signup form (HTML/CSS/JS)", "status": "complete" },
+        { "id": "su-02", "task": "Gmail-only email validation (frontend)", "status": "complete" },
+        { "id": "su-03", "task": "Google OAuth 2.0 integration", "status": "blocked" },
+        { "id": "su-04", "task": "Facebook OAuth integration", "status": "blocked" },
+        { "id": "su-05", "task": "Backend: POST /api/auth/signup endpoint", "status": "complete" },
+        { "id": "su-06", "task": "Save user to MySQL users table", "status": "complete" },
+        { "id": "su-07", "task": "Redirect to Profile page after signup", "status": "complete" },
+        { "id": "su-08", "task": "Hide Sign In / Sign Up buttons when logged in", "status": "complete" },
+        { "id": "su-09", "task": "Show Profile icon/section in nav when logged in", "status": "complete" }
+      ]
+    },
+    {
+      "id": "auth_login",
+      "name": "Log In",
+      "priority": "P0",
+      "status": "in_progress",
+      "completion_percent": 85,
+      "notes": "Login, session, forgot-password flow (token gen + reset endpoint), redirect, and auth-aware nav all complete. Sign-in portals are now separated: SignIn.html is donor-only; AdminLogIn.html handles admin + NGO with role enforcement and cross-portal links. OAuth login and forgot-password email blocked on external registrations/SMTP config. Rate limiter scoped to POST /signin only.",
+      "tasks": [
+        { "id": "li-01", "task": "Frontend login form (HTML/CSS/JS)", "status": "complete" },
+        { "id": "li-02", "task": "Backend: POST /api/auth/login endpoint", "status": "complete" },
+        { "id": "li-03", "task": "Validate credentials against database", "status": "complete" },
+        { "id": "li-04", "task": "Session/cookie creation (httpOnly + sameSite)", "status": "complete" },
+        { "id": "li-05", "task": "Google OAuth login", "status": "blocked" },
+        { "id": "li-06", "task": "Facebook OAuth login", "status": "blocked" },
+        { "id": "li-07", "task": "Forgot Password — frontend form", "status": "complete" },
+        { "id": "li-08", "task": "Forgot Password — send reset email (backend)", "status": "blocked" },
+        { "id": "li-09", "task": "Password reset token generation & expiry (1 hr)", "status": "complete" },
+        { "id": "li-10", "task": "Password reset — validate token & update password", "status": "complete" },
+        { "id": "li-11", "task": "Redirect based on role after login (donor → Landing, admin/NGO → AdminDashboard)", "status": "complete" },
+        { "id": "li-12", "task": "Hide Sign In / Sign Up; show Profile on login", "status": "complete" },
+        { "id": "li-13", "task": "Rate limiting on login endpoint", "status": "complete" },
+        { "id": "li-14", "task": "Separate donor vs admin/NGO sign-in portals with role enforcement", "status": "complete" }
+      ]
+    },
+    {
+      "id": "campaigns_donor",
+      "name": "Campaigns — Donor View",
+      "priority": "P0",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "All donor-facing campaign features implemented. Likes and comments have dedicated backend routes and DB tables (campaign_likes, campaign_comments). Campaigns.js wired to API for likes, comments, donation stats (30s polling). Share link is dynamic using ?id= URL param. Auth-aware nav added to Campaign.html.",
+      "tasks": [
+        { "id": "cd-01", "task": "Campaign listing page (HTML/CSS)", "status": "complete" },
+        { "id": "cd-02", "task": "Campaign detail page (HTML/CSS)", "status": "complete" },
+        { "id": "cd-03", "task": "Backend: GET /api/campaigns endpoint", "status": "complete" },
+        { "id": "cd-04", "task": "Backend: GET /api/campaigns/:id endpoint", "status": "complete" },
+        { "id": "cd-05", "task": "Display transparency details (NGO info, goal, raised)", "status": "complete" },
+        { "id": "cd-06", "task": "Real-time donation total updates (WebSocket or polling)", "status": "complete" },
+        { "id": "cd-07", "task": "Like campaign — frontend", "status": "complete" },
+        { "id": "cd-08", "task": "Like campaign — backend POST /api/campaigns/:id/like", "status": "complete" },
+        { "id": "cd-09", "task": "Comment on campaign — frontend", "status": "complete" },
+        { "id": "cd-10", "task": "Comment on campaign — backend POST /api/campaigns/:id/comments", "status": "complete" },
+        { "id": "cd-11", "task": "Share campaign — shareable link generation", "status": "complete" },
+        { "id": "cd-12", "task": "Progress bar updates on new donation", "status": "complete" }
+      ]
+    },
+    {
+      "id": "payments",
+      "name": "Payment Integration",
+      "priority": "P0",
+      "status": "in_progress",
+      "completion_percent": 15,
+      "notes": "Donation form UI exists. Backend donation model, creation endpoint, and campaign amount update logic are implemented — but no payment gateway is wired. Blocked on GCash/PayMaya merchant accounts.",
+      "tasks": [
+        { "id": "pay-01", "task": "Donation form UI (frontend)", "status": "complete" },
+        { "id": "pay-02", "task": "GCash integration (Paymongo or GCash API)", "status": "not_started" },
+        { "id": "pay-03", "task": "PayMaya API integration", "status": "not_started" },
+        { "id": "pay-04", "task": "Bank transfer payment flow", "status": "not_started" },
+        { "id": "pay-05", "task": "Payment webhook / callback handler", "status": "not_started" },
+        { "id": "pay-06", "task": "Create donation record in DB on success", "status": "in_progress" },
+        { "id": "pay-07", "task": "Update campaign totals after confirmed payment", "status": "in_progress" },
+        { "id": "pay-08", "task": "Donor confirmation screen / email", "status": "not_started" },
+        { "id": "pay-09", "task": "Sandbox / test mode for all payment methods", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "ngo_dashboard",
+      "name": "NGO Dashboard — Campaign Application",
+      "priority": "P1",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "All tasks complete. ngo-05: backend now accepts ngoId query param in GET /campaigns; frontend filters campaign list by ngoId when role is ngo; saveCampaign/submitCampaign wired to real API (CampaignAPI.create + submitForApproval) with grid refresh after each action; rejectionReason shown in campaign detail modal; fixed ID type mismatch in openCampaignDetail. ngo-04: sendNewSubmissionNotificationEmail added to emailService; called non-blocking from submitForApproval service; ADMIN_EMAIL env var added.",
+      "tasks": [
+        { "id": "ngo-01", "task": "Campaign application form (HTML/CSS/JS)", "status": "complete" },
+        { "id": "ngo-02", "task": "Backend: POST /api/campaigns/apply endpoint", "status": "complete" },
+        { "id": "ngo-03", "task": "Store submitted campaign with status=pending in DB", "status": "complete" },
+        { "id": "ngo-04", "task": "Notify Admin of new campaign submission", "status": "complete" },
+        { "id": "ngo-05", "task": "NGO can view submission status in dashboard", "status": "complete" },
+        { "id": "ngo-06", "task": "Form fields: title, bank details, description, purpose", "status": "complete" }
+      ]
+    },
+    {
+      "id": "ngo_analytics",
+      "name": "NGO Dashboard — Analytics",
+      "priority": "P1",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "Backend GET /ngos/:id/analytics endpoint built (model → service → controller → route). Frontend wired: stats cards, daily donations bar chart, campaign pie chart, monthly donor growth line chart, recent activity feed. 10-second setInterval polling starts when NGO navigates to analytics page and stops on page leave.",
+      "tasks": [
+        { "id": "ana-01", "task": "Analytics page HTML placeholders", "status": "complete" },
+        { "id": "ana-02", "task": "Backend: GET /api/ngo/:id/analytics endpoint", "status": "complete" },
+        { "id": "ana-03", "task": "Total donations received (live)", "status": "complete" },
+        { "id": "ana-04", "task": "Number of donors", "status": "complete" },
+        { "id": "ana-05", "task": "Campaign progress % toward goal", "status": "complete" },
+        { "id": "ana-06", "task": "Recent donation activity feed", "status": "complete" },
+        { "id": "ana-07", "task": "Donations over time chart", "status": "complete" },
+        { "id": "ana-08", "task": "Real-time data refresh (10-second max delay)", "status": "complete" }
+      ]
+    },
+    {
+      "id": "admin_dashboard",
+      "name": "Admin Dashboard",
+      "priority": "P1",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "All tasks complete. adm-03: loadDashboardData wired to live API; fixed ngosRes.profiles key mismatch; NGO name resolved via ngoMap. adm-05: rejection_reason column added to campaigns table; stored on reject; nodemailer emailService created (gracefully no-ops if SMTP not configured); rejection email sent to NGO user; frontend reject modal requires a reason and passes it to the API.",
+      "tasks": [
+        { "id": "adm-01", "task": "Admin dashboard HTML/CSS", "status": "complete" },
+        { "id": "adm-02", "task": "RBAC — admin-only route protection", "status": "complete" },
+        { "id": "adm-03", "task": "View pending campaign applications", "status": "complete" },
+        { "id": "adm-04", "task": "Approve campaign → set status=approved, make public", "status": "complete" },
+        { "id": "adm-05", "task": "Reject campaign → set status=rejected, send reason to NGO", "status": "complete" },
+        { "id": "adm-06", "task": "Activity log for all admin actions", "status": "complete" }
+      ]
+    },
+    {
+      "id": "landing_page",
+      "name": "Landing Page",
+      "priority": "P0",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "All landing page tasks complete. Live campaign listing section fetches GET /api/campaigns?status=active&limit=6. Campaign cards now display NGO name via LEFT JOIN on ngo_profiles. Stats strip fixed (ngosRes.profiles key). First-run seeder provides 6 active campaigns so the grid is never empty.",
+      "tasks": [
+        { "id": "lp-01", "task": "Landing page HTML/CSS/JS", "status": "complete" },
+        { "id": "lp-02", "task": "Public campaign listing on landing page", "status": "complete" },
+        { "id": "lp-03", "task": "Hide Sign In / Sign Up for logged-in users", "status": "complete" },
+        { "id": "lp-04", "task": "Show Profile icon / section for logged-in users", "status": "complete" }
+      ]
+    },
+    {
+      "id": "profile_page",
+      "name": "User Profile Page",
+      "priority": "P1",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "All profile page tasks complete. Avatar/cover photo upload now persists — base64 stored in avatar_url/cover_url MEDIUMTEXT columns; restored on load. Notification preferences persisted as JSON in notification_prefs TEXT column; each toggle has data-pref attribute; relabel/enableAll both call markDirty. updateProfile model accepts dynamic field updates. toPublicUser exposes avatarUrl, coverUrl, notificationPrefs. ALTER TABLE migrations run at startup for existing DBs.",
+      "tasks": [
+        { "id": "pro-01", "task": "Profile page HTML/CSS", "status": "complete" },
+        { "id": "pro-02", "task": "Backend: GET /api/users/me endpoint", "status": "complete" },
+        { "id": "pro-03", "task": "Display user name, email, profile picture", "status": "complete" },
+        { "id": "pro-04", "task": "Edit profile functionality", "status": "complete" },
+        { "id": "pro-05", "task": "Donation history for the user", "status": "complete" }
+      ]
+    },
+    {
+      "id": "database",
+      "name": "Database & Backend Infrastructure",
+      "priority": "P0",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "Core schema and all implemented feature tables complete with parameterized queries throughout. First-run seeder (src/seed.js) auto-creates default admin, NGO profile, and 6 active campaigns on empty DB. Test-account seeder (src/seedTest.js) available via npm run seed:test. Campaign queries now LEFT JOIN ngo_profiles for ngoName in all list/detail responses.",
+      "tasks": [
+        { "id": "db-01", "task": "MySQL database setup", "status": "complete" },
+        { "id": "db-02", "task": "users table", "status": "complete" },
+        { "id": "db-03", "task": "campaigns table", "status": "complete" },
+        { "id": "db-04", "task": "donations table", "status": "complete" },
+        { "id": "db-05", "task": "comments table", "status": "complete" },
+        { "id": "db-06", "task": "likes table", "status": "complete" },
+        { "id": "db-07", "task": "password_reset_tokens table", "status": "complete" },
+        { "id": "db-08", "task": "Parameterized queries on all endpoints", "status": "complete" },
+        { "id": "db-09", "task": "Express server setup", "status": "complete" },
+        { "id": "db-10", "task": "Helmet.js security headers", "status": "complete" },
+        { "id": "db-11", "task": "Global rate limiting middleware", "status": "complete" },
+        { "id": "db-12", "task": "Environment variable config (.env)", "status": "complete" },
+        { "id": "db-13", "task": "First-run database seeder with default admin, NGO, and campaigns", "status": "complete" },
+        { "id": "db-14", "task": "Test-account seeder (npm run seed:test)", "status": "complete" }
+      ]
+    }
+  ],
+
+  "blockers": [
+    {
+      "id": "blk-01",
+      "description": "GCash and PayMaya merchant accounts not yet registered — required before payment API integration can begin",
+      "affects": ["payments"],
+      "severity": "high"
+    },
+    {
+      "id": "blk-02",
+      "description": "Google OAuth app not yet registered in Google Cloud Console",
+      "affects": ["auth_signup", "auth_login"],
+      "severity": "high"
+    },
+    {
+      "id": "blk-03",
+      "description": "Facebook OAuth app not yet registered in Meta Developer Portal",
+      "affects": ["auth_signup", "auth_login"],
+      "severity": "high"
+    },
+    {
+      "id": "blk-04",
+      "description": "SMTP credentials not yet configured in .env (SMTP_HOST/USER/PASS) — emailService.js is implemented and will send once credentials are added. Only blocks Forgot Password email (li-08) now; campaign rejection emails are code-complete.",
+      "affects": ["auth_login"],
+      "severity": "medium"
+    }
+  ],
+
+  "next_priorities": [
+    "Configure SMTP + ADMIN_EMAIL in .env to activate rejection and submission notification emails (blk-04)",
+    "Register Google and Facebook OAuth apps (blk-02, blk-03)",
+    "Apply for GCash / PayMaya merchant accounts (blk-01)",
+    "Payment gateway integration — GCash / PayMaya via Paymongo (pay-02 through pay-09)"
+  ],
+
+  "summary": {
+    "total_tasks": 88,
+    "complete": 77,
+    "in_progress": 2,
+    "not_started": 6,
+    "blocked": 5,
+    "frontend_pages_status": "Complete — 14 HTML pages built covering all major flows. Donor and Admin/NGO sign-in portals separated with role enforcement and cross-portal navigation links.",
+    "backend_status": "Core MVC stack fully built — auth, campaigns, donations, NGO, admin routes all implemented with parameterized queries and RBAC. Email service (nodemailer) added. First-run seeder and test-account seeder both in place. Campaign queries LEFT JOIN ngo_profiles for NGO name in all responses.",
+    "critical_gap": "Payment gateway integration (blocked on merchant accounts), OAuth login (blocked on app registration), SMTP credentials for email features"
+  }
+}

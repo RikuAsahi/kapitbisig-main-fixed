@@ -1,0 +1,421 @@
+{
+	"info": {
+		"name": "KapitBisig API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5001"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/auth/signup", "host": ["{{base_url}}"], "path": ["auth", "signup"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"dela Cruz\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"password123\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Sign In",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/auth/signin", "host": ["{{base_url}}"], "path": ["auth", "signin"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"juan@example.com\",\n  \"password\": \"password123\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+					}
+				},
+				{
+					"name": "Google OAuth (Not Implemented)",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/auth/google", "host": ["{{base_url}}"], "path": ["auth", "google"] }
+					}
+				},
+				{
+					"name": "Facebook OAuth (Not Implemented)",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/auth/facebook", "host": ["{{base_url}}"], "path": ["auth", "facebook"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Campaigns",
+			"item": [
+				{
+					"name": "Create Campaign",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/campaigns", "host": ["{{base_url}}"], "path": ["campaigns"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Help Typhoon Victims\",\n  \"description\": \"Raising funds for typhoon victims in Visayas.\",\n  \"category\": \"disaster_relief\",\n  \"targetAmount\": 50000,\n  \"ngoId\": \"1\",\n  \"imageUrl\": \"\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get All Campaigns",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/campaigns?status=active&limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["campaigns"],
+							"query": [
+								{ "key": "status", "value": "active", "disabled": true },
+								{ "key": "category", "value": "disaster_relief", "disabled": true },
+								{ "key": "search", "value": "", "disabled": true },
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Campaign by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/campaigns/1", "host": ["{{base_url}}"], "path": ["campaigns", "1"] }
+					}
+				},
+				{
+					"name": "Update Campaign",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/campaigns/1", "host": ["{{base_url}}"], "path": ["campaigns", "1"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Campaign Title\",\n  \"description\": \"Updated description.\",\n  \"targetAmount\": 75000,\n  \"status\": \"active\",\n  \"imageUrl\": \"\",\n  \"startDate\": \"2026-05-18T00:00:00.000Z\",\n  \"endDate\": \"2026-12-31T00:00:00.000Z\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Submit Campaign for Approval",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{base_url}}/campaigns/1/submit", "host": ["{{base_url}}"], "path": ["campaigns", "1", "submit"] }
+					}
+				},
+				{
+					"name": "Approve Campaign (Admin)",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{base_url}}/campaigns/1/approve", "host": ["{{base_url}}"], "path": ["campaigns", "1", "approve"] }
+					}
+				},
+				{
+					"name": "Reject Campaign (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/campaigns/1/reject", "host": ["{{base_url}}"], "path": ["campaigns", "1", "reject"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Insufficient documentation provided.\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Delete Campaign",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{base_url}}/campaigns/1", "host": ["{{base_url}}"], "path": ["campaigns", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "NGOs",
+			"item": [
+				{
+					"name": "Create NGO Profile",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/ngos", "host": ["{{base_url}}"], "path": ["ngos"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bayanihan Foundation\",\n  \"registrationNumber\": \"SEC-2024-00001\",\n  \"description\": \"A non-profit helping communities in need.\",\n  \"websiteUrl\": \"https://bayanihan.org\",\n  \"phoneNumber\": \"+639171234567\",\n  \"address\": \"123 Rizal Ave, Manila\",\n  \"logoUrl\": \"\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get All NGOs",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/ngos?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["ngos"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Verified NGOs",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/ngos/verified?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["ngos", "verified"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My NGO Profile",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/ngos/my-profile", "host": ["{{base_url}}"], "path": ["ngos", "my-profile"] }
+					}
+				},
+				{
+					"name": "Get NGO by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/ngos/1", "host": ["{{base_url}}"], "path": ["ngos", "1"] }
+					}
+				},
+				{
+					"name": "Update NGO Profile",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/ngos/1", "host": ["{{base_url}}"], "path": ["ngos", "1"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bayanihan Foundation Updated\",\n  \"description\": \"Updated description.\",\n  \"websiteUrl\": \"https://bayanihan.org\",\n  \"phoneNumber\": \"+639179999999\",\n  \"address\": \"456 Bonifacio St, Quezon City\",\n  \"logoUrl\": \"\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Delete NGO Profile",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{base_url}}/ngos/1", "host": ["{{base_url}}"], "path": ["ngos", "1"] }
+					}
+				},
+				{
+					"name": "Get Pending Verifications (Admin)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/ngos/verification/pending?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["ngos", "verification", "pending"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Verify NGO (Admin)",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{base_url}}/ngos/1/verify", "host": ["{{base_url}}"], "path": ["ngos", "1", "verify"] }
+					}
+				},
+				{
+					"name": "Reject NGO (Admin)",
+					"request": {
+						"method": "POST",
+						"url": { "raw": "{{base_url}}/ngos/1/reject", "host": ["{{base_url}}"], "path": ["ngos", "1", "reject"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Donations",
+			"item": [
+				{
+					"name": "Create Donation",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/donations", "host": ["{{base_url}}"], "path": ["donations"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"campaignId\": \"1\",\n  \"amount\": 500,\n  \"paymentMethod\": \"gcash\",\n  \"message\": \"Stay strong, Pilipinas!\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Get My Donations",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/donations/my-donations?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["donations", "my-donations"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Donation by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/donations/1", "host": ["{{base_url}}"], "path": ["donations", "1"] }
+					}
+				},
+				{
+					"name": "Get Donations by Campaign",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/donations/campaign/1/donations?limit=100&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["donations", "campaign", "1", "donations"],
+							"query": [
+								{ "key": "limit", "value": "100" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Campaign Donation Stats",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/donations/campaign/1/stats", "host": ["{{base_url}}"], "path": ["donations", "campaign", "1", "stats"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/users?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "users"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Update User Role (Superadmin)",
+					"request": {
+						"method": "PUT",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"url": { "raw": "{{base_url}}/admin/users/1/role", "host": ["{{base_url}}"], "path": ["admin", "users", "1", "role"] },
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": \"admin\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Delete User (Superadmin)",
+					"request": {
+						"method": "DELETE",
+						"url": { "raw": "{{base_url}}/admin/users/1", "host": ["{{base_url}}"], "path": ["admin", "users", "1"] }
+					}
+				},
+				{
+					"name": "Get Activity Logs",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/activity-logs?limit=100&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "activity-logs"],
+							"query": [
+								{ "key": "adminId", "value": "", "disabled": true },
+								{ "key": "entityType", "value": "", "disabled": true },
+								{ "key": "action", "value": "", "disabled": true },
+								{ "key": "startDate", "value": "", "disabled": true },
+								{ "key": "endDate", "value": "", "disabled": true },
+								{ "key": "limit", "value": "100" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get My Activity Logs",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/admin/my-activity-logs?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "my-activity-logs"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "offset", "value": "0" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Activity Log by ID",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/admin/activity-logs/1", "host": ["{{base_url}}"], "path": ["admin", "activity-logs", "1"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+					}
+				}
+			]
+		}
+	]
+}
