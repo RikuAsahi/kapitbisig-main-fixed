@@ -12,7 +12,7 @@ A full-stack crowdfunding platform for NGOs in Barangay 105, Tondo, Manila. Dono
 | MySQL       | 8.0     | 8.0          |
 | npm         | 9.x     | bundled with Node |
 
-> **MySQL port:** the default `.env` uses port `3307`. If your MySQL runs on the standard port, change `DB_PORT=3307` to `DB_PORT=3306`.
+> **MySQL port:** the default `.env` uses port `3306`. If your MySQL runs on the standard port, change `DB_PORT=3306` to `DB_PORT=3306`.
 
 ---
 

@@ -159,6 +159,12 @@ const NGOAPI = {
 
 /* ── ADMIN API ── */
 const AdminAPI = {
+	createUser: (data) =>
+		http.post('/admin/users', data),
+
+	createNGOProfile: (data) =>
+		http.post('/admin/ngos', data),
+	
 	getAllUsers: (filters = {}) => {
 		const params = new URLSearchParams();
 		params.append('limit',  filters.limit  || 50);
@@ -195,20 +201,58 @@ const AdminAPI = {
 const AuthState = {
 	currentUser: null,
 	isAuthenticated: false,
+	_userKey: 'kb.auth.user',
+
+	_readStoredUser() {
+		try {
+			const raw = localStorage.getItem(this._userKey) || localStorage.getItem('kb.user');
+			return raw ? JSON.parse(raw) : null;
+		} catch {
+			return null;
+		}
+	},
+
+	_storeUser(user) {
+		if (!user) return;
+		try {
+			localStorage.setItem(this._userKey, JSON.stringify(user));
+			localStorage.setItem('kb.auth.role', user.role || '');
+			localStorage.setItem('kb.auth.name', user.fullName || user.name || [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || '');
+			localStorage.setItem('kb.auth.email', user.email || '');
+		} catch {}
+	},
+
+	_clearStoredUser() {
+		['kb.auth.user', 'kb.auth.role', 'kb.auth.name', 'kb.auth.email', 'kb.user'].forEach(key => {
+			try { localStorage.removeItem(key); } catch {}
+		});
+	},
 
 	async init() {
 		try {
 			const response = await AuthAPI.getMe();
 			this.currentUser = response.user;
 			this.isAuthenticated = true;
-		} catch {
-			this.currentUser = null;
-			this.isAuthenticated = false;
+			this._storeUser(response.user);
+		} catch (error) {
+			if (error && (error.status === 401 || error.status === 403)) {
+				this._clearStoredUser();
+				this.currentUser = null;
+				this.isAuthenticated = false;
+			} else {
+				this.currentUser = this._readStoredUser();
+				this.isAuthenticated = !!this.currentUser;
+			}
 		}
 		this._updateNav();
 	},
 
 	_updateNav() {
+		if (window.KBCommonNav && typeof window.KBCommonNav.update === 'function') {
+			window.KBCommonNav.update(this.isAuthenticated ? this.currentUser : null);
+			return;
+		}
+
 		const isAuth = this.isAuthenticated;
 		const user = this.currentUser;
 
@@ -241,6 +285,8 @@ const AuthState = {
 		const response = await AuthAPI.signin(email, password);
 		this.currentUser = response.user;
 		this.isAuthenticated = true;
+		this._storeUser(response.user);
+		this._updateNav();
 		return response;
 	},
 
@@ -248,6 +294,8 @@ const AuthState = {
 		const response = await AuthAPI.signup(firstName, lastName, email, password);
 		this.currentUser = response.user;
 		this.isAuthenticated = true;
+		this._storeUser(response.user);
+		this._updateNav();
 		return response;
 	},
 
@@ -255,6 +303,8 @@ const AuthState = {
 		await AuthAPI.logout();
 		this.currentUser = null;
 		this.isAuthenticated = false;
+		this._clearStoredUser();
+		this._updateNav();
 	},
 
 	getUser() {
@@ -266,7 +316,7 @@ const AuthState = {
 	},
 
 	isNgoAdmin() {
-		return this.currentUser && this.currentUser.role === 'ngo_admin';
+		return this.currentUser && ['ngo_admin', 'ngo'].includes(this.currentUser.role);
 	},
 
 	isDonor() {

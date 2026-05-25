@@ -17,6 +17,8 @@
 		sessionInterval: null,
 		analyticsInterval: null,
 		ngoId: null,
+		user: null,
+		ngoProfile: null,
 		charts: {}
 	};
 
@@ -66,47 +68,14 @@
 	};
 
 	const data = {
-		campaigns: [
-			{ id: 1, title: 'Tondo Learning Kits', category: 'Education', status: 'Approved', raised: 72000, goal: 100000, donors: 214 },
-			{ id: 2, title: 'Barangay Health Caravan', category: 'Health', status: 'Ongoing', raised: 51000, goal: 65000, donors: 143 },
-			{ id: 3, title: 'Flood Relief Operations', category: 'Natural Disasters', status: 'Pending', raised: 15000, goal: 120000, donors: 67 },
-			{ id: 4, title: 'Mothers Livelihood Tools', category: 'Community', status: 'Draft', raised: 5000, goal: 40000, donors: 19 },
-			{ id: 5, title: 'Scholarship 2026 Batch', category: 'Education', status: 'Approved', raised: 93000, goal: 100000, donors: 289 },
-			{ id: 6, title: 'Mobile Clinic Upgrades', category: 'Health', status: 'Flagged', raised: 14000, goal: 75000, donors: 42 }
-		],
-		ngos: [
-			{ name: 'Bayanihan Foundation', contact: 'Joana Reyes', status: 'Verified', campaigns: 7, raised: 385000 },
-			{ name: 'Hope in Tondo', contact: 'Carlo Dizon', status: 'Pending', campaigns: 3, raised: 92000 },
-			{ name: 'Kalinga Youth', contact: 'Mia Tan', status: 'Inactive', campaigns: 2, raised: 41000 },
-			{ name: 'Sulong Kabataan', contact: 'Luis Ramos', status: 'Verified', campaigns: 4, raised: 168000 }
-		],
-		users: [
-			{ name: 'Maria Santos', email: 'maria@kapitbisig.ph', role: 'superadmin', status: 'Active' },
-			{ name: 'Paolo Cruz', email: 'paolo@kapitbisig.ph', role: 'admin', status: 'Active' },
-			{ name: 'Nadine Flores', email: 'nadine@ngo.ph', role: 'ngo', status: 'Pending Setup' }
-		],
-		approvals: [
-			{ campaign: 'Emergency Food Packs', ngo: 'Hope in Tondo', requested: '2026-05-06', amount: 80000 },
-			{ campaign: 'School Bag Drive', ngo: 'Sulong Kabataan', requested: '2026-05-05', amount: 45000 }
-		],
-		moderation: [
-			{ campaign: 'Mobile Clinic Upgrades', reason: 'Missing liquidation report', severity: 'High' },
-			{ campaign: 'Flood Relief Operations', reason: 'Pending document verification', severity: 'Medium' }
-		],
-		support: [
-			{ org: 'Hope in Tondo', ticket: 'SUP-1012', concern: 'Campaign photo upload fails', status: 'Open' },
-			{ org: 'Kalinga Youth', ticket: 'SUP-1011', concern: 'Cannot export donations report', status: 'In Progress' }
-		],
-		notifications: [
-			{ text: '2 campaigns are waiting for approval.', time: '5 min ago', read: false },
-			{ text: 'Monthly report is ready for export.', time: '20 min ago', read: false },
-			{ text: 'New NGO account registered.', time: '1 hour ago', read: true }
-		],
-		logs: [
-			{ date: '2026-05-08 09:10', action: 'login', actor: 'Maria Santos', detail: 'Successful login from 192.168.1.11' },
-			{ date: '2026-05-08 08:58', action: 'approve', actor: 'Maria Santos', detail: 'Approved campaign Tondo Learning Kits' },
-			{ date: '2026-05-08 08:40', action: 'create', actor: 'Paolo Cruz', detail: 'Created user account nadine@ngo.ph' }
-		],
+		campaigns: [],
+		ngos: [],
+		users: [],
+		approvals: [],
+		moderation: [],
+		support: [],
+		notifications: [],
+		logs: [],
 		ngoAnalytics: null
 	};
 
@@ -116,6 +85,26 @@
 
 	function fmtMoney(value) {
 		return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(value || 0);
+	}
+
+	function escHtml(text) {
+		const d = document.createElement('div');
+		d.appendChild(document.createTextNode(String(text || '')));
+		return d.innerHTML;
+	}
+
+	function emptyBlock(title, copy) {
+		return `<div class="empty-state" style="padding:24px 10px"><h3>${title}</h3><p>${copy}</p></div>`;
+	}
+
+	function tableEmpty(colspan, message) {
+		return `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-soft)">${message}</td></tr>`;
+	}
+
+	function normalizeStatus(status) {
+		const raw = String(status || '').trim();
+		if (!raw) return 'Pending';
+		return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 	}
 
 	function getRoleFromURL() {
@@ -161,6 +150,29 @@
 			name: String(nameFromStorage || '').trim(),
 			email: String(emailFromStorage || '').trim()
 		};
+	}
+
+	async function readSessionAccount() {
+		try {
+			const res = await AuthAPI.getMe();
+			const user = res.user || null;
+			const role = mapRole(user && user.role);
+			if (!user || !role) return null;
+
+			const name = user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim();
+			localStorage.setItem('kb.auth.user', JSON.stringify(user));
+			localStorage.setItem('kb.auth.role', user.role || '');
+			localStorage.setItem('kb.auth.name', name || '');
+			localStorage.setItem('kb.auth.email', user.email || '');
+
+			return {
+				role,
+				name,
+				email: user.email || ''
+			};
+		} catch (_error) {
+			return null;
+		}
 	}
 
 	function getAllowedPages() {
@@ -334,6 +346,11 @@
 			color: l.action === 'approve' ? 'green' : l.action === 'login' ? 'sky' : 'gold'
 		}));
 
+		if (!feed.length) {
+			host.innerHTML = emptyBlock('No recent activity', 'Activity will appear here after database events are recorded.');
+			return;
+		}
+
 		host.innerHTML = feed
 			.map(
 				(item) => `
@@ -364,6 +381,11 @@
 		const sorted = [...data.campaigns]
 			.sort((a, b) => b.raised / b.goal - a.raised / a.goal)
 			.slice(0, 4);
+
+		if (!sorted.length) {
+			host.innerHTML = emptyBlock('No campaign data', 'Top campaigns will appear when campaigns exist in the database.');
+			return;
+		}
 
 		host.innerHTML = sorted
 			.map((campaign) => {
@@ -451,41 +473,37 @@
 		const table = qs('ngoTable');
 		if (!table) return;
 
-		if (PLACEHOLDER_MODE) {
-			table.innerHTML = `
-				<thead><tr><th>Organization</th><th>Contact</th><th>Status</th><th>Campaigns</th><th>Raised</th></tr></thead>
-				<tbody>
-					<tr>
-						<td><strong>Template Organization</strong></td>
-						<td>Template Contact</td>
-						<td><span class="badge badge-pending">Template</span></td>
-						<td>--</td>
-						<td>--</td>
-					</tr>
-					<tr><td colspan="5">NGO Management is template-only until backend data is connected.</td></tr>
-				</tbody>
-			`;
-			return;
-		}
+        const canAct = state.role === 'admin' || state.role === 'superadmin';
 
 		const rows = data.ngos
 			.filter((ngo) => !state.ngoSearch || ngo.name.toLowerCase().includes(state.ngoSearch))
-			.map(
-				(ngo) => `
-					<tr>
-						<td><strong>${ngo.name}</strong></td>
-						<td>${ngo.contact}</td>
-						<td><span class="badge ${badgeClass(ngo.status)}">${ngo.status}</span></td>
-						<td>${ngo.campaigns}</td>
-						<td>${fmtMoney(ngo.raised)}</td>
-					</tr>
-				`
-			)
-			.join('');
+			.map((ngo) => `
+				<tr>
+					<td>
+						<strong>${escHtml(ngo.name)}</strong>
+						<div style="font-size:11px;color:var(--text-soft);margin-top:2px">${escHtml(ngo.registrationNumber || '')}</div>
+					</td>
+					<td>
+						<div>${escHtml(ngo.contact || '—')}</div>
+						<div style="font-size:11px;color:var(--text-soft)">${escHtml(ngo.email || '')}</div>
+					</td>
+					<td><span class="badge ${badgeClass(ngo.status)}">${ngo.status}</span></td>
+					<td>${ngo.campaigns}</td>
+					<td>${fmtMoney(ngo.raised)}</td>
+					${canAct ? `<td class="td-actions">
+						${ngo.status !== 'Verified' ? `<button class="btn btn-success btn-sm" onclick="verifyNGO('${ngo.id}')">Verify</button>` : ''}
+						${ngo.status !== 'Rejected' ? `<button class="btn btn-danger btn-sm" onclick="rejectNGO('${ngo.id}')">Reject</button>` : ''}
+						<button class="btn btn-ghost btn-sm" onclick="editNGO('${ngo.id}')">Edit</button>
+						<button class="btn btn-danger btn-sm" onclick="deleteNGO('${ngo.id}')">Delete</button>
+					</td>` : ''}
+				</tr>
+			`).join('');
+
+		const actionsHeader = canAct ? '<th>Actions</th>' : '';
 
 		table.innerHTML = `
-			<thead><tr><th>Organization</th><th>Contact</th><th>Status</th><th>Campaigns</th><th>Raised</th></tr></thead>
-			<tbody>${rows || '<tr><td colspan="5">No NGO records.</td></tr>'}</tbody>
+			<thead><tr><th>Organization</th><th>Contact</th><th>Status</th><th>Campaigns</th><th>Raised</th>${actionsHeader}</tr></thead>
+			<tbody>${rows || tableEmpty(canAct ? 6 : 5, 'No NGO records found.')}</tbody>
 		`;
 	}
 
@@ -493,30 +511,35 @@
 		const table = qs('userTable');
 		if (!table) return;
 
-		if (PLACEHOLDER_MODE) {
-			table.innerHTML = `
-				<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
-				<tbody><tr><td><strong>Template User</strong></td><td>template@domain</td><td><span class="badge badge-admin">template</span></td><td>Awaiting backend</td></tr></tbody>
-			`;
-			return;
-		}
+		const isSuperAdmin = state.role === 'superadmin';
+		const rows = data.users.map((user) => `
+			<tr>
+				<td>
+					<strong>${escHtml(user.name)}</strong>
+					<div style="font-size:11px;color:var(--text-soft);margin-top:2px">#${user.id}</div>
+				</td>
+				<td>${escHtml(user.email)}</td>
+				<td><span class="badge badge-${user.role}">${user.role}</span></td>
+				<td><span class="badge badge-approved">Active</span></td>
+				<td style="font-size:12px;color:var(--text-soft)">${user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
+				${isSuperAdmin ? `<td class="td-actions">
+					<select class="filter-select" style="font-size:11px;padding:4px 8px;height:auto"
+					        onchange="changeUserRole('${user.id}', this.value)" title="Change role">
+						<option value="donor"      ${user.role==='donor'      ? 'selected':''}>Donor</option>
+						<option value="ngo_admin"  ${user.role==='ngo' || user.role==='ngo_admin' ? 'selected':''}>NGO</option>
+						<option value="admin"      ${user.role==='admin'      ? 'selected':''}>Admin</option>
+						<option value="superadmin" ${user.role==='superadmin' ? 'selected':''}>Super Admin</option>
+					</select>
+					<button class="btn btn-danger btn-sm" onclick="deleteUserAccount('${user.id}')">Delete</button>
+				</td>` : ''}
+			</tr>
+		`).join('');
+
+		const actionsHeader = isSuperAdmin ? '<th>Actions</th>' : '';
 
 		table.innerHTML = `
-			<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead>
-			<tbody>
-				${data.users
-					.map(
-						(user) => `
-							<tr>
-								<td><strong>${user.name}</strong></td>
-								<td>${user.email}</td>
-								<td><span class="badge badge-${user.role}">${user.role}</span></td>
-								<td>${user.status}</td>
-							</tr>
-						`
-					)
-					.join('')}
-			</tbody>
+			<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th>${actionsHeader}</tr></thead>
+			<tbody>${rows || tableEmpty(isSuperAdmin ? 6 : 5, 'No user records found.')}</tbody>
 		`;
 	}
 
@@ -524,34 +547,23 @@
 		const table = qs('approvalTable');
 		if (!table) return;
 
-		if (PLACEHOLDER_MODE) {
-			table.innerHTML = `
-				<thead><tr><th>Campaign</th><th>NGO</th><th>Date</th><th>Goal</th><th>Action</th></tr></thead>
-				<tbody><tr><td colspan="5">Approval Queue placeholder. Pending items will load from backend.</td></tr></tbody>
-			`;
-			return;
-		}
+		const rows = data.approvals.map((row, idx) => `
+			<tr>
+				<td><strong>${escHtml(row.title)}</strong></td>
+				<td>${escHtml(row.typeLabel)}</td>
+				<td>${escHtml(row.owner)}</td>
+				<td>${escHtml(row.requested)}</td>
+				<td>${row.amount !== null && row.amount !== undefined ? fmtMoney(row.amount) : 'N/A'}</td>
+				<td class="td-actions">
+					<button class="btn btn-success btn-sm" onclick="openApprovalModal('approve', ${idx})">Approve</button>
+					<button class="btn btn-danger btn-sm" onclick="openApprovalModal('reject', ${idx})">Reject</button>
+				</td>
+			</tr>
+		`).join('');
 
 		table.innerHTML = `
-			<thead><tr><th>Campaign</th><th>NGO</th><th>Date</th><th>Goal</th><th>Action</th></tr></thead>
-			<tbody>
-				${data.approvals
-					.map(
-						(row, idx) => `
-							<tr>
-								<td><strong>${row.campaign}</strong></td>
-								<td>${row.ngo}</td>
-								<td>${row.requested}</td>
-								<td>${fmtMoney(row.amount)}</td>
-								<td class="td-actions">
-									<button class="btn btn-success btn-sm" onclick="openApprovalModal('approve', ${idx})">Approve</button>
-									<button class="btn btn-danger btn-sm" onclick="openApprovalModal('reject', ${idx})">Reject</button>
-								</td>
-							</tr>
-						`
-					)
-					.join('')}
-			</tbody>
+			<thead><tr><th>Application</th><th>Type</th><th>Submitted By</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
+			<tbody>${rows || tableEmpty(6, 'No pending approvals.')}</tbody>
 		`;
 	}
 
@@ -559,30 +571,18 @@
 		const table = qs('moderationTable');
 		if (!table) return;
 
-		if (PLACEHOLDER_MODE) {
-			table.innerHTML = `
-				<thead><tr><th>Campaign</th><th>Reason</th><th>Severity</th><th>Action</th></tr></thead>
-				<tbody><tr><td colspan="4">Moderation placeholder. Flagged items will come from backend.</td></tr></tbody>
-			`;
-			return;
-		}
+		const rows = data.moderation.map((row) => `
+			<tr>
+				<td><strong>${escHtml(row.campaign)}</strong></td>
+				<td>${escHtml(row.reason)}</td>
+				<td><span class="badge ${row.severity === 'High' ? 'badge-flagged' : 'badge-pending'}">${escHtml(row.severity)}</span></td>
+				<td><button class="btn btn-warn btn-sm" onclick="showToast('Flag under review.','info')">Review</button></td>
+			</tr>
+		`).join('');
 
 		table.innerHTML = `
 			<thead><tr><th>Campaign</th><th>Reason</th><th>Severity</th><th>Action</th></tr></thead>
-			<tbody>
-				${data.moderation
-					.map(
-						(row) => `
-							<tr>
-								<td><strong>${row.campaign}</strong></td>
-								<td>${row.reason}</td>
-								<td><span class="badge ${row.severity === 'High' ? 'badge-flagged' : 'badge-pending'}">${row.severity}</span></td>
-								<td><button class="btn btn-warn btn-sm" onclick="showToast('Flag under review.','info')">Review</button></td>
-							</tr>
-						`
-					)
-					.join('')}
-			</tbody>
+			<tbody>${rows || tableEmpty(4, 'No moderation records found.')}</tbody>
 		`;
 	}
 
@@ -590,44 +590,30 @@
 		const table = qs('supportTable');
 		if (!table) return;
 
-		if (PLACEHOLDER_MODE) {
-			table.innerHTML = `
-				<thead><tr><th>Organization</th><th>Ticket</th><th>Concern</th><th>Status</th></tr></thead>
-				<tbody><tr><td colspan="4">Support Center placeholder. Tickets will load from backend.</td></tr></tbody>
-			`;
-			return;
-		}
+		const rows = data.support.map((row) => `
+			<tr>
+				<td><strong>${escHtml(row.org)}</strong></td>
+				<td>${escHtml(row.ticket)}</td>
+				<td>${escHtml(row.concern)}</td>
+				<td><span class="badge ${row.status === 'Open' ? 'badge-pending' : 'badge-approved'}">${escHtml(row.status)}</span></td>
+			</tr>
+		`).join('');
 
 		table.innerHTML = `
 			<thead><tr><th>Organization</th><th>Ticket</th><th>Concern</th><th>Status</th></tr></thead>
-			<tbody>
-				${data.support
-					.map(
-						(row) => `
-							<tr>
-								<td><strong>${row.org}</strong></td>
-								<td>${row.ticket}</td>
-								<td>${row.concern}</td>
-								<td><span class="badge ${row.status === 'Open' ? 'badge-pending' : 'badge-approved'}">${row.status}</span></td>
-							</tr>
-						`
-					)
-					.join('')}
-			</tbody>
+			<tbody>${rows || tableEmpty(4, 'No support requests found.')}</tbody>
 		`;
 	}
 
 	function renderNotifications() {
 		const list = qs('notifList');
 		if (!list) return;
+		document.querySelectorAll('.notif-dot').forEach((dot) => {
+			dot.style.display = data.notifications.some((n) => !n.read) ? '' : 'none';
+		});
 
-		if (PLACEHOLDER_MODE) {
-			list.innerHTML = `
-				<div class="empty-state" style="padding:24px 10px">
-					<h3>Notifications Placeholder</h3>
-					<p>Notifications will appear once backend notification service is connected.</p>
-				</div>
-			`;
+		if (!data.notifications.length) {
+			list.innerHTML = emptyBlock('No notifications', 'Notifications will appear here when records are available.');
 			return;
 		}
 
@@ -646,34 +632,46 @@
 			.join('');
 	}
 
-	function renderLogs() {
+	function renderLogs(filterAction, filterDate) {
 		const table = qs('logsTable');
 		if (!table) return;
 
-		if (PLACEHOLDER_MODE) {
-			table.innerHTML = `
-				<thead><tr><th>Date/Time</th><th>Action</th><th>Actor</th><th>Details</th></tr></thead>
-				<tbody><tr><td colspan="4">Activity Logs placeholder. Audit logs will load from backend.</td></tr></tbody>
-			`;
-			return;
+		const actionColors = {
+			LOGIN: '#4a9cc7', LOGOUT: '#888',
+			CREATE_CAMPAIGN: '#2e9e6e', EDIT_CAMPAIGN: '#F39C12', DELETE_CAMPAIGN: '#E74C3C',
+			DONATE: '#27AE60',
+			APPROVE: '#2e9e6e', REJECT: '#E74C3C',
+			UPDATE_ROLE: '#9b59b6', DELETE_USER: '#E74C3C',
+		};
+
+		let logs = data.logs;
+		if (filterAction && filterAction !== 'all') {
+			logs = logs.filter((l) => l.action === filterAction);
+		}
+		if (filterDate) {
+			logs = logs.filter((l) => l.rawDate && l.rawDate.slice(0, 10) === filterDate);
 		}
 
+		const rows = logs.map((row) => {
+			const color = actionColors[row.action] || '#999';
+			const label = row.action.replace(/_/g, ' ');
+			return `
+				<tr class="log-row">
+					<td style="white-space:nowrap;font-size:12px">${row.date}</td>
+					<td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${color}22;color:${color};letter-spacing:0.3px">${label}</span></td>
+					<td>
+						<strong>${escHtml(row.actorName || row.actor)}</strong>
+						<div style="font-size:11px;color:var(--text-soft)">${escHtml(row.actorEmail || '')}</div>
+					</td>
+					<td style="font-size:13px">${escHtml(row.detail)}</td>
+				</tr>
+			`;
+		}).join('');
+
+
 		table.innerHTML = `
-			<thead><tr><th>Date/Time</th><th>Action</th><th>Actor</th><th>Details</th></tr></thead>
-			<tbody>
-				${data.logs
-					.map(
-						(row) => `
-							<tr class="log-row">
-								<td>${row.date}</td>
-								<td><span class="action-tag ${row.action}">${row.action}</span></td>
-								<td><strong>${row.actor}</strong></td>
-								<td>${row.detail}</td>
-							</tr>
-						`
-					)
-					.join('')}
-			</tbody>
+			<thead><tr><th>Date / Time</th><th>Action</th><th>Actor</th><th>Details</th></tr></thead>
+			<tbody>${rows || '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-soft)">No activity logs found.</td></tr>'}</tbody>
 		`;
 	}
 
@@ -682,118 +680,162 @@
 		const security = qs('settingsSecurity');
 		if (!general || !security) return;
 
-		const isSuperAdmin = state.role === 'superadmin';
-
-		if (!isSuperAdmin) {
-			general.innerHTML = `
+		// General Settings Form
+		general.innerHTML = `
+			<div class="form-grid">
 				<div class="form-group">
-					<label class="form-label">Organization Display Name</label>
-					<input class="form-input" value="${state.accountName || 'NGO Account'}" />
+					<label class="form-label">First Name</label>
+					<input id="settingsFirstName" class="form-input" type="text" placeholder="Your first name" value="${escHtml(state.user?.firstName || '')}"/>
 				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Public Contact Email</label>
-					<input class="form-input" value="${state.accountEmail || 'ngo@kapitbisig.ph'}" />
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Public Contact Number</label>
-					<input class="form-input" value="+63 900 000 0000" />
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Address</label>
-					<input class="form-input" value="Barangay 105, Tondo, Manila" />
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Campaign Notification Emails</label>
-					<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
-				</div>
-			`;
-
-			security.innerHTML = `
 				<div class="form-group">
-					<label class="form-label">Change Password</label>
-					<input class="form-input" type="password" placeholder="Enter new password" />
+					<label class="form-label">Last Name</label>
+					<input id="settingsLastName" class="form-input" type="text" placeholder="Your last name" value="${escHtml(state.user?.lastName || '')}"/>
 				</div>
-				<div class="form-group" style="margin-top:12px">
+				<div class="form-group form-full">
+					<label class="form-label">Email Address</label>
+					<input id="settingsEmail" class="form-input" type="email" placeholder="your@email.com" value="${escHtml(state.user?.email || '')}" disabled/>
+					<div style="font-size:11px;color:var(--text-soft);margin-top:4px">Email cannot be changed directly. Contact support to update.</div>
+				</div>
+				${state.role === 'ngo' ? `
+					<div class="form-group form-full">
+						<label class="form-label">Organization Name</label>
+						<input id="settingsOrgName" class="form-input" type="text" placeholder="Organization name" value="${escHtml(state.ngoProfile?.name || '')}"/>
+					</div>
+					<div class="form-group form-full">
+						<label class="form-label">Organization Address</label>
+						<input id="settingsOrgAddress" class="form-input" type="text" placeholder="Street address" value="${escHtml(state.ngoProfile?.address || '')}"/>
+					</div>
+					<div class="form-group">
+						<label class="form-label">Phone Number</label>
+						<input id="settingsOrgPhone" class="form-input" type="tel" placeholder="09XX XXX XXXX" value="${escHtml(state.ngoProfile?.phoneNumber || '')}"/>
+					</div>
+					<div class="form-group">
+						<label class="form-label">Website</label>
+						<input id="settingsOrgWebsite" class="form-input" type="url" placeholder="https://organization.com" value="${escHtml(state.ngoProfile?.websiteUrl || '')}"/>
+					</div>
+					<div class="form-group form-full">
+						<label class="form-label">Organization Description</label>
+						<textarea id="settingsOrgDescription" class="form-input" placeholder="Tell us about your organization…" style="min-height:100px">${escHtml(state.ngoProfile?.description || '')}</textarea>
+					</div>
+				` : ''}
+			</div>
+		`;
+
+		// Security Settings Form
+		security.innerHTML = `
+			<div class="form-grid">
+				<div class="form-group form-full">
+					<label class="form-label">Current Password</label>
+					<input id="settingsCurrentPwd" class="form-input" type="password" placeholder="Enter your current password"/>
+				</div>
+				<div class="form-group form-full">
+					<label class="form-label">New Password</label>
+					<input id="settingsNewPwd" class="form-input" type="password" placeholder="Enter new password (min. 8 characters)"/>
+				</div>
+				<div class="form-group form-full">
 					<label class="form-label">Confirm New Password</label>
-					<input class="form-input" type="password" placeholder="Confirm new password" />
+					<input id="settingsConfirmPwd" class="form-input" type="password" placeholder="Confirm new password"/>
+					<div style="font-size:11px;color:var(--text-soft);margin-top:4px">Leave blank to keep current password unchanged.</div>
 				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Two-Factor Authentication</label>
-					<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Login Alerts</label>
-					<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Session Timeout</label>
-					<select class="form-input"><option>60 minutes</option><option>30 minutes</option><option>15 minutes</option></select>
-				</div>
-			`;
+			</div>
+		`;
+
+		// Show card footers with save buttons
+		document.querySelectorAll('#page-settings .card-footer').forEach((footer) => {
+			footer.style.display = 'block';
+		});
+
+		// Update button handlers
+		const generalFooter = document.querySelector('#page-settings .card:nth-child(1) .card-footer');
+		const securityFooter = document.querySelector('#page-settings .card:nth-child(2) .card-footer');
+		
+		if (generalFooter) {
+			generalFooter.querySelector('button').onclick = saveGeneralSettings;
+		}
+		if (securityFooter) {
+			securityFooter.querySelector('button').onclick = saveSecuritySettings;
+		}
+	}
+
+	async function saveGeneralSettings() {
+		const firstName = (qs('settingsFirstName')?.value || '').trim();
+		const lastName = (qs('settingsLastName')?.value || '').trim();
+		
+		if (!firstName || !lastName) {
+			showToast('First name and last name are required.', 'error');
 			return;
 		}
 
-		general.innerHTML = `
-			<div class="form-group">
-				<label class="form-label">Platform Name</label>
-				<input class="form-input" value="Kapitbisig" />
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Support Email</label>
-				<input class="form-input" value="support@kapitbisig.ph" />
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Support Contact Number</label>
-				<input class="form-input" value="+63 912 345 6789" />
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Default Currency</label>
-				<select class="form-input"><option>PHP (Philippine Peso)</option></select>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Default Timezone</label>
-				<select class="form-input"><option>Asia/Manila (GMT+8)</option></select>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Campaign Submission Policy</label>
-				<select class="form-input"><option>Require Admin Review</option><option>Auto-approve trusted NGOs</option></select>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Email Notifications</label>
-				<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Maintenance Mode</label>
-				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
-			</div>
-		`;
+		try {
+			const payload = { firstName, lastName };
 
-		security.innerHTML = `
-			<div class="form-group">
-				<label class="form-label">Session Timeout</label>
-				<select class="form-input"><option>60 minutes</option><option>30 minutes</option><option>15 minutes</option></select>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Require 2FA for Admins</label>
-				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Password Policy</label>
-				<select class="form-input"><option>Strong (12+ chars, mixed)</option><option>Standard (8+ chars)</option></select>
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Max Login Attempts</label>
-				<input class="form-input" type="number" value="5" min="3" max="10" />
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">Account Lock Duration (minutes)</label>
-				<input class="form-input" type="number" value="15" min="5" max="120" />
-			</div>
-			<div class="form-group" style="margin-top:12px">
-				<label class="form-label">IP Allowlist Enforcement</label>
-				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
-			</div>
-		`;
+			// For NGO users, also update organization profile
+			if (state.role === 'ngo') {
+				const orgName = (qs('settingsOrgName')?.value || '').trim();
+				const orgAddress = (qs('settingsOrgAddress')?.value || '').trim();
+				const orgPhone = (qs('settingsOrgPhone')?.value || '').trim();
+				const orgWebsite = (qs('settingsOrgWebsite')?.value || '').trim();
+				const orgDescription = (qs('settingsOrgDescription')?.value || '').trim();
+
+				if (state.ngoProfile?.id) {
+					await NGOAPI.update(state.ngoProfile.id, {
+						name: orgName || null,
+						address: orgAddress || null,
+						phoneNumber: orgPhone || null,
+						websiteUrl: orgWebsite || null,
+						description: orgDescription || null
+					});
+				}
+			}
+
+			// Update user profile
+			await AuthAPI.updateMe(payload);
+			
+			// Refresh data
+			const meRes = await AuthAPI.getMe();
+			Object.assign(state.user, meRes.user);
+			
+			showToast('Profile updated successfully!', 'success');
+			renderSettings();
+		} catch (err) {
+			showToast(err.message || 'Failed to update profile.', 'error');
+		}
+	}
+
+	async function saveSecuritySettings() {
+		const currentPwd = qs('settingsCurrentPwd')?.value || '';
+		const newPwd = qs('settingsNewPwd')?.value || '';
+		const confirmPwd = qs('settingsConfirmPwd')?.value || '';
+
+		// Only attempt to change password if new password is provided
+		if (!newPwd && !confirmPwd) {
+			showToast('No password changes to save.', 'info');
+			return;
+		}
+
+		if (!currentPwd) {
+			showToast('Please enter your current password.', 'error');
+			return;
+		}
+
+		if (newPwd.length < 8) {
+			showToast('New password must be at least 8 characters.', 'error');
+			return;
+		}
+
+		if (newPwd !== confirmPwd) {
+			showToast('New passwords do not match.', 'error');
+			return;
+		}
+
+		try {
+			// For now, show a message that this requires reauthentication
+			// In a real app, you'd validate current password on backend
+			showToast('Password change feature coming soon. Please contact support.', 'info');
+			// TODO: Implement actual password change API endpoint
+		} catch (err) {
+			showToast(err.message || 'Failed to update security settings.', 'error');
+		}
 	}
 
 	function chartPalette() {
@@ -820,37 +862,66 @@
 		return new window.Chart(canvas, config);
 	}
 
+	function showChartEmpty(id) {
+		const canvas = qs(id);
+		const wrap = canvas && canvas.parentElement;
+		if (!wrap) return;
+		canvas.style.display = 'none';
+		let empty = wrap.querySelector('[data-chart-empty]');
+		if (!empty) {
+			empty = document.createElement('div');
+			empty.setAttribute('data-chart-empty', 'true');
+			wrap.appendChild(empty);
+		}
+		empty.className = 'empty-state';
+		empty.style.padding = '24px 12px';
+		empty.innerHTML = `
+			<h3>No analytics data</h3>
+			<p>Charts will appear when donation or campaign analytics are available.</p>
+		`;
+	}
+
+	function restoreChartCanvas(id) {
+		const canvas = qs(id);
+		const wrap = canvas && canvas.parentElement;
+		if (!wrap) return;
+		canvas.style.display = '';
+		const empty = wrap.querySelector('[data-chart-empty]');
+		if (empty) empty.remove();
+	}
+
 	function renderCharts() {
 		destroyCharts();
 
-		if (PLACEHOLDER_MODE) {
-			['donationChart', 'statusChart', 'dailyChart', 'categoryChart', 'donorChart'].forEach((id) => {
-				const canvas = qs(id);
-				const wrap = canvas && canvas.parentElement;
-				if (!wrap) return;
-				wrap.innerHTML = `
-					<div class="empty-state" style="padding:24px 12px">
-						<h3>Analytics Placeholder</h3>
-						<p>Chart values will appear after backend analytics endpoints are available.</p>
-					</div>
-				`;
-			});
+		const chartIds = ['donationChart', 'statusChart', 'dailyChart', 'categoryChart', 'donorChart'];
+		const ngoA = state.role === 'ngo' ? data.ngoAnalytics : null;
+		const dailyDonations = ngoA && Array.isArray(ngoA.dailyDonations) ? ngoA.dailyDonations : [];
+		const campaigns = ngoA && Array.isArray(ngoA.campaigns) ? ngoA.campaigns : [];
+		const monthlyDonors = ngoA && Array.isArray(ngoA.monthlyDonors) ? ngoA.monthlyDonors : [];
+		const hasAnalytics = dailyDonations.length || campaigns.length || monthlyDonors.length;
+
+		if (PLACEHOLDER_MODE || !hasAnalytics) {
+			chartIds.forEach(showChartEmpty);
 			return;
 		}
 
 		if (!window.Chart) return;
+		chartIds.forEach(restoreChartCanvas);
 
 		const palette = chartPalette();
 		window.Chart.defaults.color = palette.text;
 		window.Chart.defaults.borderColor = palette.grid;
 
+		const dailyLabels = dailyDonations.map((d) => d.date.slice(5));
+		const dailyAmounts = dailyDonations.map((d) => d.amount);
+
 		state.charts.donation = createChart('donationChart', {
 			type: 'line',
 			data: {
-				labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+				labels: dailyLabels,
 				datasets: [{
 					label: 'Donations',
-					data: [12000, 9000, 14500, 18000, 13000, 22000, 19500],
+					data: dailyAmounts,
 					borderColor: '#4a9cc7',
 					backgroundColor: 'rgba(74,156,199,0.2)',
 					tension: 0.35,
@@ -860,23 +931,20 @@
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
 		});
 
+		const statusCounts = campaigns.reduce((acc, c) => {
+			const key = normalizeStatus(c.status);
+			acc[key] = (acc[key] || 0) + 1;
+			return acc;
+		}, {});
+
 		state.charts.status = createChart('statusChart', {
 			type: 'doughnut',
 			data: {
-				labels: ['Approved', 'Pending', 'Flagged'],
-				datasets: [{ data: [9, 3, 2], backgroundColor: ['#2e9e6e', '#c9a84c', '#d94f4f'] }]
+				labels: Object.keys(statusCounts),
+				datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#2e9e6e', '#c9a84c', '#d94f4f', '#4a9cc7', '#7c4de8'] }]
 			},
 			options: { responsive: true, maintainAspectRatio: false }
 		});
-
-		const ngoA = state.role === 'ngo' ? data.ngoAnalytics : null;
-
-		const dailyLabels = ngoA && ngoA.dailyDonations.length
-			? ngoA.dailyDonations.map((d) => d.date.slice(5))
-			: ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-		const dailyAmounts = ngoA && ngoA.dailyDonations.length
-			? ngoA.dailyDonations.map((d) => d.amount)
-			: [178000, 214000, 163000, 241000];
 
 		state.charts.daily = createChart('dailyChart', {
 			type: 'bar',
@@ -887,12 +955,8 @@
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
 		});
 
-		const categoryLabels = ngoA && ngoA.campaigns.length
-			? ngoA.campaigns.slice(0, 6).map((c) => c.title.length > 20 ? c.title.slice(0, 20) + '…' : c.title)
-			: ['Education', 'Health', 'Disaster', 'Community'];
-		const categoryAmounts = ngoA && ngoA.campaigns.length
-			? ngoA.campaigns.slice(0, 6).map((c) => c.currentAmount)
-			: [40, 28, 20, 12];
+		const categoryLabels = campaigns.slice(0, 6).map((c) => c.title.length > 20 ? `${c.title.slice(0, 20)}...` : c.title);
+		const categoryAmounts = campaigns.slice(0, 6).map((c) => c.currentAmount);
 
 		state.charts.category = createChart('categoryChart', {
 			type: 'pie',
@@ -903,12 +967,8 @@
 			options: { responsive: true, maintainAspectRatio: false }
 		});
 
-		const donorLabels = ngoA && ngoA.monthlyDonors.length
-			? ngoA.monthlyDonors.map((m) => m.month)
-			: ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
-		const donorCounts = ngoA && ngoA.monthlyDonors.length
-			? ngoA.monthlyDonors.map((m) => m.count)
-			: [42, 55, 61, 73, 89];
+		const donorLabels = monthlyDonors.map((m) => m.month);
+		const donorCounts = monthlyDonors.map((m) => m.count);
 
 		state.charts.donor = createChart('donorChart', {
 			type: 'line',
@@ -968,6 +1028,11 @@
 
 		if (state.role === 'ngo') {
 			const a = data.ngoAnalytics;
+			const hasNgoStats = !!(a && (a.totalDonations || a.totalDonationCount || a.uniqueDonors || (a.campaigns && a.campaigns.length)));
+			if (!hasNgoStats) {
+				host.innerHTML = emptyBlock('No analytics records', 'Analytics will appear when this NGO has campaign or donation records.');
+				return;
+			}
 			const avgDonation = a && a.totalDonationCount > 0
 				? a.totalDonations / a.totalDonationCount
 				: 0;
@@ -981,22 +1046,7 @@
 			return;
 		}
 
-		if (PLACEHOLDER_MODE) {
-			host.innerHTML = `
-				<div class="stat-card sky"><div class="stat-label">Conversion Rate</div><div class="stat-value sky">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
-				<div class="stat-card green"><div class="stat-label">Average Donation</div><div class="stat-value green">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
-				<div class="stat-card gold"><div class="stat-label">Donor Growth</div><div class="stat-value gold">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
-				<div class="stat-card purple"><div class="stat-label">Retention</div><div class="stat-value">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
-			`;
-			return;
-		}
-
-		host.innerHTML = `
-			<div class="stat-card sky"><div class="stat-label">Conversion Rate</div><div class="stat-value sky">4.8%</div><div class="stat-sub">Visitor to donor</div></div>
-			<div class="stat-card green"><div class="stat-label">Avg Donation</div><div class="stat-value green">${fmtMoney(1240)}</div><div class="stat-sub">Per transaction</div></div>
-			<div class="stat-card gold"><div class="stat-label">New Donors</div><div class="stat-value gold">89</div><div class="stat-sub">Last 30 days</div></div>
-			<div class="stat-card purple"><div class="stat-label">Retention</div><div class="stat-value">63%</div><div class="stat-sub">Returning donors</div></div>
-		`;
+		host.innerHTML = emptyBlock('No analytics records', 'Platform analytics will appear when analytics records are available in the database.');
 	}
 
 	function updateSessionTimer() {
@@ -1059,14 +1109,32 @@
 
 	async function loadDashboardData() {
 		try {
+			let currentNgoProfile = null;
+			if (state.role === 'ngo' && !state.ngoId) {
+				try {
+					const profileRes = await NGOAPI.getMyProfile();
+					currentNgoProfile = profileRes.profile || null;
+					state.ngoId = currentNgoProfile && currentNgoProfile.id ? currentNgoProfile.id : null;
+				} catch (_profileErr) {
+					currentNgoProfile = null;
+				}
+			}
+
 			const campaignFilters = { limit: 100 };
 			if (state.role === 'ngo' && state.ngoId) campaignFilters.ngoId = state.ngoId;
 
+			const campaignsPromise = CampaignAPI.list(campaignFilters);
+			const usersPromise = state.role === 'ngo' ? Promise.resolve({ users: [] }) : AdminAPI.getAllUsers({ limit: 100 });
+			const ngosPromise = state.role === 'ngo'
+				? Promise.resolve({ profiles: currentNgoProfile ? [currentNgoProfile] : [] })
+				: NGOAPI.list({ limit: 100 });
+			const logsPromise = state.role === 'ngo' ? Promise.resolve({ logs: [] }) : AdminAPI.getActivityLogs({ limit: 50 });
+
 			const [campaignsRes, usersRes, ngosRes, logsRes] = await Promise.all([
-				CampaignAPI.list(campaignFilters),
-				AdminAPI.getAllUsers({ limit: 100 }),
-				NGOAPI.list({ limit: 100 }),
-				AdminAPI.getActivityLogs({ limit: 50 })
+				campaignsPromise,
+				usersPromise,
+				ngosPromise,
+				logsPromise
 			]);
 
 			const campaigns = campaignsRes.campaigns || [];
@@ -1078,51 +1146,93 @@
 				id: c.id,
 				title: c.title,
 				category: c.category,
-				status: c.status.charAt(0).toUpperCase() + c.status.slice(1),
+				status: normalizeStatus(c.status),
 				raised: Number(c.currentAmount || 0),
 				goal: Number(c.targetAmount || 0),
 				donors: 0,
-				rejectionReason: c.rejectionReason || null
+				rejectionReason: c.rejectionReason || null,
+				ngoId: c.ngoId,
+				createdAt: c.createdAt
 			}));
 
 			data.users = users.map((u) => ({
 				name: u.fullName || `${u.firstName} ${u.lastName}`.trim(),
-				email: u.email,
-				role: u.role,
-				status: 'Active',
-				id: u.id
+				email: u.email || '',
+				role: u.role || '',
+				id: u.id,
+				createdAt: u.createdAt
 			}));
 
 			data.ngos = ngos.map((n) => ({
 				name: n.name,
 				contact: n.phoneNumber || '',
-				status: n.verificationStatus.charAt(0).toUpperCase() + n.verificationStatus.slice(1),
+				email: n.email || '',
+				registrationNumber: n.registrationNumber || '',
+				status: normalizeStatus(n.verificationStatus),
 				campaigns: 0,
 				raised: 0,
-				id: n.id
+				id: n.id,
+				websiteUrl: n.websiteUrl || '',
+				address: n.address || '',
+				description: n.description || ''
 			}));
 
 			const ngoMap = {};
 			ngos.forEach((n) => { ngoMap[String(n.id)] = n.name; });
 
-			data.approvals = campaigns
-				.filter((c) => c.status === 'pending')
+			const campaignApprovals = campaigns
+				.filter((c) => String(c.status || '').toLowerCase() === 'pending')
 				.map((c) => ({
-					campaign: c.title,
-					ngo: ngoMap[String(c.ngoId)] || `NGO #${c.ngoId}`,
+					type: 'campaign',
+					typeLabel: 'Campaign',
+					title: c.title,
+					owner: ngoMap[String(c.ngoId)] || `NGO #${c.ngoId}`,
 					requested: new Date(c.createdAt).toISOString().slice(0, 10),
 					amount: Number(c.targetAmount || 0),
 					id: c.id
 				}));
 
+			const ngoApprovals = ngos
+				.filter((n) => String(n.verificationStatus || '').toLowerCase() === 'pending')
+				.map((n) => ({
+					type: 'ngo',
+					typeLabel: 'NGO Registration',
+					title: n.name,
+					owner: n.registrationNumber || `NGO #${n.id}`,
+					requested: n.createdAt ? new Date(n.createdAt).toISOString().slice(0, 10) : '',
+					amount: null,
+					id: n.id
+				}));
+
+			data.approvals = [...campaignApprovals, ...ngoApprovals];
+			data.moderation = campaigns
+				.filter((c) => ['flagged', 'reported'].includes(String(c.status || '').toLowerCase()))
+				.map((c) => ({
+					campaign: c.title,
+					reason: c.rejectionReason || 'Flagged for review',
+					severity: 'High',
+					id: c.id
+				}));
+			data.support = [];
+			data.notifications = [];
 			data.logs = logs.map((l) => ({
 				date: new Date(l.createdAt).toLocaleString('en-PH'),
+				rawDate: l.createdAt,
 				action: l.action,
-				actor: l.adminId,
+				actor: l.actorName || l.adminId,
+				actorName: l.actorName || null,
+				actorEmail: l.actorEmail || null,
 				detail: l.description || `${l.action} on ${l.entityType}`
 			}));
 		} catch (_err) {
-			// keep existing mock data if API fails
+			data.campaigns = [];
+			data.ngos = [];
+			data.users = [];
+			data.approvals = [];
+			data.moderation = [];
+			data.support = [];
+			data.notifications = [];
+			data.logs = [];
 		}
 	}
 
@@ -1275,6 +1385,54 @@
 		state.ngoSearch = String(value || '').trim().toLowerCase();
 		renderNGOTable();
 	}
+    function filterLogs() {
+		const actionEl = document.querySelector('#page-activity-logs .filter-select');
+		const dateEl   = document.querySelector('#page-activity-logs input[type="date"]');
+		const action   = actionEl ? actionEl.value : '';
+		const date     = dateEl   ? dateEl.value   : '';
+		renderLogs(action, date);
+	}
+
+	async function verifyNGO(id) {
+		if (!confirm('Mark this NGO as Verified?')) return;
+		try {
+			await NGOAPI.verify(id);
+			showToast('NGO verified.', 'success');
+			await loadDashboardData();
+			renderNGOTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to verify NGO.', 'error');
+		}
+	}
+
+	async function rejectNGO(id) {
+		if (!confirm('Reject this NGO? This will mark them as rejected.')) return;
+		try {
+			await NGOAPI.reject(id);
+			showToast('NGO rejected.', 'info');
+			await loadDashboardData();
+			renderNGOTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to reject NGO.', 'error');
+		}
+	}
+
+	async function changeUserRole(userId, newRole) {
+		if (!confirm(`Change this user's role to "${newRole}"?`)) {
+			renderUserTable();
+			return;
+		}
+		try {
+			await AdminAPI.updateUserRole(userId, newRole);
+			showToast(`Role updated to ${newRole}.`, 'success');
+			const idx = data.users.findIndex((u) => String(u.id) === String(userId));
+			if (idx !== -1) data.users[idx].role = newRole;
+			renderUserTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to update role.', 'error');
+			renderUserTable();
+		}
+	}
 
 	function updateChart(_range) {
 		if (PLACEHOLDER_MODE) {
@@ -1363,7 +1521,7 @@
 				id: c.id,
 				title: c.title,
 				category: c.category,
-				status: c.status.charAt(0).toUpperCase() + c.status.slice(1),
+				status: normalizeStatus(c.status),
 				raised: Number(c.currentAmount || 0),
 				goal: Number(c.targetAmount || 0),
 				donors: 0,
@@ -1471,8 +1629,9 @@
 		if (!row) return;
 
 		const isReject = mode === 'reject';
-		if (qs('approvalTitle')) qs('approvalTitle').textContent = isReject ? 'Reject Campaign' : 'Approve Campaign';
-		if (qs('approvalDesc')) qs('approvalDesc').textContent = `${isReject ? 'Reject' : 'Approve'} "${row.campaign}" from ${row.ngo}?`;
+		const itemLabel = row.type === 'ngo' ? 'NGO Registration' : 'Campaign';
+		if (qs('approvalTitle')) qs('approvalTitle').textContent = `${isReject ? 'Reject' : 'Approve'} ${itemLabel}`;
+		if (qs('approvalDesc')) qs('approvalDesc').textContent = `${isReject ? 'Reject' : 'Approve'} "${row.title}" from ${row.owner}?`;
 
 		const feedbackGroup = qs('approvalFeedback') && qs('approvalFeedback').closest('.form-group');
 		const feedbackTextarea = qs('approvalFeedback');
@@ -1480,7 +1639,7 @@
 		if (feedbackGroup) {
 			const label = feedbackGroup.querySelector('.form-label');
 			if (label) label.textContent = isReject ? 'Rejection reason (sent to NGO)' : 'Notes (optional)';
-			feedbackTextarea.placeholder = isReject ? 'Explain why the campaign was rejected…' : 'Add any notes for the NGO…';
+			feedbackTextarea.placeholder = isReject ? `Explain why the ${row.type === 'ngo' ? 'registration' : 'campaign'} was rejected...` : 'Add any notes for the NGO...';
 			feedbackTextarea.required = isReject;
 		}
 
@@ -1497,6 +1656,7 @@
 	async function submitApproval(mode, index) {
 		const row = data.approvals[index];
 		if (!row) return;
+		const itemLabel = row.type === 'ngo' ? 'NGO Registration' : 'Campaign';
 
 		const reason = (qs('approvalFeedback')?.value || '').trim() || null;
 
@@ -1506,7 +1666,13 @@
 		}
 
 		try {
-			if (mode === 'approve') {
+			if (row.type === 'ngo') {
+				if (mode === 'approve') {
+					await NGOAPI.verify(row.id);
+				} else {
+					await NGOAPI.reject(row.id);
+				}
+			} else if (mode === 'approve') {
 				await CampaignAPI.approve(row.id);
 			} else {
 				await CampaignAPI.reject(row.id, reason);
@@ -1514,27 +1680,145 @@
 			data.approvals.splice(index, 1);
 			renderApprovals();
 			closeModal('approvalModal');
-			showToast(`Campaign ${mode === 'approve' ? 'approved' : 'rejected'}: ${row.campaign}`, 'success');
+			showToast(`${itemLabel} ${mode === 'approve' ? 'approved' : 'rejected'}: ${row.title}`, 'success');
 		} catch (_err) {
 			showToast('Action failed. Please try again.', 'error');
 		}
 	}
-
-	function createUser() {
+	     async function createUser() {
+		const fullName = (qs('newUserFullName')?.value || '').trim();
+		const email = (qs('newUserEmail')?.value || '').trim();
 		const role = qs('newUserRole')?.value || 'admin';
-		const generatedId = qs('generatedId')?.value || 'USR-000';
-		showToast(`User created (${role.toUpperCase()} · ${generatedId}).`, 'success');
-		closeModal('createUserModal');
+		const password = (qs('genPassword')?.textContent || '').trim();
+
+		if (!fullName) { showToast('Full name is required.', 'error'); return; }
+		if (!email) { showToast('Email is required.', 'error'); return; }
+
+		const parts = fullName.split(/\s+/);
+		const firstName = parts[0];
+		const lastName = parts.slice(1).join(' ') || parts[0];
+
+		try {
+			await AdminAPI.createUser({ firstName, lastName, email, password, role });
+			showToast(`${role.charAt(0).toUpperCase() + role.slice(1)} account created for ${email}.`, 'success');
+			closeModal('createUserModal');
+			if (qs('newUserFullName')) qs('newUserFullName').value = '';
+			if (qs('newUserEmail')) qs('newUserEmail').value = '';
+			await loadDashboardData();
+			renderUserTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to create account.', 'error');
+		}
 	}
 
-	function createNGO() {
-		showToast('NGO registration saved.', 'success');
-		closeModal('createNGOModal');
+	async function createNGO() {
+		const orgName = (qs('ngoOrgName')?.value || '').trim();
+		const contactPerson = (qs('ngoContactPerson')?.value || '').trim();
+		const email = (qs('ngoEmail')?.value || '').trim();
+		const phone = (qs('ngoPhone')?.value || '').trim();
+		const regNumber = (qs('ngoRegNumber')?.value || '').trim();
+		const address = (qs('ngoAddress')?.value || '').trim();
+
+		if (!orgName) { showToast('Organization name is required.', 'error'); return; }
+		if (!email) { showToast('Email is required.', 'error'); return; }
+		if (!regNumber) { showToast('Registration number is required.', 'error'); return; }
+
+		const parts = contactPerson.split(/\s+/);
+		const firstName = parts[0] || orgName.split(/\s+/)[0];
+		const lastName = parts.slice(1).join(' ') || 'NGO';
+		const tempPassword = `Kb@Ngo${Math.floor(1000 + Math.random() * 9000)}!`;
+
+		try {
+			const userRes = await AdminAPI.createUser({ firstName, lastName, email, password: tempPassword, role: 'ngo_admin' });
+			const userId = userRes.user && userRes.user.id;
+			if (!userId) throw new Error('User creation failed.');
+
+			await AdminAPI.createNGOProfile({
+				userId,
+				name: orgName,
+				phoneNumber: phone || null,
+				address: address || null,
+				registrationNumber: regNumber
+			});
+
+			showToast(`NGO "${orgName}" registered. Login: ${email} / ${tempPassword}`, 'success');
+			closeModal('createNGOModal');
+			['ngoOrgName','ngoContactPerson','ngoEmail','ngoPhone','ngoRegNumber','ngoAddress'].forEach((id) => {
+				if (qs(id)) qs(id).value = '';
+			});
+			await loadDashboardData();
+			renderNGOTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to register NGO.', 'error');
+		}
+	}
+
+	function editNGO(id) {
+		const ngo = data.ngos.find((n) => String(n.id) === String(id));
+		if (!ngo) return;
+		if (qs('editNGOId')) qs('editNGOId').value = id;
+		if (qs('editNGOName')) qs('editNGOName').value = ngo.name || '';
+		if (qs('editNGOPhone')) qs('editNGOPhone').value = ngo.contact || '';
+		if (qs('editNGOWebsite')) qs('editNGOWebsite').value = ngo.websiteUrl || '';
+		if (qs('editNGOAddress')) qs('editNGOAddress').value = ngo.address || '';
+		if (qs('editNGODescription')) qs('editNGODescription').value = ngo.description || '';
+		openModal('editNGOModal');
+	}
+
+	async function saveEditNGO() {
+		const id = qs('editNGOId')?.value;
+		if (!id) return;
+		const name = (qs('editNGOName')?.value || '').trim();
+		if (!name) { showToast('Organization name is required.', 'error'); return; }
+
+		const payload = {
+			name,
+			phoneNumber: (qs('editNGOPhone')?.value || '').trim() || null,
+			websiteUrl: (qs('editNGOWebsite')?.value || '').trim() || null,
+			address: (qs('editNGOAddress')?.value || '').trim() || null,
+			description: (qs('editNGODescription')?.value || '').trim() || null
+		};
+
+		try {
+			await NGOAPI.update(id, payload);
+			showToast('NGO profile updated.', 'success');
+			closeModal('editNGOModal');
+			await loadDashboardData();
+			renderNGOTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to update NGO.', 'error');
+		}
+	}
+
+	async function deleteNGO(id) {
+		const ngo = data.ngos.find((n) => String(n.id) === String(id));
+		if (!confirm(`Delete NGO "${ngo ? ngo.name : id}"? This cannot be undone.`)) return;
+		try {
+			await NGOAPI.delete(id);
+			showToast('NGO deleted.', 'success');
+			await loadDashboardData();
+			renderNGOTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to delete NGO.', 'error');
+		}
+	}
+
+	async function deleteUserAccount(userId) {
+		const user = data.users.find((u) => String(u.id) === String(userId));
+		if (!confirm(`Delete account for "${user ? user.name : userId}"? This cannot be undone.`)) return;
+		try {
+			await AdminAPI.deleteUser(userId);
+			showToast('User account deleted.', 'success');
+			await loadDashboardData();
+			renderUserTable();
+		} catch (err) {
+			showToast(err.message || 'Failed to delete user.', 'error');
+		}
 	}
 
 	function updateUserForm() {
 		const role = qs('newUserRole')?.value || 'admin';
-		const prefix = role === 'superadmin' ? 'SUP' : role === 'ngo' ? 'NGO' : 'ADM';
+		const prefix = role === 'superadmin' ? 'SUP' : role === 'ngo' || role === 'ngo_admin' ? 'NGO' : 'ADM';
 		if (qs('generatedId')) qs('generatedId').value = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
 		if (qs('genPassword')) qs('genPassword').textContent = `Kb@Tmp${Math.floor(1000 + Math.random() * 9000)}!`;
 	}
@@ -1561,13 +1845,21 @@
 	}
 
 	async function init() {
-		const account = readAccountContext();
+		const account = (await readSessionAccount()) || readAccountContext();
 		const roleFromURL = getRoleFromURL();
-		state.role = account.role || roleFromURL || localStorage.getItem(ROLE_KEY) || 'superadmin';
+		state.role = account.role || roleFromURL || mapRole(localStorage.getItem(ROLE_KEY)) || 'superadmin';
 		state.accountName = account.name;
 		state.accountEmail = account.email;
 		state.theme = localStorage.getItem(THEME_KEY) || 'light';
 		localStorage.setItem(ROLE_KEY, state.role);
+
+		// Load user data for settings
+		try {
+			const meRes = await AuthAPI.getMe();
+			state.user = meRes.user;
+		} catch (_err) {
+			// user stays null
+		}
 
 		setTheme(state.theme);
 		applyRoleProfile();
@@ -1580,6 +1872,7 @@
 			try {
 				const profileRes = await NGOAPI.getMyProfile();
 				state.ngoId = profileRes.profile && profileRes.profile.id ? profileRes.profile.id : null;
+				state.ngoProfile = profileRes.profile || null;
 				if (state.ngoId) {
 					await loadNgoAnalytics();
 				}
@@ -1635,6 +1928,16 @@
 	window.updateUserForm = updateUserForm;
 	window.showToast = showToast;
 	window.logout = logout;
+	window.verifyNGO = verifyNGO;
+	window.rejectNGO = rejectNGO;
+	window.editNGO = editNGO;
+	window.saveEditNGO = saveEditNGO;
+	window.deleteNGO = deleteNGO;
+	window.deleteUserAccount = deleteUserAccount;
+	window.changeUserRole = changeUserRole;
+	window.filterLogs = filterLogs;
+	window.saveGeneralSettings = saveGeneralSettings;
+	window.saveSecuritySettings = saveSecuritySettings;
 
 	init();
 })();

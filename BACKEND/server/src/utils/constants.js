@@ -1,8 +1,16 @@
 exports.ROLES = {
 	DONOR: 'donor',
 	NGO_ADMIN: 'ngo_admin',
+	LEGACY_NGO: 'ngo',
 	ADMIN: 'admin',
 	SUPERADMIN: 'superadmin'
+};
+
+exports.normalizeRole = function normalizeRole(role) {
+	const raw = String(role || '').trim().toLowerCase();
+	if (raw === exports.ROLES.LEGACY_NGO) return exports.ROLES.NGO_ADMIN;
+	if (raw === 'super_admin') return exports.ROLES.SUPERADMIN;
+	return raw;
 };
 
 exports.CAMPAIGN_STATUS = {
@@ -50,7 +58,7 @@ exports.PAYMENT_METHODS = {
 };
 
 exports.ADMIN_ROLES = [exports.ROLES.ADMIN, exports.ROLES.SUPERADMIN];
-exports.NGO_ROLES = [exports.ROLES.NGO_ADMIN];
+exports.NGO_ROLES = [exports.ROLES.NGO_ADMIN, exports.ROLES.LEGACY_NGO];
 
 exports.PERMISSION_MATRIX = {
 	[exports.ROLES.SUPERADMIN]: ['all'],
@@ -68,6 +76,14 @@ exports.PERMISSION_MATRIX = {
 		'view_activity_logs'
 	],
 	[exports.ROLES.NGO_ADMIN]: [
+		'create_campaigns',
+		'edit_own_campaigns',
+		'submit_campaigns',
+		'view_own_donations',
+		'view_own_analytics',
+		'edit_profile'
+	],
+	[exports.ROLES.LEGACY_NGO]: [
 		'create_campaigns',
 		'edit_own_campaigns',
 		'submit_campaigns',

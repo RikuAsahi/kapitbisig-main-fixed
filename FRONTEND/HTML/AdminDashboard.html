@@ -192,9 +192,19 @@
     <div class="page-header"><div><div class="page-eyebrow">Audit Trail</div><h1 class="page-title">Activity <strong>Logs</strong></h1></div><div class="page-actions"><button class="btn btn-ghost btn-sm" onclick="exportReport()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Logs</button></div></div>
     <div class="filter-bar">
       <div class="search-box"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search logs…"/></div>
-      <select class="filter-select"><option>All Actions</option><option>Login</option><option>Create</option><option>Edit</option><option>Approve</option><option>Reject</option><option>Delete</option></select>
-      <select class="filter-select"><option>All Users</option><option>Super Admin</option><option>Admin</option><option>NGO</option></select>
-      <input type="date" class="filter-select" style="min-width:140px"/>
+      <select class="filter-select" onchange="filterLogs()">
+        <option value="all">All Actions</option>
+        <option value="LOGIN">Login</option>
+        <option value="DONATE">Donated</option>
+        <option value="CREATE_CAMPAIGN">Create Campaign</option>
+        <option value="EDIT_CAMPAIGN">Edit Campaign</option>
+        <option value="DELETE_CAMPAIGN">Delete Campaign</option>
+        <option value="APPROVE">Approve</option>
+        <option value="REJECT">Reject</option>
+        <option value="UPDATE_ROLE">Change Role</option>
+        <option value="DELETE_USER">Delete User</option>
+      </select>
+      <input type="date" class="filter-select" style="min-width:140px" onchange="filterLogs()"/>
     </div>
     <div class="card"><div class="card-body" style="padding:0"><div class="table-wrap"><table id="logsTable"></table></div></div></div>
   </div>
@@ -279,9 +289,9 @@
   <div class="modal-header"><div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div><div class="modal-title">Create New Account</div><button class="modal-close" onclick="closeModal('createUserModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="modal-body">
     <div class="form-grid">
-      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" type="text" placeholder="Juan dela Cruz"/></div>
-      <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="newUserRole" onchange="updateUserForm()"><option value="admin">Admin</option><option value="ngo">NGO User</option><option value="superadmin">Super Admin</option></select></div>
-      <div class="form-group form-full"><label class="form-label">Email Address</label><input class="form-input" type="email" placeholder="user@kapitbisig.ph"/></div>
+      <div class="form-group"><label class="form-label">Full Name</label><input id="newUserFullName" class="form-input" type="text" placeholder="Juan dela Cruz"/></div>
+      <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="newUserRole" onchange="updateUserForm()"><option value="admin">Admin</option><option value="ngo_admin">NGO User</option><option value="superadmin">Super Admin</option></select></div>
+       <div class="form-group form-full"><label class="form-label">Email Address</label><input id="newUserEmail" class="form-input" type="email" placeholder="user@kapitbisig.ph"/></div>
       <div class="form-group" id="orgField"><label class="form-label">Organization Name</label><input class="form-input" type="text" placeholder="NGO Organization Name"/></div>
       <div class="form-group"><label class="form-label">Generated ID</label><input class="form-input" type="text" id="generatedId" readonly style="background:var(--surface2);cursor:default"/></div>
     </div>
@@ -300,15 +310,33 @@
   <div class="modal-header"><div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="modal-title">Register New NGO</div><button class="modal-close" onclick="closeModal('createNGOModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="modal-body">
     <div class="form-grid">
-      <div class="form-group form-full"><label class="form-label">Organization Name</label><input class="form-input" type="text" placeholder="Full legal organization name"/></div>
-      <div class="form-group"><label class="form-label">Contact Person</label><input class="form-input" type="text" placeholder="Full name"/></div>
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="org@example.com"/></div>
-      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" type="tel" placeholder="+63 9XX XXX XXXX"/></div>
-      <div class="form-group"><label class="form-label">Registration Number</label><input class="form-input" type="text" placeholder="SEC-00000"/></div>
-      <div class="form-group form-full"><label class="form-label">Address</label><input class="form-input" type="text" placeholder="Barangay 105, Tondo, Manila"/></div>
+       <div class="form-group form-full"><label class="form-label">Organization Name</label><input id="ngoOrgName" class="form-input" type="text" placeholder="Full legal organization name"/></div>
+      <div class="form-group"><label class="form-label">Contact Person (Full Name)</label><input id="ngoContactPerson" class="form-input" type="text" placeholder="Full name"/></div>
+      <div class="form-group"><label class="form-label">Email</label><input id="ngoEmail" class="form-input" type="email" placeholder="org@example.com"/></div>
+      <div class="form-group"><label class="form-label">Phone</label><input id="ngoPhone" class="form-input" type="tel" placeholder="+63 9XX XXX XXXX"/></div>
+      <div class="form-group"><label class="form-label">Registration Number</label><input id="ngoRegNumber" class="form-input" type="text" placeholder="SEC-00000"/></div>
+      <div class="form-group form-full"><label class="form-label">Address</label><input id="ngoAddress" class="form-input" type="text" placeholder="Barangay 105, Tondo, Manila"/></div>
     </div>
   </div>
   <div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="closeModal('createNGOModal')">Cancel</button><button class="btn btn-primary btn-sm" onclick="createNGO()">Register NGO &amp; Create Account</button></div>
+</div>
+</div>
+
+<!-- Edit NGO Modal -->
+<div class="modal-overlay" id="editNGOModal" onclick="handleOverlay(event,'editNGOModal')">
+<div class="modal-box">
+  <div class="modal-header"><div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="modal-title">Edit NGO Profile</div><button class="modal-close" onclick="closeModal('editNGOModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="modal-body">
+    <input type="hidden" id="editNGOId"/>
+    <div class="form-grid">
+      <div class="form-group form-full"><label class="form-label">Organization Name</label><input id="editNGOName" class="form-input" type="text" placeholder="Organization name"/></div>
+      <div class="form-group"><label class="form-label">Phone</label><input id="editNGOPhone" class="form-input" type="tel" placeholder="+63 9XX XXX XXXX"/></div>
+      <div class="form-group"><label class="form-label">Website URL</label><input id="editNGOWebsite" class="form-input" type="url" placeholder="https://example.org"/></div>
+      <div class="form-group form-full"><label class="form-label">Address</label><input id="editNGOAddress" class="form-input" type="text" placeholder="Barangay 105, Tondo, Manila"/></div>
+      <div class="form-group form-full"><label class="form-label">Description</label><textarea id="editNGODescription" class="form-input" placeholder="Brief description of the organization…"></textarea></div>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="closeModal('editNGOModal')">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveEditNGO()">Save Changes</button></div>
 </div>
 </div>
 
@@ -317,8 +345,8 @@
   <svg id="toastIcon" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;flex-shrink:0" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
   <span id="toastMsg"></span>
 </div>
-<script src="../JS/api.js"></script>
-<script src="../JS/helpers.js"></script>
-<script src="../JS/AdminDashboard.js"></script>
+<script src="../JS/api.js?v=dashboard-empty-state-1"></script>
+<script src="../JS/helpers.js?v=dashboard-empty-state-1"></script>
+<script src="../JS/AdminDashboard.js?v=dashboard-empty-state-1"></script>
 </body>
 </html>

@@ -153,6 +153,7 @@
 					return;
 				}
 
+				if (window.KBCommonNav) window.KBCommonNav.storeUser(data.user);
 				showToast('Account created successfully.', 'info');
 				setTimeout(function () {
 					window.location.href = 'UserProfile.html';

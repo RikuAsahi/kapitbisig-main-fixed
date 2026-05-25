@@ -6,7 +6,10 @@ function authorizeRoles(...allowedRoles) {
 			return res.status(401).json({ message: constants.ERROR_MESSAGES.NOT_AUTHENTICATED });
 		}
 
-		if (!allowedRoles.includes(req.user.role)) {
+		const normalizedAllowedRoles = allowedRoles.flat().map(constants.normalizeRole);
+		const userRole = constants.normalizeRole(req.user.role);
+
+		if (!normalizedAllowedRoles.includes(userRole)) {
 			return res.status(403).json({ message: constants.ERROR_MESSAGES.UNAUTHORIZED });
 		}
 
@@ -20,7 +23,8 @@ function authorizePermission(requiredPermission) {
 			return res.status(401).json({ message: constants.ERROR_MESSAGES.NOT_AUTHENTICATED });
 		}
 
-		const userPermissions = constants.PERMISSION_MATRIX[req.user.role] || [];
+		const userRole = constants.normalizeRole(req.user.role);
+		const userPermissions = constants.PERMISSION_MATRIX[userRole] || constants.PERMISSION_MATRIX[req.user.role] || [];
 		const hasPermission = userPermissions.includes('all') || userPermissions.includes(requiredPermission);
 
 		if (!hasPermission) {

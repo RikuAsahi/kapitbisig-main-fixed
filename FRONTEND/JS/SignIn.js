@@ -95,15 +95,17 @@
 				}
 
 				const role = data.user && data.user.role;
-				if (role === 'admin' || role === 'superadmin' || role === 'ngo') {
+				if (role === 'admin' || role === 'superadmin' || role === 'ngo' || role === 'ngo_admin') {
 					// Log them out and redirect to the correct portal
 					await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(function () {});
+					if (window.KBCommonNav) window.KBCommonNav.clearUser();
 					showToast('Please sign in via the Admin / NGO Portal.', 'error');
 					setTimeout(function () {
 						window.location.href = 'AdminLogIn.html';
 					}, 1800);
 					return;
 				}
+				if (window.KBCommonNav) window.KBCommonNav.storeUser(data.user);
 				showToast('Signed in successfully.', 'info');
 				setTimeout(function () {
 					window.location.href = 'Landingpage.html';

@@ -1,4 +1,16 @@
 const db = require('../database');
+const constants = require('../utils/constants');
+
+const VALID_ROLES = [
+	constants.ROLES.DONOR,
+	constants.ROLES.NGO_ADMIN,
+	constants.ROLES.ADMIN,
+	constants.ROLES.SUPERADMIN
+];
+
+function normalizeRole(role) {
+	return constants.normalizeRole(role);
+}
 
 function mapUser(row) {
 	if (!row) return null;
@@ -15,7 +27,7 @@ function mapUser(row) {
 		fullName: `${row.first_name || ''} ${row.last_name || ''}`.trim(),
 		email: row.email,
 		passwordHash: row.password_hash,
-		role: row.role,
+		role: normalizeRole(row.role || (row.has_ngo_profile ? constants.ROLES.NGO_ADMIN : constants.ROLES.DONOR)),
 		avatarUrl: row.avatar_url || null,
 		coverUrl: row.cover_url || null,
 		notificationPrefs,
@@ -31,7 +43,7 @@ async function createUsersTable() {
 			last_name VARCHAR(100) NOT NULL,
 			email VARCHAR(255) NOT NULL,
 			password_hash VARCHAR(255) NOT NULL,
-			role ENUM('donor', 'ngo', 'admin', 'superadmin') NOT NULL DEFAULT 'donor',
+			role ENUM('donor', 'ngo_admin', 'admin', 'superadmin') NOT NULL DEFAULT 'donor',
 			avatar_url MEDIUMTEXT,
 			cover_url MEDIUMTEXT,
 			notification_prefs TEXT,
@@ -47,15 +59,39 @@ async function createUsersTable() {
 		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS cover_url MEDIUMTEXT AFTER avatar_url`).catch(() => {}),
 		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_prefs TEXT AFTER cover_url`).catch(() => {})
 	]);
+
+	await migrateRoleEnum();
+}
+
+async function migrateRoleEnum() {
+	await db.query(
+		`ALTER TABLE users
+		 MODIFY COLUMN role ENUM('donor', 'ngo', 'ngo_admin', 'admin', 'superadmin') NOT NULL DEFAULT 'donor'`
+	).catch(() => {});
+
+	await db.query(`UPDATE users SET role = 'ngo_admin' WHERE role = 'ngo'`).catch(() => {});
+	await db.query(
+		`UPDATE users u
+		 INNER JOIN ngo_profiles n ON n.user_id = u.user_id
+		 SET u.role = 'ngo_admin'
+		 WHERE u.role = ''`
+	).catch(() => {});
+
+	await db.query(
+		`ALTER TABLE users
+		 MODIFY COLUMN role ENUM('donor', 'ngo_admin', 'admin', 'superadmin') NOT NULL DEFAULT 'donor'`
+	).catch(() => {});
 }
 
 
 async function findByEmail(email) {
 	console.log('[DEBUG] userModel.findByEmail called with:', email);
 	const [rows] = await db.query(
-		`SELECT user_id, first_name, last_name, email, password_hash, role, avatar_url, cover_url, notification_prefs, date_registered
-		 FROM users
-		 WHERE LOWER(email) = LOWER(?)
+		`SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
+		        u.avatar_url, u.cover_url, u.notification_prefs, u.date_registered,
+		        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
+		 FROM users u
+		 WHERE LOWER(u.email) = LOWER(?)
 		 LIMIT 1`,
 		[email]
 	);
@@ -64,9 +100,11 @@ async function findByEmail(email) {
 
 async function findById(id) {
 	const [rows] = await db.query(
-		`SELECT user_id, first_name, last_name, email, password_hash, role, avatar_url, cover_url, notification_prefs, date_registered
-		 FROM users
-		 WHERE user_id = ?
+		`SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
+		        u.avatar_url, u.cover_url, u.notification_prefs, u.date_registered,
+		        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
+		 FROM users u
+		 WHERE u.user_id = ?
 		 LIMIT 1`,
 		[Number(id)]
 	);
@@ -84,9 +122,11 @@ async function createUser({ firstName, lastName, email, passwordHash }) {
 
 async function findAll(limit = 50, offset = 0) {
 	const [rows] = await db.query(
-		`SELECT user_id, first_name, last_name, email, password_hash, role, avatar_url, cover_url, notification_prefs, date_registered
-		 FROM users
-		 ORDER BY date_registered DESC
+		`SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
+		        u.avatar_url, u.cover_url, u.notification_prefs, u.date_registered,
+		        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
+		 FROM users u
+		 ORDER BY u.date_registered DESC
 		 LIMIT ? OFFSET ?`,
 		[limit, offset]
 	);
@@ -94,9 +134,17 @@ async function findAll(limit = 50, offset = 0) {
 }
 
 async function updateRole(id, newRole) {
+	const role = normalizeRole(newRole);
+	if (!VALID_ROLES.includes(role)) {
+		throw {
+			statusCode: 400,
+			message: constants.ERROR_MESSAGES.INVALID_ROLE
+		};
+	}
+
 	await db.query(
 		`UPDATE users SET role = ? WHERE user_id = ?`,
-		[newRole, Number(id)]
+		[role, Number(id)]
 	);
 	return findById(id);
 }

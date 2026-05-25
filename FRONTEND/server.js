@@ -62,5 +62,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
 	console.log(`Frontend server running on http://localhost:${PORT}`);
-	console.log('Backend API should be running on http://localhost:5001');
+	
 });

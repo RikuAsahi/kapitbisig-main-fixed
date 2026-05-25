@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 module.exports = {
-	port: Number(process.env.PORT || 4000),
+	port: Number(process.env.PORT || 5001),
 	nodeEnv: process.env.NODE_ENV || 'development',
 	sessionSecret: process.env.SESSION_SECRET || 'dev-secret-change-me',
 	frontendOrigins: String(process.env.FRONTEND_ORIGINS || '')

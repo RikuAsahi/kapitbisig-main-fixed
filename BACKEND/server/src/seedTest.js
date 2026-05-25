@@ -22,7 +22,7 @@ const TEST_ACCOUNTS = [
 		lastName: 'NGO',
 		email: 'testngo@kapitbisig.ph',
 		password: 'TestNGO123!',
-		role: 'ngo',
+		role: 'ngo_admin',
 		ngo: {
 			name: 'Test NGO Foundation',
 			description: 'A test NGO account for development and QA.',
@@ -47,7 +47,7 @@ async function seedTest() {
 
 		const inserted = result.affectedRows > 0;
 
-		if (inserted && account.role === 'ngo' && account.ngo) {
+		if (inserted && account.role === 'ngo_admin' && account.ngo) {
 			// Get the new user's ID
 			const [[row]] = await db.query(
 				`SELECT user_id FROM users WHERE email = ? LIMIT 1`,

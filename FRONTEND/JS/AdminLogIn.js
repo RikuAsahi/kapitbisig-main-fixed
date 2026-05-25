@@ -5,6 +5,14 @@ const MAX_ATTEMPTS = 5;
 let currentUser = null;
 let lockTimer = null;
 
+// ── CAPTCHA TOGGLE ──
+function toggleCaptcha() {
+	const captchaCheck = document.getElementById('captchaCheck');
+	if (captchaCheck) {
+		captchaCheck.classList.toggle('checked');
+	}
+}
+
 // ── PASSWORD TOGGLE ──
 function togglePwd(inputId, iconId) {
   const input = document.getElementById(inputId);
@@ -38,19 +46,24 @@ async function attemptLogin() {
 
   setLoading(true);
   try {
-    const user = await AuthAPI.signin(id, pwd);
+    const res = await AuthAPI.signin(id, pwd);
+    const user = res.user || res;
     setLoading(false);
 
-    const allowed = ['admin', 'superadmin', 'ngo'];
-    if (!allowed.includes(user.role)) {
-      showMsg('msgArea','error','Access denied. This portal is for Admin and NGO accounts only. <a href="SignIn.html" style="color:inherit;text-decoration:underline;">Donor sign-in →</a>');
-      await AuthAPI.logout();
-      return;
+    let role = normalizePortalRole(user.role);
+    const allowed = ['admin', 'superadmin', 'ngo_admin'];
+    if (!allowed.includes(role)) {
+      role = await resolveNgoRoleFallback(role);
+      if (!allowed.includes(role)) {
+        showMsg('msgArea','error','Access denied. This portal is for Admin and NGO accounts only. <a href="SignIn.html" style="color:inherit;text-decoration:underline;">Donor sign-in →</a>');
+        await AuthAPI.logout();
+        return;
+      }
     }
 
     attempts = 0;
-    currentUser = { id: user.id, role: user.role, name: user.fullName || user.firstName, email: user.email };
-    goToDashboard(user.role);
+    currentUser = { id: user.id, role, name: user.fullName || user.firstName, email: user.email };
+    goToDashboard(role);
   } catch (err) {
     setLoading(false);
     attempts++;
@@ -104,6 +117,22 @@ function goToDashboard(role) {
   localStorage.setItem('kb.auth.name', currentUser.name || '');
   localStorage.setItem('kb.auth.email', currentUser.email || '');
   window.location.href = 'AdminDashboard.html';
+}
+
+function normalizePortalRole(role) {
+  const raw = String(role || '').trim().toLowerCase();
+  if (raw === 'ngo' || raw === 'ngo-user' || raw === 'ngo user' || raw === 'ngo-admin') return 'ngo_admin';
+  if (raw === 'super_admin') return 'superadmin';
+  return raw;
+}
+
+async function resolveNgoRoleFallback(role) {
+  if (role && role !== 'donor') return role;
+  try {
+    const res = await NGOAPI.getMyProfile();
+    if (res && res.profile && res.profile.id) return 'ngo_admin';
+  } catch (_error) {}
+  return role;
 }
 
 // ── STRENGTH METER ──

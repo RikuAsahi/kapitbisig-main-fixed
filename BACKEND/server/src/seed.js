@@ -77,8 +77,8 @@ const SEED_CAMPAIGNS = [
 ];
 
 async function seed() {
-	// Check if any campaigns already exist — skip seeding if so
-	const [existing] = await db.query('SELECT COUNT(*) AS cnt FROM campaigns');
+	// Check if the admin user already exists — skip seeding if so
+	const [existing] = await db.query('SELECT COUNT(*) AS cnt FROM users WHERE email = ?', ['admin@kapitbisig.ph']);
 	if (existing[0].cnt > 0) return;
 
 	console.log('  ↳ Seeding default admin, NGO user, profile, and campaigns…');
@@ -94,7 +94,7 @@ async function seed() {
 	const passwordHash = await bcrypt.hash('kapitbisig2025!', 10);
 	const [userResult] = await db.query(
 		`INSERT INTO users (first_name, last_name, email, password_hash, role)
-		 VALUES (?, ?, ?, ?, 'ngo')`,
+		 VALUES (?, ?, ?, ?, 'ngo_admin')`,
 		['KapitBisig', 'Demo', 'demo@kapitbisig.ph', passwordHash]
 	);
 	const userId = userResult.insertId;
