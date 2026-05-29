@@ -182,7 +182,7 @@
         { "id": "adm-03", "task": "View pending campaign applications", "status": "complete" },
         { "id": "adm-04", "task": "Approve campaign → set status=approved, make public", "status": "complete" },
         { "id": "adm-05", "task": "Reject campaign → set status=rejected, send reason to NGO", "status": "complete" },
-        { "id": "adm-06", "task": "Activity log for all admin actions", "status": "complete" }
+        { "id": "adm-06", "task": "Activity log for all admin actions", "status": "complete" },
         { "id": "adm-07", "task": "NGO Management — dynamic table with live API data", "status": "complete" },
         { "id": "adm-08", "task": "NGO Management — Create NGO (user + profile)", "status": "complete" },
         { "id": "adm-09", "task": "NGO Management — Edit NGO profile (name, phone, address, description)", "status": "complete" },
@@ -292,4 +292,5 @@
     "frontend_pages_status": "Complete — 14 HTML pages covering all major flows. Donation Approvals tab live for both Admin and NGO. Payment modal dynamically shows only admin-enabled methods. Bank transfer proof upload fully implemented.",
     "backend_status": "Core MVC stack fully built — auth, campaigns, donations, NGO, admin, settings routes all implemented with RBAC. GET /admin/donations and PUT /admin/donations/:id/status. GET /ngos/my-donations (scoped to NGO campaigns) and PUT /ngos/donations/:id/status (ownership-enforced). donationModel has findByCampaignIds() and findAllWithDetails() with JOIN.",
     "critical_gap": "Online payment gateways (blocked on merchant accounts), OAuth login (blocked on app registration), SMTP credentials for email"
+}
 }
