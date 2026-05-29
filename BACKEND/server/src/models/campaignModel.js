@@ -61,7 +61,7 @@ async function findById(id) {
 		`SELECT c.*, n.ngo_name
 		 FROM campaigns c
 		 LEFT JOIN ngo_profiles n ON n.ngo_id = c.ngo_id
-		 WHERE c.campaign_id = ? LIMIT 1`,
+		 WHERE c.campaign_id = ? AND (n.archived_at IS NULL OR n.ngo_id IS NULL) LIMIT 1`,
 		[Number(id)]
 	);
 	return mapCampaign(rows[0]);
@@ -72,7 +72,7 @@ async function findByStatus(status, limit = 50, offset = 0) {
 		`SELECT c.*, n.ngo_name
 		 FROM campaigns c
 		 LEFT JOIN ngo_profiles n ON n.ngo_id = c.ngo_id
-		 WHERE c.status = ?
+		 WHERE c.status = ? AND n.archived_at IS NULL
 		 ORDER BY c.created_at DESC
 		 LIMIT ? OFFSET ?`,
 		[status, limit, offset]
@@ -85,7 +85,7 @@ async function findByNgoId(ngoId, limit = 50, offset = 0) {
 		`SELECT c.*, n.ngo_name
 		 FROM campaigns c
 		 LEFT JOIN ngo_profiles n ON n.ngo_id = c.ngo_id
-		 WHERE c.ngo_id = ?
+		 WHERE c.ngo_id = ? AND n.archived_at IS NULL
 		 ORDER BY c.created_at DESC
 		 LIMIT ? OFFSET ?`,
 		[Number(ngoId), limit, offset]
@@ -104,6 +104,8 @@ async function findAll(filters = {}, limit = 50, offset = 0) {
 		sql += ` AND c.status = ?`;
 		values.push(filters.status);
 	}
+
+	sql += ` AND n.archived_at IS NULL`;
 
 	if (filters.category) {
 		sql += ` AND c.category = ?`;
@@ -202,6 +204,23 @@ async function delete_(id) {
 	return result.affectedRows > 0;
 }
 
+async function cancelByNgoId(ngoId) {
+	const [result] = await db.query(
+		`UPDATE campaigns
+		 SET status = ?
+		 WHERE ngo_id = ?
+		   AND status IN (?, ?, ?)`,
+		[
+			CAMPAIGN_STATUS.CANCELLED,
+			Number(ngoId),
+			CAMPAIGN_STATUS.DRAFT,
+			CAMPAIGN_STATUS.PENDING,
+			CAMPAIGN_STATUS.ACTIVE
+		]
+	);
+	return result.affectedRows;
+}
+
 module.exports = {
 	createCampaignsTable,
 	findById,
@@ -211,5 +230,6 @@ module.exports = {
 	create,
 	update,
 	updateAmount,
+	cancelByNgoId,
 	delete: delete_
 };

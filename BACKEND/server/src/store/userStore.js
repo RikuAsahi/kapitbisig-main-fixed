@@ -42,7 +42,7 @@ async function findByEmail(email) {
 	const [rows] = await db.query(
 		`SELECT user_id, first_name, last_name, email, password_hash, role, date_registered
 		 FROM users
-		 WHERE LOWER(email) = LOWER(?)
+		 WHERE LOWER(email) = LOWER(?) AND deleted_at IS NULL
 		 LIMIT 1`,
 		[email]
 	);
@@ -54,7 +54,7 @@ async function findById(id) {
 	const [rows] = await db.query(
 		`SELECT user_id, first_name, last_name, email, password_hash, role, date_registered
 		 FROM users
-		 WHERE user_id = ?
+		 WHERE user_id = ? AND deleted_at IS NULL
 		 LIMIT 1`,
 		[Number(id)]
 	);

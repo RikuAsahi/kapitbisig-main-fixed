@@ -212,6 +212,11 @@
 		openModal(categoryName);
 	}
 
+	function getCampaignCategoriesUrl() {
+		const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+		return page === 'landingpage.html' ? 'Landingpage.html#campaigns' : 'index.html#campaigns';
+	}
+
 	function handleOverlayClick(event) {
 		if (event.target === modalOverlay) closeModal();
 	}
@@ -231,13 +236,10 @@
 	}
 
 	async function handleDonateClick() {
-		// Check if user is authenticated
 		try {
-			const response = await AuthAPI.getMe();
-			// User is authenticated, redirect to campaigns
-			window.location.href = 'Campaign.html';
+			await AuthAPI.getMe();
+			window.location.href = getCampaignCategoriesUrl();
 		} catch (error) {
-			// User is not authenticated, redirect to signin
 			window.location.href = 'SignIn.html';
 		}
 	}

@@ -318,6 +318,62 @@
     }
     .auth-bottom a:hover { color: var(--navy-mid); }
 
+    .auth-modal-overlay {
+      position: fixed; inset: 0; z-index: 600;
+      display: none; align-items: center; justify-content: center;
+      padding: calc(var(--nav-h) + 18px) clamp(16px,5vw,48px) 24px;
+      background: rgba(15,25,45,0.62);
+      backdrop-filter: blur(8px);
+      overflow-y: auto;
+    }
+    .auth-modal-overlay.open { display: flex; }
+    .auth-modal {
+      position: relative; width: min(100%, 460px);
+      background: var(--white); border-radius: 24px;
+      border: 1px solid rgba(91,164,207,0.16);
+      box-shadow: 0 24px 80px rgba(5,12,24,0.28);
+      padding: clamp(28px,5vw,40px);
+      animation: cardIn .35s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .auth-modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 34px; height: 34px; border-radius: 10px;
+      border: 1px solid rgba(91,164,207,0.16);
+      background: var(--off-white); color: var(--text-soft);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+    .auth-modal-close:hover { background: var(--white); color: var(--sky); border-color: rgba(91,164,207,0.35); }
+    .auth-modal-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.3; }
+    .auth-modal-tag {
+      font-size: 10px; font-weight: 800; letter-spacing: 2px;
+      color: var(--sky); text-transform: uppercase; margin-bottom: 6px;
+    }
+    .auth-modal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(22px,3vw,28px); color: var(--text-dark); margin-bottom: 8px;
+    }
+    .auth-modal-copy {
+      color: var(--text-soft); font-size: 13px; line-height: 1.6; margin-bottom: 20px;
+      max-width: 34rem;
+    }
+    .auth-status {
+      display: none; padding: 10px 12px; border-radius: 10px;
+      font-size: 12.5px; line-height: 1.45;
+      border: 1px solid rgba(91,164,207,0.18);
+      background: rgba(91,164,207,0.08); color: var(--navy-mid);
+    }
+    .auth-status.show { display: block; }
+    .auth-status.error {
+      border-color: rgba(224,82,82,0.25);
+      background: rgba(224,82,82,0.07);
+      color: var(--error);
+    }
+    .auth-dev-link {
+      display: block; margin-top: 8px; color: var(--sky);
+      font-weight: 700; text-decoration: underline; word-break: break-all;
+    }
+
     /* ══ RESPONSIVE ══ */
     @media (max-width: 768px) {
       .hamburger { display: flex; }
@@ -686,4 +742,3 @@
       .name-row { grid-template-columns: 1fr; }
       .social-btns { flex-direction: column; }
     }
-  

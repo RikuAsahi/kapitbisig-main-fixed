@@ -17,7 +17,8 @@ function mapNgo(row) {
 		verifiedAt: row.verified_at,
 		logoUrl: row.logo_url,
 		createdAt: row.created_at,
-		updatedAt: row.updated_at
+		updatedAt: row.updated_at,
+		archivedAt: row.archived_at || null
 	};
 }
 
@@ -35,6 +36,9 @@ async function createNgoProfilesTable() {
 			verification_status ENUM('pending', 'verified', 'rejected') NOT NULL DEFAULT 'pending',
 			verified_at DATETIME,
 			logo_url VARCHAR(255),
+			archived_at DATETIME,
+			archived_by BIGINT UNSIGNED,
+			archived_reason VARCHAR(255),
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (ngo_id),
@@ -44,11 +48,17 @@ async function createNgoProfilesTable() {
 			INDEX idx_verification_status (verification_status)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 	`);
+	await Promise.all([
+		db.query(`ALTER TABLE ngo_profiles ADD COLUMN IF NOT EXISTS archived_at DATETIME NULL AFTER logo_url`).catch(() => {}),
+		db.query(`ALTER TABLE ngo_profiles ADD COLUMN IF NOT EXISTS archived_by BIGINT UNSIGNED NULL AFTER archived_at`).catch(() => {}),
+		db.query(`ALTER TABLE ngo_profiles ADD COLUMN IF NOT EXISTS archived_reason VARCHAR(255) NULL AFTER archived_by`).catch(() => {}),
+		db.query(`ALTER TABLE ngo_profiles ADD INDEX idx_archived_at (archived_at)`).catch(() => {})
+	]);
 }
 
 async function findById(id) {
 	const [rows] = await db.query(
-		`SELECT * FROM ngo_profiles WHERE ngo_id = ? LIMIT 1`,
+		`SELECT * FROM ngo_profiles WHERE ngo_id = ? AND archived_at IS NULL LIMIT 1`,
 		[Number(id)]
 	);
 	return mapNgo(rows[0]);
@@ -56,7 +66,7 @@ async function findById(id) {
 
 async function findByUserId(userId) {
 	const [rows] = await db.query(
-		`SELECT * FROM ngo_profiles WHERE user_id = ? LIMIT 1`,
+		`SELECT * FROM ngo_profiles WHERE user_id = ? AND archived_at IS NULL LIMIT 1`,
 		[Number(userId)]
 	);
 	return mapNgo(rows[0]);
@@ -65,7 +75,7 @@ async function findByUserId(userId) {
 async function findByVerificationStatus(status, limit = 50, offset = 0) {
 	const [rows] = await db.query(
 		`SELECT * FROM ngo_profiles
-		 WHERE verification_status = ?
+		 WHERE verification_status = ? AND archived_at IS NULL
 		 ORDER BY created_at DESC
 		 LIMIT ? OFFSET ?`,
 		[status, limit, offset]
@@ -76,6 +86,7 @@ async function findByVerificationStatus(status, limit = 50, offset = 0) {
 async function findAll(limit = 50, offset = 0) {
 	const [rows] = await db.query(
 		`SELECT * FROM ngo_profiles
+		 WHERE archived_at IS NULL
 		 ORDER BY created_at DESC
 		 LIMIT ? OFFSET ?`,
 		[limit, offset]
@@ -132,7 +143,7 @@ async function update(id, data) {
 	if (updates.length === 0) return findById(id);
 
 	values.push(Number(id));
-	const sql = `UPDATE ngo_profiles SET ${updates.join(', ')} WHERE ngo_id = ?`;
+	const sql = `UPDATE ngo_profiles SET ${updates.join(', ')} WHERE ngo_id = ? AND archived_at IS NULL`;
 	await db.query(sql, values);
 	return findById(id);
 }
@@ -254,6 +265,16 @@ async function delete_(id) {
 	return result.affectedRows > 0;
 }
 
+async function archive(id, { archivedBy = null, reason = 'Archived by administrator' } = {}) {
+	const [result] = await db.query(
+		`UPDATE ngo_profiles
+		 SET archived_at = NOW(), archived_by = ?, archived_reason = ?
+		 WHERE ngo_id = ? AND archived_at IS NULL`,
+		[archivedBy ? Number(archivedBy) : null, reason, Number(id)]
+	);
+	return result.affectedRows > 0;
+}
+
 module.exports = {
 	createNgoProfilesTable,
 	findById,
@@ -264,5 +285,6 @@ module.exports = {
 	update,
 	updateVerificationStatus,
 	getNgoAnalytics,
+	archive,
 	delete: delete_
 };

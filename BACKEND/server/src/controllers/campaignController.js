@@ -61,7 +61,8 @@ async function updateCampaign(req, res, next) {
 		const campaign = await campaignService.updateCampaign(
 			id,
 			{ title, description, category, targetAmount, status, imageUrl, startDate, endDate },
-			req.session.userId
+			req.session.userId,
+			req.user?.role
 		);
 
 		return res.json({ message: 'Campaign updated.', campaign });
@@ -104,7 +105,7 @@ async function rejectCampaign(req, res, next) {
 async function deleteCampaign(req, res, next) {
 	try {
 		const { id } = req.params;
-		await campaignService.deleteCampaign(id, req.session.userId);
+		await campaignService.deleteCampaign(id, req.session.userId, req.user?.role);
 		return res.json({ message: 'Campaign deleted.' });
 	} catch (error) {
 		next(error);

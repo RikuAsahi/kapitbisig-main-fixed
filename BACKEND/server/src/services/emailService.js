@@ -73,4 +73,41 @@ async function sendNewSubmissionNotificationEmail({ campaignTitle, ngoName }) {
 	});
 }
 
-module.exports = { sendCampaignRejectionEmail, sendNewSubmissionNotificationEmail };
+async function sendPasswordResetEmail({ toEmail, toName, resetUrl }) {
+	const transport = createTransport();
+	if (!transport) {
+		console.warn('[email] SMTP not configured - skipping password reset email to', toEmail);
+		return false;
+	}
+
+	const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
+
+	try {
+		await transport.sendMail({
+			from: `"KapitBisig" <${fromAddress}>`,
+			to: `${toName || 'KapitBisig user'} <${toEmail}>`,
+			subject: 'Reset your KapitBisig password',
+			html: `
+			<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a1a2e">
+				<h2 style="color:#4a9cc7">Reset Your Password</h2>
+				<p>Hi ${toName || 'there'},</p>
+				<p>We received a request to reset your KapitBisig password. Click the button below to create a new password.</p>
+				<p style="margin:24px 0">
+					<a href="${resetUrl}" style="display:inline-block;background:#5BA4CF;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">Create New Password</a>
+				</p>
+				<p>If the button does not work, copy and paste this link into your browser:</p>
+				<p style="word-break:break-all;color:#4a9cc7">${resetUrl}</p>
+				<p>This link expires in 1 hour. If you did not request a password reset, you can ignore this email.</p>
+				<p style="color:#666;font-size:12px;margin-top:32px">- The KapitBisig Team</p>
+			</div>
+		`
+		});
+	} catch (err) {
+		console.error('[email] Failed to send password reset email:', err.message);
+		return false;
+	}
+
+	return true;
+}
+
+module.exports = { sendCampaignRejectionEmail, sendNewSubmissionNotificationEmail, sendPasswordResetEmail };

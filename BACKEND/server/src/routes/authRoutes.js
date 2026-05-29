@@ -7,6 +7,7 @@ const { findByEmail } = require('../models/userModel');
 
 router.post('/signup', authController.signup);
 router.post('/signin', authLimiter, authController.signin);
+router.post('/login', authLimiter, authController.signin);
 router.get('/me', authMiddleware, authController.getMe);
 router.put('/me', authMiddleware, authController.updateMe);
 router.post('/logout', authController.logout);

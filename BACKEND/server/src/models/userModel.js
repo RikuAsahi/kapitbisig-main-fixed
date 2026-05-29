@@ -31,7 +31,8 @@ function mapUser(row) {
 		avatarUrl: row.avatar_url || null,
 		coverUrl: row.cover_url || null,
 		notificationPrefs,
-		createdAt: row.date_registered
+		createdAt: row.date_registered,
+		deletedAt: row.deleted_at || null
 	};
 }
 
@@ -47,6 +48,9 @@ async function createUsersTable() {
 			avatar_url MEDIUMTEXT,
 			cover_url MEDIUMTEXT,
 			notification_prefs TEXT,
+			deleted_at DATETIME,
+			deleted_by BIGINT UNSIGNED,
+			deleted_reason VARCHAR(255),
 			date_registered DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (user_id),
 			UNIQUE KEY uq_email (email),
@@ -57,7 +61,11 @@ async function createUsersTable() {
 	await Promise.all([
 		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url MEDIUMTEXT AFTER role`).catch(() => {}),
 		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS cover_url MEDIUMTEXT AFTER avatar_url`).catch(() => {}),
-		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_prefs TEXT AFTER cover_url`).catch(() => {})
+		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_prefs TEXT AFTER cover_url`).catch(() => {}),
+		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at DATETIME NULL AFTER notification_prefs`).catch(() => {}),
+		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_by BIGINT UNSIGNED NULL AFTER deleted_at`).catch(() => {}),
+		db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_reason VARCHAR(255) NULL AFTER deleted_by`).catch(() => {}),
+		db.query(`ALTER TABLE users ADD INDEX idx_deleted_at (deleted_at)`).catch(() => {})
 	]);
 
 	await migrateRoleEnum();
@@ -84,15 +92,20 @@ async function migrateRoleEnum() {
 }
 
 
-async function findByEmail(email) {
+async function findByEmail(email, { includeArchived = false } = {}) {
 	console.log('[DEBUG] userModel.findByEmail called with:', email);
+	let sql = `SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
+	        u.avatar_url, u.cover_url, u.notification_prefs, u.deleted_at, u.date_registered,
+	        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
+	 FROM users u
+	 WHERE LOWER(u.email) = LOWER(?)`;
+	if (!includeArchived) {
+		sql += ` AND u.deleted_at IS NULL`;
+	}
+	sql += ` LIMIT 1`;
+
 	const [rows] = await db.query(
-		`SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
-		        u.avatar_url, u.cover_url, u.notification_prefs, u.date_registered,
-		        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
-		 FROM users u
-		 WHERE LOWER(u.email) = LOWER(?)
-		 LIMIT 1`,
+		sql,
 		[email]
 	);
 	return mapUser(rows[0]);
@@ -101,10 +114,10 @@ async function findByEmail(email) {
 async function findById(id) {
 	const [rows] = await db.query(
 		`SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
-		        u.avatar_url, u.cover_url, u.notification_prefs, u.date_registered,
+		        u.avatar_url, u.cover_url, u.notification_prefs, u.deleted_at, u.date_registered,
 		        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
 		 FROM users u
-		 WHERE u.user_id = ?
+		 WHERE u.user_id = ? AND u.deleted_at IS NULL
 		 LIMIT 1`,
 		[Number(id)]
 	);
@@ -123,9 +136,10 @@ async function createUser({ firstName, lastName, email, passwordHash }) {
 async function findAll(limit = 50, offset = 0) {
 	const [rows] = await db.query(
 		`SELECT u.user_id, u.first_name, u.last_name, u.email, u.password_hash, u.role,
-		        u.avatar_url, u.cover_url, u.notification_prefs, u.date_registered,
+		        u.avatar_url, u.cover_url, u.notification_prefs, u.deleted_at, u.date_registered,
 		        EXISTS (SELECT 1 FROM ngo_profiles n WHERE n.user_id = u.user_id) AS has_ngo_profile
 		 FROM users u
+		 WHERE u.deleted_at IS NULL
 		 ORDER BY u.date_registered DESC
 		 LIMIT ? OFFSET ?`,
 		[limit, offset]
@@ -143,7 +157,7 @@ async function updateRole(id, newRole) {
 	}
 
 	await db.query(
-		`UPDATE users SET role = ? WHERE user_id = ?`,
+		`UPDATE users SET role = ? WHERE user_id = ? AND deleted_at IS NULL`,
 		[role, Number(id)]
 	);
 	return findById(id);
@@ -172,8 +186,28 @@ async function updateProfile(id, { firstName, lastName, avatarUrl, coverUrl, not
 	if (updates.length === 0) return findById(id);
 
 	values.push(Number(id));
-	await db.query(`UPDATE users SET ${updates.join(', ')} WHERE user_id = ?`, values);
+	await db.query(`UPDATE users SET ${updates.join(', ')} WHERE user_id = ? AND deleted_at IS NULL`, values);
 	return findById(id);
+}
+
+async function archive(id, { deletedBy = null, reason = 'Archived by administrator' } = {}) {
+	const [result] = await db.query(
+		`UPDATE users
+		 SET deleted_at = NOW(), deleted_by = ?, deleted_reason = ?
+		 WHERE user_id = ? AND deleted_at IS NULL`,
+		[deletedBy ? Number(deletedBy) : null, reason, Number(id)]
+	);
+	return result.affectedRows > 0;
+}
+
+async function countActiveByRole(role) {
+	const [rows] = await db.query(
+		`SELECT COUNT(*) AS total
+		 FROM users
+		 WHERE role = ? AND deleted_at IS NULL`,
+		[normalizeRole(role)]
+	);
+	return Number(rows[0]?.total || 0);
 }
 
 async function delete_(id) {
@@ -190,5 +224,7 @@ module.exports = {
 	updateRole,
 	updatePassword,
 	updateProfile,
+	archive,
+	countActiveByRole,
 	delete: delete_
 };

@@ -54,9 +54,21 @@ async function deleteUser(req, res, next) {
 	try {
 		const { userId } = req.params;
 		const ipAddress = req.ip || req.connection.remoteAddress;
-		await adminService.deleteUserAccount(userId, req.session.userId, ipAddress);
+		const result = await adminService.deleteUserAccount(userId, req.session.userId, ipAddress, req.user && req.user.role);
 
-		return res.json({ message: 'User account deleted.' });
+		return res.json({ message: 'User account archived.', ...result });
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function deleteNGOAccount(req, res, next) {
+	try {
+		const { ngoId } = req.params;
+		const ipAddress = req.ip || req.connection.remoteAddress;
+		const result = await adminService.deleteNgoAccount(ngoId, req.session.userId, ipAddress, req.user && req.user.role);
+
+		return res.json({ message: 'NGO account archived.', ...result });
 	} catch (error) {
 		next(error);
 	}
@@ -177,6 +189,7 @@ module.exports = {
 	getAllUsers,
 	updateUserRole,
 	deleteUser,
+	deleteNGOAccount,
 	getActivityLogs,
 	getMyActivityLogs,
 	getActivityLog,

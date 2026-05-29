@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { findByEmail, findById, createUser, updatePassword, updateProfile } = require('../models/userModel');
 const passwordResetModel = require('../models/passwordResetModel');
+const { sendPasswordResetEmail } = require('../services/emailService');
 const { validateEmail, validatePassword } = require('../utils/validators');
 const constants = require('../utils/constants');
 
@@ -19,6 +20,17 @@ function toPublicUser(user) {
 	};
 }
 
+function getDashboardRedirect(role) {
+	const normalizedRole = constants.normalizeRole(role);
+	if (normalizedRole === constants.ROLES.ADMIN || normalizedRole === constants.ROLES.SUPERADMIN) {
+		return 'AdminDashboard.html?role=superadmin';
+	}
+	if (normalizedRole === constants.ROLES.NGO_ADMIN) {
+		return 'AdminDashboard.html?role=ngo';
+	}
+	return 'index.html';
+}
+
 async function signup(req, res, next) {
 	try {
 		const { firstName, lastName, email, password } = req.body || {};
@@ -35,7 +47,7 @@ async function signup(req, res, next) {
 			return res.status(400).json({ message: 'Password must be at least 8 characters.' });
 		}
 
-		const existing = await findByEmail(String(email).trim());
+		const existing = await findByEmail(String(email).trim(), { includeArchived: true });
 		if (existing) {
 			return res.status(409).json({ message: 'Email already registered.' });
 		}
@@ -49,7 +61,13 @@ async function signup(req, res, next) {
 		});
 
 		req.session.userId = user.id;
-		return res.status(201).json({ message: 'Account created.', user: toPublicUser(user) });
+		const publicUser = toPublicUser(user);
+		return res.status(201).json({
+			success: true,
+			message: 'Account created.',
+			user: publicUser,
+			redirectUrl: getDashboardRedirect(publicUser.role)
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -90,7 +108,13 @@ async function signin(req, res, next) {
 		req.session.userId = user.id;
 		console.log('[AUTH] Session created with userId:', user.id);
 		
-		return res.json({ message: 'Signed in.', user: toPublicUser(user) });
+		const publicUser = toPublicUser(user);
+		return res.json({
+			success: true,
+			message: 'Signed in.',
+			user: publicUser,
+			redirectUrl: getDashboardRedirect(publicUser.role)
+		});
 	} catch (error) {
 		console.error('[AUTH] ✗ Signin error:', error);
 		next(error);
@@ -129,16 +153,33 @@ async function forgotPassword(req, res, next) {
 			return res.status(400).json({ message: 'Email is required.' });
 		}
 
-		// Always return 200 — never reveal whether email is registered
+		if (!validateEmail(email)) {
+			return res.status(400).json({ message: 'Invalid email format.' });
+		}
+
+		let devResetUrl = null;
+
+		// Always return 200 for valid-looking emails; never reveal whether an account exists.
 		const user = await findByEmail(String(email).trim());
 		if (user) {
 			const token = await passwordResetModel.createToken(user.id);
-			const resetUrl = `http://localhost:4012/SignIn.html?token=${token}`;
-			// TODO: send resetUrl via email when SMTP is configured (blk-04)
+			const frontendBaseUrl = process.env.FRONTEND_PUBLIC_URL || req.get('origin') || `${req.protocol}://${req.get('host')}`;
+			const resetUrl = `${frontendBaseUrl.replace(/\/$/, '')}/SignIn.html?token=${token}`;
+			const emailSent = await sendPasswordResetEmail({
+				toEmail: user.email,
+				toName: user.fullName || user.firstName,
+				resetUrl
+			});
+
+			if (!emailSent && process.env.NODE_ENV !== 'production') {
+				devResetUrl = resetUrl;
+			}
 			console.log(`[PASSWORD RESET] Link for ${email}:\n  ${resetUrl}`);
 		}
 
-		return res.json({ message: 'If that email is registered, a reset link has been sent.' });
+		const response = { message: 'If that email is registered, a reset link has been sent.' };
+		if (devResetUrl) response.devResetUrl = devResetUrl;
+		return res.json(response);
 	} catch (error) {
 		next(error);
 	}

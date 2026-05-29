@@ -36,7 +36,7 @@ const AuthAPI = {
 		http.post('/auth/signup', { firstName, lastName, email, password }),
 
 	signin: (email, password) =>
-		http.post('/auth/signin', { email, password }),
+		http.post('/api/auth/login', { email, password }),
 
 	getMe: () =>
 		http.get('/auth/me'),
@@ -176,6 +176,9 @@ const AdminAPI = {
 
 	createNGOProfile: (data) =>
 		http.post('/admin/ngos', data),
+
+	deleteNGO: (ngoId) =>
+		http.delete(`/admin/ngos/${ngoId}`),
 	
 	getAllUsers: (filters = {}) => {
 		const params = new URLSearchParams();

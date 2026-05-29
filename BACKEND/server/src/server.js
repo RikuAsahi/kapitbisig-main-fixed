@@ -64,6 +64,14 @@ app.use('/admin', adminRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/support/tickets', supportTicketRoutes);
 
+app.use('/api/auth', authRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/donations', donationLimiter, donationRoutes);
+app.use('/api/ngos', ngoRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/support/tickets', supportTicketRoutes);
+
 app.use((req, res) => {
 	res.status(404).json({ message: 'Not found' });
 });

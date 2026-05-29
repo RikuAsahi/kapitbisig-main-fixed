@@ -155,14 +155,14 @@
 				: '';
 			const label = d.campaignTitle || ('Campaign #' + escapeHtml(String(d.campaignId || '')));
 			const method = d.paymentMethod ? d.paymentMethod.replace(/_/g, ' ') : 'Card';
-			return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f4f8;">'
-				+ '<div>'
-				+ '<div style="font-weight:600;font-size:14px;margin-bottom:2px;">' + label + '</div>'
-				+ '<div style="font-size:12px;color:#888;">' + date + (date ? ' · ' : '') + escapeHtml(method) + '</div>'
+			return '<div class="donation-row">'
+				+ '<div class="donation-main">'
+				+ '<div class="donation-title">' + escapeHtml(label) + '</div>'
+				+ '<div class="donation-meta">' + date + (date ? ' · ' : '') + escapeHtml(method) + '</div>'
 				+ '</div>'
-				+ '<div style="text-align:right;">'
-				+ '<div style="font-weight:700;color:#27AE60;font-size:15px;">' + fmtMoney(d.amount) + '</div>'
-				+ '<div style="font-size:11px;font-weight:600;color:' + color + ';">' + (d.status || 'pending').toUpperCase() + '</div>'
+				+ '<div class="donation-amount">'
+				+ '<div class="donation-value">' + fmtMoney(d.amount) + '</div>'
+				+ '<div class="donation-status" style="color:' + color + ';">' + (d.status || 'pending').toUpperCase() + '</div>'
 				+ '</div>'
 				+ '</div>';
 		}).join('');

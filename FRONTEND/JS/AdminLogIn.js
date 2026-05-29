@@ -62,8 +62,14 @@ async function attemptLogin() {
     }
 
     attempts = 0;
-    currentUser = { id: user.id, role, name: user.fullName || user.firstName, email: user.email };
-    goToDashboard(role);
+    currentUser = {
+      ...user,
+      id: user.id,
+      role,
+      name: user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || user.firstName || user.email,
+      email: user.email
+    };
+    goToDashboard(role, res.redirectUrl);
   } catch (err) {
     setLoading(false);
     attempts++;
@@ -74,7 +80,10 @@ async function attemptLogin() {
       return;
     }
     const left = MAX_ATTEMPTS - attempts;
-    showMsg('msgArea','error',`Invalid credentials. ${left} attempt${left!==1?'s':''} remaining.`);
+    const message = err && err.status === 401
+      ? `Invalid credentials. ${left} attempt${left!==1?'s':''} remaining.`
+      : (err && err.message) || 'Unable to sign in. Please try again.';
+    showMsg('msgArea','error', message);
   }
 }
 
@@ -111,12 +120,13 @@ function submitNewPassword() {
 function finishSetup() { goToDashboard(currentUser.role); }
 
 // ── GO TO DASHBOARD ──
-function goToDashboard(role) {
+function goToDashboard(role, redirectUrl) {
   localStorage.setItem('kb.auth.user', JSON.stringify(currentUser));
   localStorage.setItem('kb.auth.role', role);
   localStorage.setItem('kb.auth.name', currentUser.name || '');
   localStorage.setItem('kb.auth.email', currentUser.email || '');
-  window.location.href = 'AdminDashboard.html';
+  const dashboardRole = role === 'ngo_admin' ? 'ngo' : 'superadmin';
+  window.location.href = redirectUrl || `AdminDashboard.html?role=${dashboardRole}`;
 }
 
 function normalizePortalRole(role) {

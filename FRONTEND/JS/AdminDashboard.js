@@ -394,10 +394,7 @@
 		const host = qs('campaignGrid');
 		if (!host) return;
 
-		if (state.role !== 'ngo') {
-			host.innerHTML = '<div class="empty-state"><h3>Campaign Module Hidden</h3><p>Campaign management is not shown for Super Admin on this version.</p></div>';
-			return;
-		}
+
 
 		if (PLACEHOLDER_MODE) {
 			host.innerHTML = `
@@ -1339,12 +1336,16 @@
 			const campaignFilters = { limit: 100 };
 			if (state.role === 'ngo' && state.ngoId) campaignFilters.ngoId = state.ngoId;
 
-			const [campaignsRes, usersRes, ngosRes, logsRes] = await Promise.all([
+			const isAdmin = state.role === 'admin' || state.role === 'superadmin';
+
+			const promises = [
 				CampaignAPI.list(campaignFilters),
-				AdminAPI.getAllUsers({ limit: 100 }),
+				isAdmin ? AdminAPI.getAllUsers({ limit: 100 }) : Promise.resolve({ users: [] }),
 				NGOAPI.list({ limit: 100 }),
-				AdminAPI.getActivityLogs({ limit: 50 })
-			]);
+				isAdmin ? AdminAPI.getActivityLogs({ limit: 50 }) : Promise.resolve({ logs: [] })
+			];
+
+			const [campaignsRes, usersRes, ngosRes, logsRes] = await Promise.all(promises);
 
 			const campaigns = campaignsRes.campaigns || [];
 			const users = usersRes.users || [];
@@ -1968,12 +1969,14 @@
 
 	async function deleteNGO(id) {
 		const ngo = data.ngos.find((n) => String(n.id) === String(id));
-		if (!confirm(`Delete NGO "${ngo ? ngo.name : id}"? This cannot be undone.`)) return;
+		if (!confirm(`Delete NGO account "${ngo ? ngo.name : id}"? This will archive the NGO, disable the linked login account, and cancel active campaigns.`)) return;
 		try {
-			await NGOAPI.delete(id);
-			showToast('NGO deleted.', 'success');
+			await AdminAPI.deleteNGO(id);
+			showToast('NGO account archived.', 'success');
 			await loadDashboardData();
 			renderNGOTable();
+			renderDashboardStats();
+			renderApprovals();
 		} catch (err) {
 			showToast(err.message || 'Failed to delete NGO.', 'error');
 		}
@@ -1981,12 +1984,15 @@
 
 	async function deleteUserAccount(userId) {
 		const user = data.users.find((u) => String(u.id) === String(userId));
-		if (!confirm(`Delete account for "${user ? user.name : userId}"? This cannot be undone.`)) return;
+		if (!confirm(`Delete account for "${user ? user.name : userId}"? This will archive the account and prevent future sign-ins.`)) return;
 		try {
 			await AdminAPI.deleteUser(userId);
-			showToast('User account deleted.', 'success');
+			showToast('User account archived.', 'success');
 			await loadDashboardData();
 			renderUserTable();
+			renderNGOTable();
+			renderDashboardStats();
+			renderApprovals();
 		} catch (err) {
 			showToast(err.message || 'Failed to delete user.', 'error');
 		}
@@ -2021,11 +2027,26 @@
 	}
 
 	async function init() {
+		// Verify session against backend before rendering anything
+		let serverUser = null;
+		try {
+			const meRes = await AuthAPI.getMe();
+			serverUser = meRes && meRes.user;
+		} catch (_err) {
+			serverUser = null;
+		}
+
+		const allowedRoles = ['admin', 'superadmin', 'ngo', 'ngo_admin', 'ngo_user'];
+		if (!serverUser || !allowedRoles.includes(serverUser.role)) {
+			window.location.href = 'AdminLogIn.html';
+			return;
+		}
+
 		const account = readAccountContext();
 		const roleFromURL = getRoleFromURL();
-		state.role = account.role || roleFromURL || localStorage.getItem(ROLE_KEY) || 'superadmin';
-		state.accountName = account.name;
-		state.accountEmail = account.email;
+		state.role = mapRole(serverUser.role) || account.role || roleFromURL || localStorage.getItem(ROLE_KEY) || 'superadmin';
+		state.accountName = account.name || `${serverUser.firstName || ''} ${serverUser.lastName || ''}`.trim();
+		state.accountEmail = account.email || serverUser.email || '';
 		state.theme = localStorage.getItem(THEME_KEY) || 'light';
 		localStorage.setItem(ROLE_KEY, state.role);
 
@@ -2034,17 +2055,24 @@
 		renderRoleSwitcher();
 		renderSidebarNav();
 
-		await loadDashboardData();
+		// Resolve ngoId BEFORE loadDashboardData so the ngoId filter is applied on first load
 
 		if (state.role === 'ngo') {
 			try {
 				const profileRes = await NGOAPI.getMyProfile();
 				state.ngoId = profileRes.profile && profileRes.profile.id ? profileRes.profile.id : null;
-				if (state.ngoId) {
-					await loadNgoAnalytics();
-				}
 			} catch (_err) {
-				// ngoId stays null; analytics shows empty state
+				// ngoId stays null
+			}
+		}
+
+		await loadDashboardData();
+
+		if (state.role === 'ngo' && state.ngoId) {
+			try {
+				await loadNgoAnalytics();
+			} catch (_err) {
+				// analytics shows empty state
 			}
 		}
 
