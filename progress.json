@@ -2,8 +2,17 @@
   "project": "KapitBisig NGO Crowdfunding Platform",
   "repository": "https://github.com/RikuAsahi/KB-CLEAN-VER",
   "version": "1.0.0",
-  "last_updated": "2026-05-20",
+  "last_updated": "2026-05-26",
   "recent_fixes": [
+    "NGO Donation Approvals: GET /ngos/my-donations returns donations scoped to the NGO's own campaigns (JOIN on campaign ownership). PUT /ngos/donations/:id/status lets NGO approve/reject donations — server enforces campaign ownership before allowing status change. NGOAPI.getMyDonations() and NGOAPI.reviewDonation() added to api.js. 'donations' tab added to NGO's pagesByRole. renderDonationsTable(), viewProof(), approveDonation(), rejectDonation() all branch on state.role === 'ngo' to call correct API.",
+    "Admin Donation Approvals: GET /admin/donations returns all donations with donor name/email and campaign title via LEFT JOIN. PUT /admin/donations/:id/status marks pending donation completed/failed; updates campaign total on approval; logs activity. Donation Approvals tab added to admin sidebar. Proof image modal shows donor info, screenshot, reference, and approve/reject buttons.",
+    "donationModel: added findByCampaignIds() (parametrized IN clause + JOIN users + campaigns) and findAllWithDetails() (all donations + JOIN). Both exported.",
+    "Payment Gateway Admin Controls: system_settings table + GET/PUT /settings/payment API. Admin dashboard now has a Payment Gateway Settings card (superadmin only) with live toggles for Bank Transfer, GCash, PayMaya, and Card, plus configurable bank details (name, account number, account name, donor instructions). Default: Bank Transfer ON, all others OFF.",
+    "Offline Bank Transfer donation flow: donor payment modal dynamically loads enabled methods from API, shows admin-configured bank details, requires screenshot proof upload (stored as base64 in donations.proof_image), with optional reference notes field and image preview.",
+    "donations table: added proof_image (MEDIUMTEXT) and proof_notes (TEXT) columns. ALTER TABLE migration runs on startup for existing DBs.",
+    "express.json body limit raised to 10MB to support base64 proof image payloads in donation submissions.",
+    "Server-side validation in donationService now checks payment method is enabled before accepting donation (returns 400 if disabled). Bank transfer requires proof_image or returns 400.",
+    "SettingsAPI added to api.js frontend client: getPayment() and updatePayment().",
     "Landing page live campaigns grid made fully dynamic — campaignModel.findAll/findById/findByStatus/findByNgoId all LEFT JOIN ngo_profiles so ngoName is returned in every campaign response.",
     "First-run database seeder (src/seed.js) added — auto-creates 1 admin user, 1 NGO user, 1 verified NGO profile, and 6 active campaigns across all categories on empty DB startup.",
     "Test-account seeder (src/seedTest.js) added — run via `npm run seed:test` to upsert testadmin@kapitbisig.ph and testngo@kapitbisig.ph; INSERT IGNORE so safe to re-run.",
@@ -91,18 +100,39 @@
       "name": "Payment Integration",
       "priority": "P0",
       "status": "in_progress",
-      "completion_percent": 15,
-      "notes": "Donation form UI exists. Backend donation model, creation endpoint, and campaign amount update logic are implemented — but no payment gateway is wired. Blocked on GCash/PayMaya merchant accounts.",
+      "completion_percent": 82,
+      "notes": "Offline bank transfer fully implemented — admin configures bank details + toggles methods in Payment Gateway Settings panel; donor uploads screenshot proof (base64 stored in donations.proof_image). Admin and NGO can both view proof screenshots, approve, and reject donations. Admin sees all donations; NGO sees only their own campaigns' donations. Blocked on GCash/PayMaya/Card merchant accounts for online gateway integration.",
       "tasks": [
-        { "id": "pay-01", "task": "Donation form UI (frontend)", "status": "complete" },
-        { "id": "pay-02", "task": "GCash integration (Paymongo or GCash API)", "status": "not_started" },
-        { "id": "pay-03", "task": "PayMaya API integration", "status": "not_started" },
-        { "id": "pay-04", "task": "Bank transfer payment flow", "status": "not_started" },
-        { "id": "pay-05", "task": "Payment webhook / callback handler", "status": "not_started" },
-        { "id": "pay-06", "task": "Create donation record in DB on success", "status": "in_progress" },
-        { "id": "pay-07", "task": "Update campaign totals after confirmed payment", "status": "in_progress" },
-        { "id": "pay-08", "task": "Donor confirmation screen / email", "status": "not_started" },
-        { "id": "pay-09", "task": "Sandbox / test mode for all payment methods", "status": "not_started" }
+       { "id": "pay-01", "task": "Donation form UI with amount presets, tip %, and tax line", "status": "complete" },
+        { "id": "pay-02", "task": "GCash integration (Paymongo API)", "status": "blocked" },
+        { "id": "pay-03", "task": "PayMaya API integration", "status": "blocked" },
+        { "id": "pay-04", "task": "Bank transfer offline flow — bank details display + screenshot proof upload", "status": "complete" },
+        { "id": "pay-05", "task": "Payment webhook / callback handler for gateway confirmations", "status": "not_started" },
+        { "id": "pay-06", "task": "Donation record created in DB with proof_image and proof_notes fields", "status": "complete" },
+        { "id": "pay-07", "task": "Server-side validation: disabled payment method returns 400", "status": "complete" },
+        { "id": "pay-08", "task": "Donor confirmation screen after donation submission", "status": "complete" },
+        { "id": "pay-09", "task": "Donor receipt email after donation", "status": "blocked" },
+        { "id": "pay-10", "task": "Admin view/approval of bank transfer proof screenshots", "status": "complete" },
+        { "id": "pay-11", "task": "NGO view/approval of donations to their own campaigns", "status": "complete" },
+        { "id": "pay-12", "task": "Sandbox / test mode for online payment methods", "status": "not_started" }
+      ]
+    },
+    {
+      "id": "payment_settings",
+      "name": "Payment Gateway Settings",
+      "priority": "P0",
+      "status": "complete",
+      "completion_percent": 100,
+      "notes": "system_settings table with key/value store. GET /settings/payment (public) returns enabled methods and bank details. PUT /settings/payment (admin/superadmin) updates toggles and bank info. Admin Dashboard Payment Gateway Settings card with toggles for all 4 methods and bank details form. Defaults: Bank Transfer ON, GCash/PayMaya/Card OFF.",
+      "tasks": [
+        { "id": "pgs-01", "task": "system_settings MySQL table (key/value) with defaults seeded on startup", "status": "complete" },
+        { "id": "pgs-02", "task": "GET /settings/payment — public API returning enabled methods + bank details", "status": "complete" },
+        { "id": "pgs-03", "task": "PUT /settings/payment — admin-only API to update toggles and bank info", "status": "complete" },
+        { "id": "pgs-04", "task": "Admin Dashboard Payment Gateway Settings card (superadmin only)", "status": "complete" },
+        { "id": "pgs-05", "task": "Toggle switches: Bank Transfer, GCash, PayMaya, Card", "status": "complete" },
+        { "id": "pgs-06", "task": "Bank details form: name, account number, account name, instructions", "status": "complete" },
+        { "id": "pgs-07", "task": "Donor-facing payment modal dynamically shows only enabled methods", "status": "complete" },
+        { "id": "pgs-08", "task": "SettingsAPI added to api.js (getPayment, updatePayment)", "status": "complete" }
       ]
     },
     {
@@ -111,7 +141,7 @@
       "priority": "P1",
       "status": "complete",
       "completion_percent": 100,
-      "notes": "All tasks complete. ngo-05: backend now accepts ngoId query param in GET /campaigns; frontend filters campaign list by ngoId when role is ngo; saveCampaign/submitCampaign wired to real API (CampaignAPI.create + submitForApproval) with grid refresh after each action; rejectionReason shown in campaign detail modal; fixed ID type mismatch in openCampaignDetail. ngo-04: sendNewSubmissionNotificationEmail added to emailService; called non-blocking from submitForApproval service; ADMIN_EMAIL env var added.",
+      "notes": "All tasks complete. Donation Approvals tab added (2026-05-26): GET /ngos/my-donations returns donations scoped to the NGO's own campaigns only. PUT /ngos/donations/:id/status lets NGO approve/reject with server-enforced campaign ownership check. Approve updates campaign total; both actions log activity. 'donations' added to NGO pagesByRole in dashboard.",
       "tasks": [
         { "id": "ngo-01", "task": "Campaign application form (HTML/CSS/JS)", "status": "complete" },
         { "id": "ngo-02", "task": "Backend: POST /api/campaigns/apply endpoint", "status": "complete" },
@@ -145,7 +175,7 @@
       "priority": "P1",
       "status": "complete",
       "completion_percent": 100,
-      "notes": "All tasks complete. adm-03: loadDashboardData wired to live API; fixed ngosRes.profiles key mismatch; NGO name resolved via ngoMap. adm-05: rejection_reason column added to campaigns table; stored on reject; nodemailer emailService created (gracefully no-ops if SMTP not configured); rejection email sent to NGO user; frontend reject modal requires a reason and passes it to the API.",
+       "notes": "All tasks complete. Full CRUD for NGO/User Management, dynamic activity logs, campaign approvals. Donation Approvals tab added (2026-05-26): GET /admin/donations lists all donations with donor + campaign info; PUT /admin/donations/:id/status approves/rejects with campaign total update and activity log. Proof image modal shows screenshot, donor details, approve/reject actions.",
       "tasks": [
         { "id": "adm-01", "task": "Admin dashboard HTML/CSS", "status": "complete" },
         { "id": "adm-02", "task": "RBAC — admin-only route protection", "status": "complete" },
@@ -153,6 +183,15 @@
         { "id": "adm-04", "task": "Approve campaign → set status=approved, make public", "status": "complete" },
         { "id": "adm-05", "task": "Reject campaign → set status=rejected, send reason to NGO", "status": "complete" },
         { "id": "adm-06", "task": "Activity log for all admin actions", "status": "complete" }
+        { "id": "adm-07", "task": "NGO Management — dynamic table with live API data", "status": "complete" },
+        { "id": "adm-08", "task": "NGO Management — Create NGO (user + profile)", "status": "complete" },
+        { "id": "adm-09", "task": "NGO Management — Edit NGO profile (name, phone, address, description)", "status": "complete" },
+        { "id": "adm-10", "task": "NGO Management — Delete NGO", "status": "complete" },
+        { "id": "adm-11", "task": "User Management — dynamic table with live API data", "status": "complete" },
+        { "id": "adm-12", "task": "User Management — Create Account with role", "status": "complete" },
+        { "id": "adm-13", "task": "User Management — Change Role (superadmin only)", "status": "complete" },
+        { "id": "adm-14", "task": "User Management — Delete Account (superadmin only)", "status": "complete" },
+        { "id": "adm-15", "task": "Donation Approvals tab — view all donations, proof screenshot modal, approve/reject with campaign total update", "status": "complete" }
       ]
     },
     {
@@ -238,20 +277,19 @@
   ],
 
   "next_priorities": [
-    "Configure SMTP + ADMIN_EMAIL in .env to activate rejection and submission notification emails (blk-04)",
+    "Configure SMTP + ADMIN_EMAIL in .env to activate rejection, submission, and donor receipt emails (blk-04)",
     "Register Google and Facebook OAuth apps (blk-02, blk-03)",
-    "Apply for GCash / PayMaya merchant accounts (blk-01)",
-    "Payment gateway integration — GCash / PayMaya via Paymongo (pay-02 through pay-09)"
+    "Apply for GCash / PayMaya merchant accounts and integrate via Paymongo (blk-01)",
+    "Build campaign report/moderation backend (ISS-14 — frontend modal exists, no API)"
   ],
 
   "summary": {
-    "total_tasks": 88,
-    "complete": 77,
-    "in_progress": 2,
-    "not_started": 6,
-    "blocked": 5,
-    "frontend_pages_status": "Complete — 14 HTML pages built covering all major flows. Donor and Admin/NGO sign-in portals separated with role enforcement and cross-portal navigation links.",
-    "backend_status": "Core MVC stack fully built — auth, campaigns, donations, NGO, admin routes all implemented with parameterized queries and RBAC. Email service (nodemailer) added. First-run seeder and test-account seeder both in place. Campaign queries LEFT JOIN ngo_profiles for NGO name in all responses.",
-    "critical_gap": "Payment gateway integration (blocked on merchant accounts), OAuth login (blocked on app registration), SMTP credentials for email features"
-  }
+    "total_tasks": 111,
+    "complete": 106,
+    "in_progress": 0,
+    "not_started": 2,
+    "blocked": 7,
+    "frontend_pages_status": "Complete — 14 HTML pages covering all major flows. Donation Approvals tab live for both Admin and NGO. Payment modal dynamically shows only admin-enabled methods. Bank transfer proof upload fully implemented.",
+    "backend_status": "Core MVC stack fully built — auth, campaigns, donations, NGO, admin, settings routes all implemented with RBAC. GET /admin/donations and PUT /admin/donations/:id/status. GET /ngos/my-donations (scoped to NGO campaigns) and PUT /ngos/donations/:id/status (ownership-enforced). donationModel has findByCampaignIds() and findAllWithDetails() with JOIN.",
+    "critical_gap": "Online payment gateways (blocked on merchant accounts), OAuth login (blocked on app registration), SMTP credentials for email"
 }

@@ -1,28 +1,42 @@
 const Donation = require('../models/donationModel');
 const Campaign = require('../models/campaignModel');
+const SystemSettings = require('../models/systemSettingsModel');
 const { validateAmount } = require('../utils/validators');
+
+const METHOD_SETTING_KEY = {
+	gcash: 'payment_gcash_enabled',
+	paymaya: 'payment_paymaya_enabled',
+	card: 'payment_card_enabled',
+	bank_transfer: 'payment_bank_transfer_enabled'
+};
 
 async function createDonation(data, donorId) {
 	if (!data.campaignId || !data.amount || !data.paymentMethod) {
-		throw {
-			statusCode: 400,
-			message: 'Missing required fields.'
-		};
+		throw { statusCode: 400, message: 'Missing required fields.' };
 	}
 
 	if (!validateAmount(data.amount)) {
-		throw {
-			statusCode: 400,
-			message: 'Invalid amount.'
-		};
+		throw { statusCode: 400, message: 'Invalid amount.' };
+	}
+
+	const settingKey = METHOD_SETTING_KEY[data.paymentMethod];
+	if (!settingKey) {
+		throw { statusCode: 400, message: 'Invalid payment method.' };
+	}
+
+	const raw = await SystemSettings.getAll();
+	if (raw[settingKey] !== 'true') {
+		throw { statusCode: 400, message: 'This payment method is currently unavailable.' };
+	}
+
+	
+	if ((data.paymentMethod === 'bank_transfer' || data.paymentMethod === 'gcash') && !data.proofImage) {
+		throw { statusCode: 400, message: 'A screenshot proof of payment is required.' };
 	}
 
 	const campaign = await Campaign.findById(data.campaignId);
 	if (!campaign) {
-		throw {
-			statusCode: 404,
-			message: 'Campaign not found.'
-		};
+		throw { statusCode: 404, message: 'Campaign not found.' };
 	}
 
 	const donation = await Donation.create({
@@ -30,7 +44,9 @@ async function createDonation(data, donorId) {
 		donorId,
 		amount: Number(data.amount),
 		paymentMethod: data.paymentMethod,
-		message: data.message || null
+		message: data.message || null,
+		proofImage: data.proofImage || null,
+		proofNotes: data.proofNotes || null
 	});
 
 	return donation;

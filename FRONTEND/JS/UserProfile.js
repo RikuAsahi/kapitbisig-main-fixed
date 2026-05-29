@@ -141,7 +141,7 @@
 
 		if (!state.donations.length) {
 			container.innerHTML = '<p style="text-align:center;color:#999;padding:24px 0;">'
-				+ 'No donations yet. <a href="Landingpage.html#campaigns" style="color:inherit;text-decoration:underline;">Browse campaigns</a> to make your first contribution.'
+				+ 'No donations yet. <a href="index.html#campaigns" style="color:inherit;text-decoration:underline;">Browse campaigns</a> to make your first contribution.'
 				+ '</p>';
 			return;
 		}
@@ -219,14 +219,22 @@
 
 	// ── UI HELPERS ────────────────────────────────────────────────────
 
-	function smoothTo(sectionId) {
-		const el = qs(sectionId);
-		if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	function showPage(sectionId) {
+		document.querySelectorAll('.profile-page').forEach(function (page) {
+			page.classList.remove('active-page');
+		});
+		const target = qs(sectionId);
+		if (target) {
+			target.classList.add('active-page');
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
 		document.querySelectorAll('.sidebar-link').forEach(function (link) {
 			link.classList.toggle('active', link.dataset.section === sectionId);
 		});
+		state.currentPage = sectionId;
 	}
 
+    function smoothTo(sectionId) { showPage(sectionId); }
 	function setVis(vis) {
 		const vPriv = qs('vPrivate');
 		const vPub = qs('vPublic');
@@ -315,7 +323,7 @@
 
 	async function handleLogout() {
 		try { await AuthState.logout(); } catch (_) {}
-		window.location.href = 'Landingpage.html';
+		window.location.href = 'index.html';
 	}
 
 	// ── INIT ──────────────────────────────────────────────────────────

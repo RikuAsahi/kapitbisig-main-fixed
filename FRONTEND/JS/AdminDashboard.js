@@ -17,8 +17,6 @@
 		sessionInterval: null,
 		analyticsInterval: null,
 		ngoId: null,
-		user: null,
-		ngoProfile: null,
 		charts: {}
 	};
 
@@ -29,13 +27,14 @@
 			'ngo-management',
 			'user-management',
 			'approvals',
+			'donations',
 			'moderation',
 			'support',
 			'notifications',
 			'activity-logs',
 			'settings'
 		],
-		ngo: ['dashboard', 'campaigns', 'analytics', 'support', 'settings']
+		ngo: ['dashboard', 'campaigns', 'analytics', 'donations', 'support', 'settings']
 	};
 
 	const roleProfiles = {
@@ -60,6 +59,7 @@
 		'ngo-management': { label: 'NGO Management', icon: 'M4 21h16M7 21V8h10v13M9 8V5h6v3' },
 		'user-management': { label: 'User Management', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87' },
 		approvals: { label: 'Approval Queue', icon: 'M20 6L9 17l-5-5' },
+		donations: { label: 'Donation Approvals', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z' },
 		moderation: { label: 'Moderation', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
 		support: { label: 'Support Center', icon: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' },
 		notifications: { label: 'Notifications', icon: 'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0' },
@@ -68,14 +68,47 @@
 	};
 
 	const data = {
-		campaigns: [],
-		ngos: [],
-		users: [],
-		approvals: [],
-		moderation: [],
-		support: [],
-		notifications: [],
-		logs: [],
+		campaigns: [
+			{ id: 1, title: 'Tondo Learning Kits', category: 'Education', status: 'Approved', raised: 72000, goal: 100000, donors: 214 },
+			{ id: 2, title: 'Barangay Health Caravan', category: 'Health', status: 'Ongoing', raised: 51000, goal: 65000, donors: 143 },
+			{ id: 3, title: 'Flood Relief Operations', category: 'Natural Disasters', status: 'Pending', raised: 15000, goal: 120000, donors: 67 },
+			{ id: 4, title: 'Mothers Livelihood Tools', category: 'Community', status: 'Draft', raised: 5000, goal: 40000, donors: 19 },
+			{ id: 5, title: 'Scholarship 2026 Batch', category: 'Education', status: 'Approved', raised: 93000, goal: 100000, donors: 289 },
+			{ id: 6, title: 'Mobile Clinic Upgrades', category: 'Health', status: 'Flagged', raised: 14000, goal: 75000, donors: 42 }
+		],
+		ngos: [
+			{ name: 'Bayanihan Foundation', contact: 'Joana Reyes', status: 'Verified', campaigns: 7, raised: 385000 },
+			{ name: 'Hope in Tondo', contact: 'Carlo Dizon', status: 'Pending', campaigns: 3, raised: 92000 },
+			{ name: 'Kalinga Youth', contact: 'Mia Tan', status: 'Inactive', campaigns: 2, raised: 41000 },
+			{ name: 'Sulong Kabataan', contact: 'Luis Ramos', status: 'Verified', campaigns: 4, raised: 168000 }
+		],
+		users: [
+			{ name: 'Maria Santos', email: 'maria@kapitbisig.ph', role: 'superadmin', status: 'Active' },
+			{ name: 'Paolo Cruz', email: 'paolo@kapitbisig.ph', role: 'admin', status: 'Active' },
+			{ name: 'Nadine Flores', email: 'nadine@ngo.ph', role: 'ngo', status: 'Pending Setup' }
+		],
+		approvals: [
+			{ campaign: 'Emergency Food Packs', ngo: 'Hope in Tondo', requested: '2026-05-06', amount: 80000 },
+			{ campaign: 'School Bag Drive', ngo: 'Sulong Kabataan', requested: '2026-05-05', amount: 45000 }
+		],
+		moderation: [
+			{ campaign: 'Mobile Clinic Upgrades', reason: 'Missing liquidation report', severity: 'High' },
+			{ campaign: 'Flood Relief Operations', reason: 'Pending document verification', severity: 'Medium' }
+		],
+		support: [
+			{ org: 'Hope in Tondo', ticket: 'SUP-1012', concern: 'Campaign photo upload fails', status: 'Open' },
+			{ org: 'Kalinga Youth', ticket: 'SUP-1011', concern: 'Cannot export donations report', status: 'In Progress' }
+		],
+		notifications: [
+			{ text: '2 campaigns are waiting for approval.', time: '5 min ago', read: false },
+			{ text: 'Monthly report is ready for export.', time: '20 min ago', read: false },
+			{ text: 'New NGO account registered.', time: '1 hour ago', read: true }
+		],
+		logs: [
+			{ date: '2026-05-08 09:10', action: 'login', actor: 'Maria Santos', detail: 'Successful login from 192.168.1.11' },
+			{ date: '2026-05-08 08:58', action: 'approve', actor: 'Maria Santos', detail: 'Approved campaign Tondo Learning Kits' },
+			{ date: '2026-05-08 08:40', action: 'create', actor: 'Paolo Cruz', detail: 'Created user account nadine@ngo.ph' }
+		],
 		ngoAnalytics: null
 	};
 
@@ -91,20 +124,6 @@
 		const d = document.createElement('div');
 		d.appendChild(document.createTextNode(String(text || '')));
 		return d.innerHTML;
-	}
-
-	function emptyBlock(title, copy) {
-		return `<div class="empty-state" style="padding:24px 10px"><h3>${title}</h3><p>${copy}</p></div>`;
-	}
-
-	function tableEmpty(colspan, message) {
-		return `<tr><td colspan="${colspan}" style="text-align:center;padding:24px;color:var(--text-soft)">${message}</td></tr>`;
-	}
-
-	function normalizeStatus(status) {
-		const raw = String(status || '').trim();
-		if (!raw) return 'Pending';
-		return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 	}
 
 	function getRoleFromURL() {
@@ -150,29 +169,6 @@
 			name: String(nameFromStorage || '').trim(),
 			email: String(emailFromStorage || '').trim()
 		};
-	}
-
-	async function readSessionAccount() {
-		try {
-			const res = await AuthAPI.getMe();
-			const user = res.user || null;
-			const role = mapRole(user && user.role);
-			if (!user || !role) return null;
-
-			const name = user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim();
-			localStorage.setItem('kb.auth.user', JSON.stringify(user));
-			localStorage.setItem('kb.auth.role', user.role || '');
-			localStorage.setItem('kb.auth.name', name || '');
-			localStorage.setItem('kb.auth.email', user.email || '');
-
-			return {
-				role,
-				name,
-				email: user.email || ''
-			};
-		} catch (_error) {
-			return null;
-		}
 	}
 
 	function getAllowedPages() {
@@ -346,11 +342,6 @@
 			color: l.action === 'approve' ? 'green' : l.action === 'login' ? 'sky' : 'gold'
 		}));
 
-		if (!feed.length) {
-			host.innerHTML = emptyBlock('No recent activity', 'Activity will appear here after database events are recorded.');
-			return;
-		}
-
 		host.innerHTML = feed
 			.map(
 				(item) => `
@@ -381,11 +372,6 @@
 		const sorted = [...data.campaigns]
 			.sort((a, b) => b.raised / b.goal - a.raised / a.goal)
 			.slice(0, 4);
-
-		if (!sorted.length) {
-			host.innerHTML = emptyBlock('No campaign data', 'Top campaigns will appear when campaigns exist in the database.');
-			return;
-		}
 
 		host.innerHTML = sorted
 			.map((campaign) => {
@@ -473,8 +459,7 @@
 		const table = qs('ngoTable');
 		if (!table) return;
 
-        const canAct = state.role === 'admin' || state.role === 'superadmin';
-
+		const canAct = state.role === 'admin' || state.role === 'superadmin';
 		const rows = data.ngos
 			.filter((ngo) => !state.ngoSearch || ngo.name.toLowerCase().includes(state.ngoSearch))
 			.map((ngo) => `
@@ -500,10 +485,9 @@
 			`).join('');
 
 		const actionsHeader = canAct ? '<th>Actions</th>' : '';
-
 		table.innerHTML = `
 			<thead><tr><th>Organization</th><th>Contact</th><th>Status</th><th>Campaigns</th><th>Raised</th>${actionsHeader}</tr></thead>
-			<tbody>${rows || tableEmpty(canAct ? 6 : 5, 'No NGO records found.')}</tbody>
+			<tbody>${rows || `<tr><td colspan="${canAct ? 6 : 5}" style="text-align:center;padding:24px;color:var(--text-soft)">No NGO records found.</td></tr>`}</tbody>
 		`;
 	}
 
@@ -526,7 +510,7 @@
 					<select class="filter-select" style="font-size:11px;padding:4px 8px;height:auto"
 					        onchange="changeUserRole('${user.id}', this.value)" title="Change role">
 						<option value="donor"      ${user.role==='donor'      ? 'selected':''}>Donor</option>
-						<option value="ngo_admin"  ${user.role==='ngo' || user.role==='ngo_admin' ? 'selected':''}>NGO</option>
+						<option value="ngo"        ${user.role==='ngo'        ? 'selected':''}>NGO</option>
 						<option value="admin"      ${user.role==='admin'      ? 'selected':''}>Admin</option>
 						<option value="superadmin" ${user.role==='superadmin' ? 'selected':''}>Super Admin</option>
 					</select>
@@ -536,10 +520,9 @@
 		`).join('');
 
 		const actionsHeader = isSuperAdmin ? '<th>Actions</th>' : '';
-
 		table.innerHTML = `
 			<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th>${actionsHeader}</tr></thead>
-			<tbody>${rows || tableEmpty(isSuperAdmin ? 6 : 5, 'No user records found.')}</tbody>
+			<tbody>${rows || `<tr><td colspan="${isSuperAdmin ? 6 : 5}" style="text-align:center;padding:24px;color:var(--text-soft)">No users found.</td></tr>`}</tbody>
 		`;
 	}
 
@@ -547,23 +530,34 @@
 		const table = qs('approvalTable');
 		if (!table) return;
 
-		const rows = data.approvals.map((row, idx) => `
-			<tr>
-				<td><strong>${escHtml(row.title)}</strong></td>
-				<td>${escHtml(row.typeLabel)}</td>
-				<td>${escHtml(row.owner)}</td>
-				<td>${escHtml(row.requested)}</td>
-				<td>${row.amount !== null && row.amount !== undefined ? fmtMoney(row.amount) : 'N/A'}</td>
-				<td class="td-actions">
-					<button class="btn btn-success btn-sm" onclick="openApprovalModal('approve', ${idx})">Approve</button>
-					<button class="btn btn-danger btn-sm" onclick="openApprovalModal('reject', ${idx})">Reject</button>
-				</td>
-			</tr>
-		`).join('');
+		if (PLACEHOLDER_MODE) {
+			table.innerHTML = `
+				<thead><tr><th>Campaign</th><th>NGO</th><th>Date</th><th>Goal</th><th>Action</th></tr></thead>
+				<tbody><tr><td colspan="5">Approval Queue placeholder. Pending items will load from backend.</td></tr></tbody>
+			`;
+			return;
+		}
 
 		table.innerHTML = `
-			<thead><tr><th>Application</th><th>Type</th><th>Submitted By</th><th>Date</th><th>Amount</th><th>Action</th></tr></thead>
-			<tbody>${rows || tableEmpty(6, 'No pending approvals.')}</tbody>
+			<thead><tr><th>Campaign</th><th>NGO</th><th>Date</th><th>Goal</th><th>Action</th></tr></thead>
+			<tbody>
+				${data.approvals
+					.map(
+						(row, idx) => `
+							<tr>
+								<td><strong>${row.campaign}</strong></td>
+								<td>${row.ngo}</td>
+								<td>${row.requested}</td>
+								<td>${fmtMoney(row.amount)}</td>
+								<td class="td-actions">
+									<button class="btn btn-success btn-sm" onclick="openApprovalModal('approve', ${idx})">Approve</button>
+									<button class="btn btn-danger btn-sm" onclick="openApprovalModal('reject', ${idx})">Reject</button>
+								</td>
+							</tr>
+						`
+					)
+					.join('')}
+			</tbody>
 		`;
 	}
 
@@ -571,18 +565,30 @@
 		const table = qs('moderationTable');
 		if (!table) return;
 
-		const rows = data.moderation.map((row) => `
-			<tr>
-				<td><strong>${escHtml(row.campaign)}</strong></td>
-				<td>${escHtml(row.reason)}</td>
-				<td><span class="badge ${row.severity === 'High' ? 'badge-flagged' : 'badge-pending'}">${escHtml(row.severity)}</span></td>
-				<td><button class="btn btn-warn btn-sm" onclick="showToast('Flag under review.','info')">Review</button></td>
-			</tr>
-		`).join('');
+		if (PLACEHOLDER_MODE) {
+			table.innerHTML = `
+				<thead><tr><th>Campaign</th><th>Reason</th><th>Severity</th><th>Action</th></tr></thead>
+				<tbody><tr><td colspan="4">Moderation placeholder. Flagged items will come from backend.</td></tr></tbody>
+			`;
+			return;
+		}
 
 		table.innerHTML = `
 			<thead><tr><th>Campaign</th><th>Reason</th><th>Severity</th><th>Action</th></tr></thead>
-			<tbody>${rows || tableEmpty(4, 'No moderation records found.')}</tbody>
+			<tbody>
+				${data.moderation
+					.map(
+						(row) => `
+							<tr>
+								<td><strong>${row.campaign}</strong></td>
+								<td>${row.reason}</td>
+								<td><span class="badge ${row.severity === 'High' ? 'badge-flagged' : 'badge-pending'}">${row.severity}</span></td>
+								<td><button class="btn btn-warn btn-sm" onclick="showToast('Flag under review.','info')">Review</button></td>
+							</tr>
+						`
+					)
+					.join('')}
+			</tbody>
 		`;
 	}
 
@@ -590,30 +596,44 @@
 		const table = qs('supportTable');
 		if (!table) return;
 
-		const rows = data.support.map((row) => `
-			<tr>
-				<td><strong>${escHtml(row.org)}</strong></td>
-				<td>${escHtml(row.ticket)}</td>
-				<td>${escHtml(row.concern)}</td>
-				<td><span class="badge ${row.status === 'Open' ? 'badge-pending' : 'badge-approved'}">${escHtml(row.status)}</span></td>
-			</tr>
-		`).join('');
+		if (PLACEHOLDER_MODE) {
+			table.innerHTML = `
+				<thead><tr><th>Organization</th><th>Ticket</th><th>Concern</th><th>Status</th></tr></thead>
+				<tbody><tr><td colspan="4">Support Center placeholder. Tickets will load from backend.</td></tr></tbody>
+			`;
+			return;
+		}
 
 		table.innerHTML = `
 			<thead><tr><th>Organization</th><th>Ticket</th><th>Concern</th><th>Status</th></tr></thead>
-			<tbody>${rows || tableEmpty(4, 'No support requests found.')}</tbody>
+			<tbody>
+				${data.support
+					.map(
+						(row) => `
+							<tr>
+								<td><strong>${row.org}</strong></td>
+								<td>${row.ticket}</td>
+								<td>${row.concern}</td>
+								<td><span class="badge ${row.status === 'Open' ? 'badge-pending' : 'badge-approved'}">${row.status}</span></td>
+							</tr>
+						`
+					)
+					.join('')}
+			</tbody>
 		`;
 	}
 
 	function renderNotifications() {
 		const list = qs('notifList');
 		if (!list) return;
-		document.querySelectorAll('.notif-dot').forEach((dot) => {
-			dot.style.display = data.notifications.some((n) => !n.read) ? '' : 'none';
-		});
 
-		if (!data.notifications.length) {
-			list.innerHTML = emptyBlock('No notifications', 'Notifications will appear here when records are available.');
+		if (PLACEHOLDER_MODE) {
+			list.innerHTML = `
+				<div class="empty-state" style="padding:24px 10px">
+					<h3>Notifications Placeholder</h3>
+					<p>Notifications will appear once backend notification service is connected.</p>
+				</div>
+			`;
 			return;
 		}
 
@@ -630,6 +650,154 @@
 				`
 			)
 			.join('');
+	}
+
+	async function renderDonationsTable() {
+		const table = qs('donationsTable');
+		if (!table) return;
+		table.innerHTML = '<tr><td colspan="7" style="padding:20px;text-align:center;color:#888">Loading…</td></tr>';
+
+		const statusEl = qs('donStatusFilter');
+		const methodEl = qs('donMethodFilter');
+		const status = statusEl ? statusEl.value : '';
+		const method = methodEl ? methodEl.value : '';
+
+		const isNGO = state.role === 'ngo';
+
+		try {
+			const res = isNGO
+				? await NGOAPI.getMyDonations({ status: status || null, paymentMethod: method || null, limit: 100 })
+				: await AdminAPI.getDonations({ status: status || null, paymentMethod: method || null, limit: 100 });
+			const donations = res.donations || [];
+
+			if (!donations.length) {
+				table.innerHTML = '<tr><td colspan="7" style="padding:28px;text-align:center;color:#888">No donations found.</td></tr>';
+				return;
+			}
+
+			const statusColor = { pending: '#e6a817', completed: '#27ae60', failed: '#e74c3c', refunded: '#888' };
+			const methodLabel = { bank_transfer: 'Bank Transfer', gcash: 'GCash', paymaya: 'PayMaya', card: 'Card' };
+
+			table.innerHTML = `
+				<thead><tr>
+					<th>Donor</th>
+					<th>Campaign</th>
+					<th>Amount</th>
+					<th>Method</th>
+					<th>Date</th>
+					<th>Status</th>
+					<th>Actions</th>
+				</tr></thead>
+				<tbody>
+				${donations.map((d) => `
+					<tr>
+						<td>
+							<div style="font-weight:600;font-size:0.85rem">${escHtml(d.donorName)}</div>
+							<div style="font-size:0.75rem;color:#888">${escHtml(d.donorEmail)}</div>
+						</td>
+						<td style="max-width:180px;font-size:0.83rem">${escHtml(d.campaignTitle)}</td>
+						<td style="font-weight:700;color:var(--primary)">₱${Number(d.amount).toLocaleString()}</td>
+						<td><span class="badge" style="font-size:0.72rem">${escHtml(methodLabel[d.paymentMethod] || d.paymentMethod)}</span></td>
+						<td style="font-size:0.78rem;color:#888">${new Date(d.createdAt).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'})}</td>
+						<td><span class="badge" style="background:${statusColor[d.status] || '#888'}1a;color:${statusColor[d.status] || '#888'};font-size:0.72rem">${d.status}</span></td>
+						<td>
+							<div style="display:flex;gap:6px;flex-wrap:wrap">
+								${d.proofImage
+									? `<button class="btn btn-ghost btn-sm" style="font-size:0.75rem;padding:4px 10px" onclick="viewProof('${d.id}')">View Proof</button>`
+									: `<span style="font-size:0.75rem;color:#aaa">No proof</span>`
+								}
+								${d.status === 'pending' ? `
+									<button class="btn btn-primary btn-sm" style="font-size:0.75rem;padding:4px 10px;background:#27ae60;border-color:#27ae60" onclick="approveDonation('${d.id}')">Approve</button>
+									<button class="btn btn-ghost btn-sm" style="font-size:0.75rem;padding:4px 10px;color:#e74c3c;border-color:#e74c3c" onclick="rejectDonation('${d.id}')">Reject</button>
+								` : ''}
+							</div>
+						</td>
+					</tr>
+				`).join('')}
+				</tbody>
+			`;
+		} catch (err) {
+			table.innerHTML = `<tr><td colspan="7" style="padding:20px;text-align:center;color:#e74c3c">${escHtml(err.message)}</td></tr>`;
+		}
+	}
+
+	function filterDonations() {
+		renderDonationsTable();
+	}
+
+	async function viewProof(donationId) {
+		try {
+			const res = state.role === 'ngo'
+				? await NGOAPI.getMyDonations({ limit: 200 })
+				: await AdminAPI.getDonations({ limit: 200 });
+			const d = (res.donations || []).find((x) => x.id === String(donationId));
+			if (!d) { showToast('Donation not found.', 'error'); return; }
+
+			const meta = qs('proofModalMeta');
+			const img = qs('proofModalImg');
+			const notes = qs('proofModalNotes');
+			const noImg = qs('proofModalNoImg');
+			const actions = qs('proofModalActions');
+
+			if (meta) meta.innerHTML = `
+				<div><strong>Donor:</strong> ${escHtml(d.donorName)} (${escHtml(d.donorEmail)})</div>
+				<div><strong>Campaign:</strong> ${escHtml(d.campaignTitle)}</div>
+				<div><strong>Amount:</strong> ₱${Number(d.amount).toLocaleString()} via ${escHtml(d.paymentMethod.replace('_',' '))}</div>
+				<div><strong>Date:</strong> ${new Date(d.createdAt).toLocaleString('en-PH')}</div>
+			`;
+
+			if (d.proofImage) {
+				if (img) { img.src = d.proofImage; img.style.display = ''; }
+				if (noImg) noImg.style.display = 'none';
+			} else {
+				if (img) img.style.display = 'none';
+				if (noImg) noImg.style.display = '';
+			}
+
+			if (notes) notes.textContent = d.proofNotes ? `Reference: ${d.proofNotes}` : '';
+
+			if (actions) {
+				actions.innerHTML = d.status === 'pending' ? `
+					<button class="btn btn-ghost btn-sm" onclick="closeModal('proofModal')">Close</button>
+					<button class="btn btn-primary btn-sm" style="background:#27ae60;border-color:#27ae60" onclick="closeModal('proofModal');approveDonation('${d.id}')">Approve</button>
+					<button class="btn btn-ghost btn-sm" style="color:#e74c3c;border-color:#e74c3c" onclick="closeModal('proofModal');rejectDonation('${d.id}')">Reject</button>
+				` : `<button class="btn btn-ghost btn-sm" onclick="closeModal('proofModal')">Close</button>`;
+			}
+
+			openModal('proofModal');
+		} catch (err) {
+			showToast('Could not load proof: ' + err.message, 'error');
+		}
+	}
+
+	async function approveDonation(id) {
+		if (!confirm('Mark this donation as Completed? This will update the campaign total.')) return;
+		try {
+			if (state.role === 'ngo') {
+				await NGOAPI.reviewDonation(id, 'completed');
+			} else {
+				await AdminAPI.updateDonationStatus(id, 'completed');
+			}
+			showToast('Donation approved and campaign total updated.', 'success');
+			renderDonationsTable();
+		} catch (err) {
+			showToast('Failed: ' + err.message, 'error');
+		}
+	}
+
+	async function rejectDonation(id) {
+		if (!confirm('Mark this donation as Failed / Rejected?')) return;
+		try {
+			if (state.role === 'ngo') {
+				await NGOAPI.reviewDonation(id, 'failed');
+			} else {
+				await AdminAPI.updateDonationStatus(id, 'failed');
+			}
+			showToast('Donation rejected.', 'success');
+			renderDonationsTable();
+		} catch (err) {
+			showToast('Failed: ' + err.message, 'error');
+		}
 	}
 
 	function renderLogs(filterAction, filterDate) {
@@ -668,174 +836,241 @@
 			`;
 		}).join('');
 
-
 		table.innerHTML = `
 			<thead><tr><th>Date / Time</th><th>Action</th><th>Actor</th><th>Details</th></tr></thead>
 			<tbody>${rows || '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text-soft)">No activity logs found.</td></tr>'}</tbody>
 		`;
 	}
 
-	function renderSettings() {
+	async function loadPaymentSettingsPanel() {
+		const container = qs('settingsPayment');
+		if (!container) return;
+		container.innerHTML = '<p style="color:#888;font-size:0.85rem">Loading…</p>';
+		try {
+			const res = await SettingsAPI.getPayment();
+			const s = res.settings;
+			container.innerHTML = `
+				<div style="display:flex;flex-direction:column;gap:14px">
+					<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:4px">
+						<p style="font-size:0.78rem;color:#888;margin:0">Toggle which payment methods donors can use. Bank Transfer is the offline method — donors upload a screenshot as proof.</p>
+					</div>
+					<div class="form-group" style="display:flex;align-items:center;justify-content:space-between">
+						<div>
+							<label class="form-label" style="margin:0">Bank Transfer (Offline)</label>
+							<p style="font-size:0.75rem;color:#888;margin:2px 0 0">Donors upload a payment screenshot as proof</p>
+						</div>
+						<label class="toggle"><input type="checkbox" id="pg-bank_transfer" ${s.bankTransferEnabled ? 'checked' : ''}><span class="toggle-track"></span></label>
+					</div>
+					<div class="form-group" style="display:flex;align-items:center;justify-content:space-between">
+						<div>
+							<label class="form-label" style="margin:0">GCash (Offline)</label>
+							<p style="font-size:0.75rem;color:#888;margin:2px 0 0">Donors upload a payment screenshot as proof</p>
+						</div>
+						<label class="toggle"><input type="checkbox" id="pg-gcash" ${s.gcashEnabled ? 'checked' : ''}><span class="toggle-track"></span></label>
+					</div>
+					<div class="form-group" style="display:flex;align-items:center;justify-content:space-between">
+						<div>
+							<label class="form-label" style="margin:0">PayMaya</label>
+							<p style="font-size:0.75rem;color:#888;margin:2px 0 0">Requires Paymongo integration</p>
+						</div>
+						<label class="toggle"><input type="checkbox" id="pg-paymaya" ${s.paymayaEnabled ? 'checked' : ''}><span class="toggle-track"></span></label>
+					</div>
+					<div class="form-group" style="display:flex;align-items:center;justify-content:space-between">
+						<div>
+							<label class="form-label" style="margin:0">Credit / Debit Card</label>
+							<p style="font-size:0.75rem;color:#888;margin:2px 0 0">Requires payment processor integration</p>
+						</div>
+						<label class="toggle"><input type="checkbox" id="pg-card" ${s.cardEnabled ? 'checked' : ''}><span class="toggle-track"></span></label>
+					</div>
+					<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+						<p style="font-size:0.82rem;font-weight:600;margin:0 0 10px">Bank Transfer Details</p>
+						<div class="form-group">
+							<label class="form-label">Bank Name</label>
+							<input class="form-input" id="pg-bankName" value="${escHtml(s.bankName)}" placeholder="e.g. BDO Unibank"/>
+						</div>
+						<div class="form-group" style="margin-top:10px">
+							<label class="form-label">Account Number</label>
+							<input class="form-input" id="pg-bankAccount" value="${escHtml(s.bankAccountNumber)}" placeholder="e.g. 1234-5678-9012"/>
+						</div>
+						<div class="form-group" style="margin-top:10px">
+							<label class="form-label">Account Name</label>
+							<input class="form-input" id="pg-bankPayee" value="${escHtml(s.bankAccountName)}" placeholder="e.g. KapitBisig Foundation"/>
+						</div>
+						<div class="form-group" style="margin-top:10px">
+							<label class="form-label">Instructions for Donors</label>
+							<textarea class="form-input" id="pg-bankInstructions" rows="3" style="resize:vertical">${escHtml(s.bankInstructions)}</textarea>
+						</div>
+					</div>
+					<div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+						<p style="font-size:0.82rem;font-weight:600;margin:0 0 10px">GCash Details</p>
+						<div class="form-group">
+							<label class="form-label">GCash Number</label>
+							<input class="form-input" id="pg-gcashNumber" value="${escHtml(s.gcashNumber)}" placeholder="e.g. 0917 123 4567"/>
+						</div>
+						<div class="form-group" style="margin-top:10px">
+							<label class="form-label">Account Name</label>
+							<input class="form-input" id="pg-gcashName" value="${escHtml(s.gcashName)}" placeholder="e.g. KapitBisig Foundation"/>
+						</div>
+						<div class="form-group" style="margin-top:10px">
+							<label class="form-label">Instructions for Donors</label>
+							<textarea class="form-input" id="pg-gcashInstructions" rows="3" style="resize:vertical">${escHtml(s.gcashInstructions)}</textarea>
+						</div>
+					</div>
+				</div>
+			`;
+		} catch (_) {
+			container.innerHTML = '<p style="color:#c0392b;font-size:0.85rem">Failed to load payment settings.</p>';
+		}
+	}
+
+	function escHtml(str) {
+		return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+	}
+
+	async function savePaymentSettings() {
+		try {
+			await SettingsAPI.updatePayment({
+				bankTransferEnabled: !!(qs('pg-bank_transfer') && qs('pg-bank_transfer').checked),
+				gcashEnabled:        !!(qs('pg-gcash')         && qs('pg-gcash').checked),
+				paymayaEnabled:      !!(qs('pg-paymaya')       && qs('pg-paymaya').checked),
+				cardEnabled:         !!(qs('pg-card')           && qs('pg-card').checked),
+				bankName:            (qs('pg-bankName')           && qs('pg-bankName').value)           || '',
+				bankAccountNumber:   (qs('pg-bankAccount')        && qs('pg-bankAccount').value)        || '',
+				bankAccountName:     (qs('pg-bankPayee')          && qs('pg-bankPayee').value)          || '',
+				bankInstructions:    (qs('pg-bankInstructions')   && qs('pg-bankInstructions').value)   || '',
+				gcashNumber:         (qs('pg-gcashNumber')        && qs('pg-gcashNumber').value)        || '',
+				gcashName:           (qs('pg-gcashName')          && qs('pg-gcashName').value)          || '',
+				gcashInstructions:   (qs('pg-gcashInstructions')  && qs('pg-gcashInstructions').value)  || ''
+			});
+			showToast('Payment settings saved!', 'success');
+		} catch (err) {
+			showToast('Failed to save: ' + err.message, 'error');
+		}
+	}
+
+	async function renderSettings() {
 		const general = qs('settingsGeneral');
 		const security = qs('settingsSecurity');
 		if (!general || !security) return;
 
-		// General Settings Form
-		general.innerHTML = `
-			<div class="form-grid">
-				<div class="form-group">
-					<label class="form-label">First Name</label>
-					<input id="settingsFirstName" class="form-input" type="text" placeholder="Your first name" value="${escHtml(state.user?.firstName || '')}"/>
-				</div>
-				<div class="form-group">
-					<label class="form-label">Last Name</label>
-					<input id="settingsLastName" class="form-input" type="text" placeholder="Your last name" value="${escHtml(state.user?.lastName || '')}"/>
-				</div>
-				<div class="form-group form-full">
-					<label class="form-label">Email Address</label>
-					<input id="settingsEmail" class="form-input" type="email" placeholder="your@email.com" value="${escHtml(state.user?.email || '')}" disabled/>
-					<div style="font-size:11px;color:var(--text-soft);margin-top:4px">Email cannot be changed directly. Contact support to update.</div>
-				</div>
-				${state.role === 'ngo' ? `
-					<div class="form-group form-full">
-						<label class="form-label">Organization Name</label>
-						<input id="settingsOrgName" class="form-input" type="text" placeholder="Organization name" value="${escHtml(state.ngoProfile?.name || '')}"/>
-					</div>
-					<div class="form-group form-full">
-						<label class="form-label">Organization Address</label>
-						<input id="settingsOrgAddress" class="form-input" type="text" placeholder="Street address" value="${escHtml(state.ngoProfile?.address || '')}"/>
-					</div>
-					<div class="form-group">
-						<label class="form-label">Phone Number</label>
-						<input id="settingsOrgPhone" class="form-input" type="tel" placeholder="09XX XXX XXXX" value="${escHtml(state.ngoProfile?.phoneNumber || '')}"/>
-					</div>
-					<div class="form-group">
-						<label class="form-label">Website</label>
-						<input id="settingsOrgWebsite" class="form-input" type="url" placeholder="https://organization.com" value="${escHtml(state.ngoProfile?.websiteUrl || '')}"/>
-					</div>
-					<div class="form-group form-full">
-						<label class="form-label">Organization Description</label>
-						<textarea id="settingsOrgDescription" class="form-input" placeholder="Tell us about your organization…" style="min-height:100px">${escHtml(state.ngoProfile?.description || '')}</textarea>
-					</div>
-				` : ''}
-			</div>
-		`;
+		const isSuperAdmin = state.role === 'superadmin';
 
-		// Security Settings Form
-		security.innerHTML = `
-			<div class="form-grid">
-				<div class="form-group form-full">
-					<label class="form-label">Current Password</label>
-					<input id="settingsCurrentPwd" class="form-input" type="password" placeholder="Enter your current password"/>
+		if (isSuperAdmin) {
+			const payCard = qs('paymentSettingsCard');
+			if (payCard) payCard.style.display = '';
+			await loadPaymentSettingsPanel();
+		}
+
+		if (!isSuperAdmin) {
+			general.innerHTML = `
+				<div class="form-group">
+					<label class="form-label">Organization Display Name</label>
+					<input class="form-input" value="${state.accountName || 'NGO Account'}" />
 				</div>
-				<div class="form-group form-full">
-					<label class="form-label">New Password</label>
-					<input id="settingsNewPwd" class="form-input" type="password" placeholder="Enter new password (min. 8 characters)"/>
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Public Contact Email</label>
+					<input class="form-input" value="${state.accountEmail || 'ngo@kapitbisig.ph'}" />
 				</div>
-				<div class="form-group form-full">
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Public Contact Number</label>
+					<input class="form-input" value="+63 900 000 0000" />
+				</div>
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Address</label>
+					<input class="form-input" value="Barangay 105, Tondo, Manila" />
+				</div>
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Campaign Notification Emails</label>
+					<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
+				</div>
+			`;
+
+			security.innerHTML = `
+				<div class="form-group">
+					<label class="form-label">Change Password</label>
+					<input class="form-input" type="password" placeholder="Enter new password" />
+				</div>
+				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Confirm New Password</label>
-					<input id="settingsConfirmPwd" class="form-input" type="password" placeholder="Confirm new password"/>
-					<div style="font-size:11px;color:var(--text-soft);margin-top:4px">Leave blank to keep current password unchanged.</div>
+					<input class="form-input" type="password" placeholder="Confirm new password" />
 				</div>
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Two-Factor Authentication</label>
+					<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+				</div>
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Login Alerts</label>
+					<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
+				</div>
+				<div class="form-group" style="margin-top:12px">
+					<label class="form-label">Session Timeout</label>
+					<select class="form-input"><option>60 minutes</option><option>30 minutes</option><option>15 minutes</option></select>
+				</div>
+			`;
+			return;
+		}
+
+		general.innerHTML = `
+			<div class="form-group">
+				<label class="form-label">Platform Name</label>
+				<input class="form-input" value="Kapitbisig" />
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Support Email</label>
+				<input class="form-input" value="support@kapitbisig.ph" />
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Support Contact Number</label>
+				<input class="form-input" value="+63 912 345 6789" />
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Default Currency</label>
+				<select class="form-input"><option>PHP (Philippine Peso)</option></select>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Default Timezone</label>
+				<select class="form-input"><option>Asia/Manila (GMT+8)</option></select>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Campaign Submission Policy</label>
+				<select class="form-input"><option>Require Admin Review</option><option>Auto-approve trusted NGOs</option></select>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Email Notifications</label>
+				<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Maintenance Mode</label>
+				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
 			</div>
 		`;
 
-		// Show card footers with save buttons
-		document.querySelectorAll('#page-settings .card-footer').forEach((footer) => {
-			footer.style.display = 'block';
-		});
-
-		// Update button handlers
-		const generalFooter = document.querySelector('#page-settings .card:nth-child(1) .card-footer');
-		const securityFooter = document.querySelector('#page-settings .card:nth-child(2) .card-footer');
-		
-		if (generalFooter) {
-			generalFooter.querySelector('button').onclick = saveGeneralSettings;
-		}
-		if (securityFooter) {
-			securityFooter.querySelector('button').onclick = saveSecuritySettings;
-		}
-	}
-
-	async function saveGeneralSettings() {
-		const firstName = (qs('settingsFirstName')?.value || '').trim();
-		const lastName = (qs('settingsLastName')?.value || '').trim();
-		
-		if (!firstName || !lastName) {
-			showToast('First name and last name are required.', 'error');
-			return;
-		}
-
-		try {
-			const payload = { firstName, lastName };
-
-			// For NGO users, also update organization profile
-			if (state.role === 'ngo') {
-				const orgName = (qs('settingsOrgName')?.value || '').trim();
-				const orgAddress = (qs('settingsOrgAddress')?.value || '').trim();
-				const orgPhone = (qs('settingsOrgPhone')?.value || '').trim();
-				const orgWebsite = (qs('settingsOrgWebsite')?.value || '').trim();
-				const orgDescription = (qs('settingsOrgDescription')?.value || '').trim();
-
-				if (state.ngoProfile?.id) {
-					await NGOAPI.update(state.ngoProfile.id, {
-						name: orgName || null,
-						address: orgAddress || null,
-						phoneNumber: orgPhone || null,
-						websiteUrl: orgWebsite || null,
-						description: orgDescription || null
-					});
-				}
-			}
-
-			// Update user profile
-			await AuthAPI.updateMe(payload);
-			
-			// Refresh data
-			const meRes = await AuthAPI.getMe();
-			Object.assign(state.user, meRes.user);
-			
-			showToast('Profile updated successfully!', 'success');
-			renderSettings();
-		} catch (err) {
-			showToast(err.message || 'Failed to update profile.', 'error');
-		}
-	}
-
-	async function saveSecuritySettings() {
-		const currentPwd = qs('settingsCurrentPwd')?.value || '';
-		const newPwd = qs('settingsNewPwd')?.value || '';
-		const confirmPwd = qs('settingsConfirmPwd')?.value || '';
-
-		// Only attempt to change password if new password is provided
-		if (!newPwd && !confirmPwd) {
-			showToast('No password changes to save.', 'info');
-			return;
-		}
-
-		if (!currentPwd) {
-			showToast('Please enter your current password.', 'error');
-			return;
-		}
-
-		if (newPwd.length < 8) {
-			showToast('New password must be at least 8 characters.', 'error');
-			return;
-		}
-
-		if (newPwd !== confirmPwd) {
-			showToast('New passwords do not match.', 'error');
-			return;
-		}
-
-		try {
-			// For now, show a message that this requires reauthentication
-			// In a real app, you'd validate current password on backend
-			showToast('Password change feature coming soon. Please contact support.', 'info');
-			// TODO: Implement actual password change API endpoint
-		} catch (err) {
-			showToast(err.message || 'Failed to update security settings.', 'error');
-		}
+		security.innerHTML = `
+			<div class="form-group">
+				<label class="form-label">Session Timeout</label>
+				<select class="form-input"><option>60 minutes</option><option>30 minutes</option><option>15 minutes</option></select>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Require 2FA for Admins</label>
+				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Password Policy</label>
+				<select class="form-input"><option>Strong (12+ chars, mixed)</option><option>Standard (8+ chars)</option></select>
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Max Login Attempts</label>
+				<input class="form-input" type="number" value="5" min="3" max="10" />
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">Account Lock Duration (minutes)</label>
+				<input class="form-input" type="number" value="15" min="5" max="120" />
+			</div>
+			<div class="form-group" style="margin-top:12px">
+				<label class="form-label">IP Allowlist Enforcement</label>
+				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+			</div>
+		`;
 	}
 
 	function chartPalette() {
@@ -862,66 +1097,37 @@
 		return new window.Chart(canvas, config);
 	}
 
-	function showChartEmpty(id) {
-		const canvas = qs(id);
-		const wrap = canvas && canvas.parentElement;
-		if (!wrap) return;
-		canvas.style.display = 'none';
-		let empty = wrap.querySelector('[data-chart-empty]');
-		if (!empty) {
-			empty = document.createElement('div');
-			empty.setAttribute('data-chart-empty', 'true');
-			wrap.appendChild(empty);
-		}
-		empty.className = 'empty-state';
-		empty.style.padding = '24px 12px';
-		empty.innerHTML = `
-			<h3>No analytics data</h3>
-			<p>Charts will appear when donation or campaign analytics are available.</p>
-		`;
-	}
-
-	function restoreChartCanvas(id) {
-		const canvas = qs(id);
-		const wrap = canvas && canvas.parentElement;
-		if (!wrap) return;
-		canvas.style.display = '';
-		const empty = wrap.querySelector('[data-chart-empty]');
-		if (empty) empty.remove();
-	}
-
 	function renderCharts() {
 		destroyCharts();
 
-		const chartIds = ['donationChart', 'statusChart', 'dailyChart', 'categoryChart', 'donorChart'];
-		const ngoA = state.role === 'ngo' ? data.ngoAnalytics : null;
-		const dailyDonations = ngoA && Array.isArray(ngoA.dailyDonations) ? ngoA.dailyDonations : [];
-		const campaigns = ngoA && Array.isArray(ngoA.campaigns) ? ngoA.campaigns : [];
-		const monthlyDonors = ngoA && Array.isArray(ngoA.monthlyDonors) ? ngoA.monthlyDonors : [];
-		const hasAnalytics = dailyDonations.length || campaigns.length || monthlyDonors.length;
-
-		if (PLACEHOLDER_MODE || !hasAnalytics) {
-			chartIds.forEach(showChartEmpty);
+		if (PLACEHOLDER_MODE) {
+			['donationChart', 'statusChart', 'dailyChart', 'categoryChart', 'donorChart'].forEach((id) => {
+				const canvas = qs(id);
+				const wrap = canvas && canvas.parentElement;
+				if (!wrap) return;
+				wrap.innerHTML = `
+					<div class="empty-state" style="padding:24px 12px">
+						<h3>Analytics Placeholder</h3>
+						<p>Chart values will appear after backend analytics endpoints are available.</p>
+					</div>
+				`;
+			});
 			return;
 		}
 
 		if (!window.Chart) return;
-		chartIds.forEach(restoreChartCanvas);
 
 		const palette = chartPalette();
 		window.Chart.defaults.color = palette.text;
 		window.Chart.defaults.borderColor = palette.grid;
 
-		const dailyLabels = dailyDonations.map((d) => d.date.slice(5));
-		const dailyAmounts = dailyDonations.map((d) => d.amount);
-
 		state.charts.donation = createChart('donationChart', {
 			type: 'line',
 			data: {
-				labels: dailyLabels,
+				labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
 				datasets: [{
 					label: 'Donations',
-					data: dailyAmounts,
+					data: [12000, 9000, 14500, 18000, 13000, 22000, 19500],
 					borderColor: '#4a9cc7',
 					backgroundColor: 'rgba(74,156,199,0.2)',
 					tension: 0.35,
@@ -931,20 +1137,23 @@
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
 		});
 
-		const statusCounts = campaigns.reduce((acc, c) => {
-			const key = normalizeStatus(c.status);
-			acc[key] = (acc[key] || 0) + 1;
-			return acc;
-		}, {});
-
 		state.charts.status = createChart('statusChart', {
 			type: 'doughnut',
 			data: {
-				labels: Object.keys(statusCounts),
-				datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#2e9e6e', '#c9a84c', '#d94f4f', '#4a9cc7', '#7c4de8'] }]
+				labels: ['Approved', 'Pending', 'Flagged'],
+				datasets: [{ data: [9, 3, 2], backgroundColor: ['#2e9e6e', '#c9a84c', '#d94f4f'] }]
 			},
 			options: { responsive: true, maintainAspectRatio: false }
 		});
+
+		const ngoA = state.role === 'ngo' ? data.ngoAnalytics : null;
+
+		const dailyLabels = ngoA && ngoA.dailyDonations.length
+			? ngoA.dailyDonations.map((d) => d.date.slice(5))
+			: ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+		const dailyAmounts = ngoA && ngoA.dailyDonations.length
+			? ngoA.dailyDonations.map((d) => d.amount)
+			: [178000, 214000, 163000, 241000];
 
 		state.charts.daily = createChart('dailyChart', {
 			type: 'bar',
@@ -955,8 +1164,12 @@
 			options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
 		});
 
-		const categoryLabels = campaigns.slice(0, 6).map((c) => c.title.length > 20 ? `${c.title.slice(0, 20)}...` : c.title);
-		const categoryAmounts = campaigns.slice(0, 6).map((c) => c.currentAmount);
+		const categoryLabels = ngoA && ngoA.campaigns.length
+			? ngoA.campaigns.slice(0, 6).map((c) => c.title.length > 20 ? c.title.slice(0, 20) + '…' : c.title)
+			: ['Education', 'Health', 'Disaster', 'Community'];
+		const categoryAmounts = ngoA && ngoA.campaigns.length
+			? ngoA.campaigns.slice(0, 6).map((c) => c.currentAmount)
+			: [40, 28, 20, 12];
 
 		state.charts.category = createChart('categoryChart', {
 			type: 'pie',
@@ -967,8 +1180,12 @@
 			options: { responsive: true, maintainAspectRatio: false }
 		});
 
-		const donorLabels = monthlyDonors.map((m) => m.month);
-		const donorCounts = monthlyDonors.map((m) => m.count);
+		const donorLabels = ngoA && ngoA.monthlyDonors.length
+			? ngoA.monthlyDonors.map((m) => m.month)
+			: ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
+		const donorCounts = ngoA && ngoA.monthlyDonors.length
+			? ngoA.monthlyDonors.map((m) => m.count)
+			: [42, 55, 61, 73, 89];
 
 		state.charts.donor = createChart('donorChart', {
 			type: 'line',
@@ -1028,11 +1245,6 @@
 
 		if (state.role === 'ngo') {
 			const a = data.ngoAnalytics;
-			const hasNgoStats = !!(a && (a.totalDonations || a.totalDonationCount || a.uniqueDonors || (a.campaigns && a.campaigns.length)));
-			if (!hasNgoStats) {
-				host.innerHTML = emptyBlock('No analytics records', 'Analytics will appear when this NGO has campaign or donation records.');
-				return;
-			}
 			const avgDonation = a && a.totalDonationCount > 0
 				? a.totalDonations / a.totalDonationCount
 				: 0;
@@ -1046,7 +1258,22 @@
 			return;
 		}
 
-		host.innerHTML = emptyBlock('No analytics records', 'Platform analytics will appear when analytics records are available in the database.');
+		if (PLACEHOLDER_MODE) {
+			host.innerHTML = `
+				<div class="stat-card sky"><div class="stat-label">Conversion Rate</div><div class="stat-value sky">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
+				<div class="stat-card green"><div class="stat-label">Average Donation</div><div class="stat-value green">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
+				<div class="stat-card gold"><div class="stat-label">Donor Growth</div><div class="stat-value gold">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
+				<div class="stat-card purple"><div class="stat-label">Retention</div><div class="stat-value">--</div><div class="stat-sub">Awaiting backend analytics</div></div>
+			`;
+			return;
+		}
+
+		host.innerHTML = `
+			<div class="stat-card sky"><div class="stat-label">Conversion Rate</div><div class="stat-value sky">4.8%</div><div class="stat-sub">Visitor to donor</div></div>
+			<div class="stat-card green"><div class="stat-label">Avg Donation</div><div class="stat-value green">${fmtMoney(1240)}</div><div class="stat-sub">Per transaction</div></div>
+			<div class="stat-card gold"><div class="stat-label">New Donors</div><div class="stat-value gold">89</div><div class="stat-sub">Last 30 days</div></div>
+			<div class="stat-card purple"><div class="stat-label">Retention</div><div class="stat-value">63%</div><div class="stat-sub">Returning donors</div></div>
+		`;
 	}
 
 	function updateSessionTimer() {
@@ -1109,32 +1336,14 @@
 
 	async function loadDashboardData() {
 		try {
-			let currentNgoProfile = null;
-			if (state.role === 'ngo' && !state.ngoId) {
-				try {
-					const profileRes = await NGOAPI.getMyProfile();
-					currentNgoProfile = profileRes.profile || null;
-					state.ngoId = currentNgoProfile && currentNgoProfile.id ? currentNgoProfile.id : null;
-				} catch (_profileErr) {
-					currentNgoProfile = null;
-				}
-			}
-
 			const campaignFilters = { limit: 100 };
 			if (state.role === 'ngo' && state.ngoId) campaignFilters.ngoId = state.ngoId;
 
-			const campaignsPromise = CampaignAPI.list(campaignFilters);
-			const usersPromise = state.role === 'ngo' ? Promise.resolve({ users: [] }) : AdminAPI.getAllUsers({ limit: 100 });
-			const ngosPromise = state.role === 'ngo'
-				? Promise.resolve({ profiles: currentNgoProfile ? [currentNgoProfile] : [] })
-				: NGOAPI.list({ limit: 100 });
-			const logsPromise = state.role === 'ngo' ? Promise.resolve({ logs: [] }) : AdminAPI.getActivityLogs({ limit: 50 });
-
 			const [campaignsRes, usersRes, ngosRes, logsRes] = await Promise.all([
-				campaignsPromise,
-				usersPromise,
-				ngosPromise,
-				logsPromise
+				CampaignAPI.list(campaignFilters),
+				AdminAPI.getAllUsers({ limit: 100 }),
+				NGOAPI.list({ limit: 100 }),
+				AdminAPI.getActivityLogs({ limit: 50 })
 			]);
 
 			const campaigns = campaignsRes.campaigns || [];
@@ -1146,19 +1355,18 @@
 				id: c.id,
 				title: c.title,
 				category: c.category,
-				status: normalizeStatus(c.status),
+				status: c.status.charAt(0).toUpperCase() + c.status.slice(1),
 				raised: Number(c.currentAmount || 0),
 				goal: Number(c.targetAmount || 0),
 				donors: 0,
-				rejectionReason: c.rejectionReason || null,
-				ngoId: c.ngoId,
-				createdAt: c.createdAt
+				rejectionReason: c.rejectionReason || null
 			}));
 
 			data.users = users.map((u) => ({
 				name: u.fullName || `${u.firstName} ${u.lastName}`.trim(),
-				email: u.email || '',
-				role: u.role || '',
+				email: u.email,
+				role: u.role,
+				status: 'Active',
 				id: u.id,
 				createdAt: u.createdAt
 			}));
@@ -1168,7 +1376,9 @@
 				contact: n.phoneNumber || '',
 				email: n.email || '',
 				registrationNumber: n.registrationNumber || '',
-				status: normalizeStatus(n.verificationStatus),
+				status: n.verificationStatus
+					? n.verificationStatus.charAt(0).toUpperCase() + n.verificationStatus.slice(1)
+					: 'Pending',
 				campaigns: 0,
 				raised: 0,
 				id: n.id,
@@ -1180,41 +1390,16 @@
 			const ngoMap = {};
 			ngos.forEach((n) => { ngoMap[String(n.id)] = n.name; });
 
-			const campaignApprovals = campaigns
-				.filter((c) => String(c.status || '').toLowerCase() === 'pending')
+			data.approvals = campaigns
+				.filter((c) => c.status === 'pending')
 				.map((c) => ({
-					type: 'campaign',
-					typeLabel: 'Campaign',
-					title: c.title,
-					owner: ngoMap[String(c.ngoId)] || `NGO #${c.ngoId}`,
+					campaign: c.title,
+					ngo: ngoMap[String(c.ngoId)] || `NGO #${c.ngoId}`,
 					requested: new Date(c.createdAt).toISOString().slice(0, 10),
 					amount: Number(c.targetAmount || 0),
 					id: c.id
 				}));
 
-			const ngoApprovals = ngos
-				.filter((n) => String(n.verificationStatus || '').toLowerCase() === 'pending')
-				.map((n) => ({
-					type: 'ngo',
-					typeLabel: 'NGO Registration',
-					title: n.name,
-					owner: n.registrationNumber || `NGO #${n.id}`,
-					requested: n.createdAt ? new Date(n.createdAt).toISOString().slice(0, 10) : '',
-					amount: null,
-					id: n.id
-				}));
-
-			data.approvals = [...campaignApprovals, ...ngoApprovals];
-			data.moderation = campaigns
-				.filter((c) => ['flagged', 'reported'].includes(String(c.status || '').toLowerCase()))
-				.map((c) => ({
-					campaign: c.title,
-					reason: c.rejectionReason || 'Flagged for review',
-					severity: 'High',
-					id: c.id
-				}));
-			data.support = [];
-			data.notifications = [];
 			data.logs = logs.map((l) => ({
 				date: new Date(l.createdAt).toLocaleString('en-PH'),
 				rawDate: l.createdAt,
@@ -1225,14 +1410,7 @@
 				detail: l.description || `${l.action} on ${l.entityType}`
 			}));
 		} catch (_err) {
-			data.campaigns = [];
-			data.ngos = [];
-			data.users = [];
-			data.approvals = [];
-			data.moderation = [];
-			data.support = [];
-			data.notifications = [];
-			data.logs = [];
+			// keep existing mock data if API fails
 		}
 	}
 
@@ -1343,6 +1521,10 @@
 		} else {
 			stopAnalyticsPolling();
 		}
+
+		if (pageKey === 'donations') {
+			renderDonationsTable();
+		}
 	}
 
 	function toggleSidebar() {
@@ -1385,7 +1567,8 @@
 		state.ngoSearch = String(value || '').trim().toLowerCase();
 		renderNGOTable();
 	}
-    function filterLogs() {
+
+	function filterLogs() {
 		const actionEl = document.querySelector('#page-activity-logs .filter-select');
 		const dateEl   = document.querySelector('#page-activity-logs input[type="date"]');
 		const action   = actionEl ? actionEl.value : '';
@@ -1521,7 +1704,7 @@
 				id: c.id,
 				title: c.title,
 				category: c.category,
-				status: normalizeStatus(c.status),
+				status: c.status.charAt(0).toUpperCase() + c.status.slice(1),
 				raised: Number(c.currentAmount || 0),
 				goal: Number(c.targetAmount || 0),
 				donors: 0,
@@ -1629,9 +1812,8 @@
 		if (!row) return;
 
 		const isReject = mode === 'reject';
-		const itemLabel = row.type === 'ngo' ? 'NGO Registration' : 'Campaign';
-		if (qs('approvalTitle')) qs('approvalTitle').textContent = `${isReject ? 'Reject' : 'Approve'} ${itemLabel}`;
-		if (qs('approvalDesc')) qs('approvalDesc').textContent = `${isReject ? 'Reject' : 'Approve'} "${row.title}" from ${row.owner}?`;
+		if (qs('approvalTitle')) qs('approvalTitle').textContent = isReject ? 'Reject Campaign' : 'Approve Campaign';
+		if (qs('approvalDesc')) qs('approvalDesc').textContent = `${isReject ? 'Reject' : 'Approve'} "${row.campaign}" from ${row.ngo}?`;
 
 		const feedbackGroup = qs('approvalFeedback') && qs('approvalFeedback').closest('.form-group');
 		const feedbackTextarea = qs('approvalFeedback');
@@ -1639,7 +1821,7 @@
 		if (feedbackGroup) {
 			const label = feedbackGroup.querySelector('.form-label');
 			if (label) label.textContent = isReject ? 'Rejection reason (sent to NGO)' : 'Notes (optional)';
-			feedbackTextarea.placeholder = isReject ? `Explain why the ${row.type === 'ngo' ? 'registration' : 'campaign'} was rejected...` : 'Add any notes for the NGO...';
+			feedbackTextarea.placeholder = isReject ? 'Explain why the campaign was rejected…' : 'Add any notes for the NGO…';
 			feedbackTextarea.required = isReject;
 		}
 
@@ -1656,7 +1838,6 @@
 	async function submitApproval(mode, index) {
 		const row = data.approvals[index];
 		if (!row) return;
-		const itemLabel = row.type === 'ngo' ? 'NGO Registration' : 'Campaign';
 
 		const reason = (qs('approvalFeedback')?.value || '').trim() || null;
 
@@ -1666,13 +1847,7 @@
 		}
 
 		try {
-			if (row.type === 'ngo') {
-				if (mode === 'approve') {
-					await NGOAPI.verify(row.id);
-				} else {
-					await NGOAPI.reject(row.id);
-				}
-			} else if (mode === 'approve') {
+			if (mode === 'approve') {
 				await CampaignAPI.approve(row.id);
 			} else {
 				await CampaignAPI.reject(row.id, reason);
@@ -1680,12 +1855,13 @@
 			data.approvals.splice(index, 1);
 			renderApprovals();
 			closeModal('approvalModal');
-			showToast(`${itemLabel} ${mode === 'approve' ? 'approved' : 'rejected'}: ${row.title}`, 'success');
+			showToast(`Campaign ${mode === 'approve' ? 'approved' : 'rejected'}: ${row.campaign}`, 'success');
 		} catch (_err) {
 			showToast('Action failed. Please try again.', 'error');
 		}
 	}
-	     async function createUser() {
+
+	async function createUser() {
 		const fullName = (qs('newUserFullName')?.value || '').trim();
 		const email = (qs('newUserEmail')?.value || '').trim();
 		const role = qs('newUserRole')?.value || 'admin';
@@ -1729,7 +1905,7 @@
 		const tempPassword = `Kb@Ngo${Math.floor(1000 + Math.random() * 9000)}!`;
 
 		try {
-			const userRes = await AdminAPI.createUser({ firstName, lastName, email, password: tempPassword, role: 'ngo_admin' });
+			const userRes = await AdminAPI.createUser({ firstName, lastName, email, password: tempPassword, role: 'ngo' });
 			const userId = userRes.user && userRes.user.id;
 			if (!userId) throw new Error('User creation failed.');
 
@@ -1818,7 +1994,7 @@
 
 	function updateUserForm() {
 		const role = qs('newUserRole')?.value || 'admin';
-		const prefix = role === 'superadmin' ? 'SUP' : role === 'ngo' || role === 'ngo_admin' ? 'NGO' : 'ADM';
+		const prefix = role === 'superadmin' ? 'SUP' : role === 'ngo' ? 'NGO' : 'ADM';
 		if (qs('generatedId')) qs('generatedId').value = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
 		if (qs('genPassword')) qs('genPassword').textContent = `Kb@Tmp${Math.floor(1000 + Math.random() * 9000)}!`;
 	}
@@ -1845,21 +2021,13 @@
 	}
 
 	async function init() {
-		const account = (await readSessionAccount()) || readAccountContext();
+		const account = readAccountContext();
 		const roleFromURL = getRoleFromURL();
-		state.role = account.role || roleFromURL || mapRole(localStorage.getItem(ROLE_KEY)) || 'superadmin';
+		state.role = account.role || roleFromURL || localStorage.getItem(ROLE_KEY) || 'superadmin';
 		state.accountName = account.name;
 		state.accountEmail = account.email;
 		state.theme = localStorage.getItem(THEME_KEY) || 'light';
 		localStorage.setItem(ROLE_KEY, state.role);
-
-		// Load user data for settings
-		try {
-			const meRes = await AuthAPI.getMe();
-			state.user = meRes.user;
-		} catch (_err) {
-			// user stays null
-		}
 
 		setTheme(state.theme);
 		applyRoleProfile();
@@ -1872,7 +2040,6 @@
 			try {
 				const profileRes = await NGOAPI.getMyProfile();
 				state.ngoId = profileRes.profile && profileRes.profile.id ? profileRes.profile.id : null;
-				state.ngoProfile = profileRes.profile || null;
 				if (state.ngoId) {
 					await loadNgoAnalytics();
 				}
@@ -1936,8 +2103,11 @@
 	window.deleteUserAccount = deleteUserAccount;
 	window.changeUserRole = changeUserRole;
 	window.filterLogs = filterLogs;
-	window.saveGeneralSettings = saveGeneralSettings;
-	window.saveSecuritySettings = saveSecuritySettings;
+	window.savePaymentSettings = savePaymentSettings;
+	window.filterDonations = filterDonations;
+	window.viewProof = viewProof;
+	window.approveDonation = approveDonation;
+	window.rejectDonation = rejectDonation;
 
 	init();
 })();

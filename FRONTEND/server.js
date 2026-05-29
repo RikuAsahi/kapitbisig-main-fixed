@@ -23,7 +23,7 @@ function resolveRequestPath(urlPath) {
 
 	// Redirect root to landing page
 	if (decodedPath === '/') {
-		safePath = '/HTML/Landingpage.html';
+		safePath = '/HTML/index.html';
 	} else if (decodedPath.startsWith('/') && decodedPath.endsWith('.html') && !decodedPath.slice(1).includes('/')) {
 		// Route .html files from root to HTML directory (e.g., /Campaign.html -> /HTML/Campaign.html)
 		safePath = `/HTML${decodedPath}`;

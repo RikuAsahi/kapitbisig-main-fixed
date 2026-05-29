@@ -12,17 +12,17 @@
 
 <!-- ════ NAV ════ -->
 <nav id="mainNav">
-  <a href="Landingpage.html" class="nav-logo">
+  <a href="index.html" class="nav-logo">
     <div class="nav-logo-img-wrap">
       <img src="../../Assets/KBLOGOonly.png" alt="KapitBisig" onerror="this.style.display='none';"/>
     </div>
     <span class="nav-logo-text">KAPIT<span>BISIG</span></span>
   </a>
   <ul class="nav-links" id="navLinks">
-    <li><a href="Landingpage.html">Home</a></li>
-    <li><a href="Landingpage.html#campaigns">Campaigns</a></li>
-    <li><a href="Landingpage.html#organizations">Organizations</a></li>
-    <li><a href="Landingpage.html#FAQs">FAQs</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#campaigns">Campaigns</a></li>
+    <li><a href="index.html#organizations">Organizations</a></li>
+    <li><a href="index.html#FAQs">FAQs</a></li>
     <!-- Auth state toggled by JS -->
     <li id="navAuthArea">
       <a href="SignIn.html" class="nav-btn nav-signin">Sign In</a>
@@ -36,10 +36,10 @@
   </button>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="Landingpage.html">Home</a>
-  <a href="Landingpage.html#campaigns">Campaigns</a>
-  <a href="Landingpage.html#organizations">Organizations</a>
-  <a href="Landingpage.html#FAQs">FAQs</a>
+  <a href="index.html">Home</a>
+  <a href="index.html#campaigns">Campaigns</a>
+  <a href="index.html#organizations">Organizations</a>
+  <a href="index.html#FAQs">FAQs</a>
   <a href="SignIn.html" id="drawerSignIn">Sign In</a>
   <a href="Signup.html" id="drawerSignUp">Sign Up</a>
 </div>
@@ -75,8 +75,8 @@
   <!-- LEFT COLUMN -->
   <div class="main-col">
 
-    <!-- Progress / Transparency -->
-    <div class="card reveal">
+   <!-- Progress / Transparency -->
+    <div class="card">
       <p class="card-label"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Fundraising Progress</p>
       <div class="progress-amounts">
         <div>
@@ -109,7 +109,7 @@
     </div>
 
     <!-- Transparency Report -->
-    <div class="card reveal reveal-d1">
+    <div class="card  reveal-d1">
       <p class="card-label"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Transparency Report</p>
       <div class="transparency-grid">
         <div class="trans-item">
@@ -154,7 +154,7 @@
     </div>
 
     <!-- Campaign Updates -->
-    <div class="card reveal reveal-d1">
+     <div class="card  reveal-d1">
       <p class="card-label"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Campaign Updates</p>
       <div class="updates-list">
         <div class="update-item placeholder">
@@ -168,13 +168,13 @@
     </div>
 
     <!-- Recent Donors -->
-    <div class="card reveal reveal-d2">
+     <div class="card  reveal-d2">
       <p class="card-label"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Recent Donors</p>
       <div class="donors-list" id="donorsList">
         <div class="donor-placeholder">Donor activity is not available yet. This area will show supporter names and contributions once the campaign is active.</div>
       </div>
     </div>
-    <div class="card reveal reveal-d2">
+     <div class="card  reveal-d2">
       <p class="card-label"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</p>
       <form class="comment-form" id="commentForm" onsubmit="submitComment(event)">
         <textarea class="form-input" id="commentBody" rows="3" placeholder="Write a comment for this campaign"></textarea>
@@ -189,7 +189,7 @@
     </div>
 
     <!-- Campaign Actions -->
-    <div class="card reveal reveal-d3">
+    <div class="card  reveal-d3">
       <p class="card-label"><svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg> Campaign Actions</p>
       <div class="camp-actions">
         <button class="action-btn action-like" id="likeBtn" onclick="toggleLike()">
@@ -211,10 +211,10 @@
   </div><!-- /main-col -->
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
-
-    <!-- Donate Card -->
-    <div class="donate-card reveal">
+  <aside class="sidebar">  
+    
+   <!-- Donate Card -->
+    <div class="donate-card ">
       <p class="donate-card-title">Support This Campaign</p>
       <p class="donate-card-sub">Your donation goes directly to verified scholars in Barangay 105. 100% transparent.</p>
       <button class="btn-donate-main" onclick="handleDonateClick()">
@@ -235,7 +235,7 @@
     </div>
 
     <!-- NGO Info Card -->
-    <div class="ngo-side-card reveal reveal-d1">
+    <div class="ngo-side-card  reveal-d1">
       <div class="ngo-side-header">
         <div class="ngo-side-logo">
           <img src="../../Assets/UpSkillsLOGO.png" alt="UpSkills+" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
@@ -250,7 +250,7 @@
         </div>
       </div>
       <p class="ngo-side-desc">Empowering individuals through accessible education and skills development in Barangay 105, Tondo, Manila.</p>
-      <a href="Landingpage.html#organizations" class="ngo-side-link">View NGO Profile <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a>
+       <a href="/index.html#organizations" class="ngo-side-link">View NGO Profile <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></a>
     </div>
 
   </aside>
@@ -423,16 +423,23 @@
 
     <!-- GCash Fields -->
     <div id="gcashFields" style="display:none;">
-      <div class="ewallet-info">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <p>You will be redirected to GCash to complete your payment of <strong id="gcashAmt">₱0.00</strong>. Scan the QR code below or tap "Pay with GCash".</p>
+     <div class="bank-details">
+        <div class="bank-details-header">GCash Details</div>
+        <div class="bank-details-row"><span>GCash Number</span><strong id="gcashNumber">—</strong></div>
+        <div class="bank-details-row"><span>Account Name</span><strong id="gcashName">—</strong></div>
+        <div class="bank-details-note" id="gcashInstructions">Send the exact donation amount to the GCash number above and upload a screenshot of your receipt below.</div>
       </div>
-      <div class="ewallet-account">GCash Account: <strong id="gcashAccount">0917 123 4567</strong></div>
-      <div class="ewallet-qr">
-        <div class="ewallet-qr-box" id="gcashQrBox">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="4" y="4" width="5" height="5"/><rect x="15" y="4" width="5" height="5"/><rect x="4" y="15" width="5" height="5"/><path d="M14 14h1v1h-1z M15 15h1v1h-1z M16 14h1v1h-1z M14 16h1v1h-1z M16 16h3v3h-3z"/></svg>
-        </div>
-        <p id="gcashQrLabel">Scan with your GCash app</p>
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">Upload Payment Screenshot <span style="color:#c0392b">*</span></label>
+        <input type="file" class="form-input" id="gcashProofInput" accept="image/*" onchange="handleProofUpload(this)" style="padding:6px"/>
+        <p class="form-error" id="gcashProofErr">Please upload a screenshot of your GCash payment.</p>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label">Reference / Notes (optional)</label>
+        <input type="text" class="form-input" id="gcashProofNotes" placeholder="e.g. GCash ref #12345"/>
+      </div>
+      <div id="gcashPreviewWrap" style="display:none;margin-top:8px">
+        <img id="gcashPreview" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid #dde3ef;" alt="Proof preview"/>
       </div>
     </div>
 
@@ -487,7 +494,7 @@
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         Share This Campaign
       </button>
-      <button class="btn-success-campaigns" onclick="closeModal('successModal'); window.location.href='Landingpage.html#campaigns'">
+      <button class="btn-success-campaigns" onclick="closeModal('successModal'); window.location.href='/index.html#campaigns'">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
         Back to Campaigns
       </button>
@@ -573,7 +580,7 @@
       </div>
       <div class="modal-footer" style="justify-content:center; gap:12px;">
         <button class="btn-outline" onclick="closeModal('reportModal'); resetReport()">Return to Campaign</button>
-        <button class="btn-primary-modal" onclick="closeModal('reportModal'); resetReport(); window.location.href='Landingpage.html#campaigns'">
+        <button class="btn-primary-modal" onclick="closeModal('reportModal'); resetReport(); window.location.href='/index.html#campaigns'">
           Go to Campaigns
         </button>
       </div>

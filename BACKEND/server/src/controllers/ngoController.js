@@ -1,4 +1,8 @@
 const ngoService = require('../services/ngoService');
+const NGO = require('../models/ngoModel');
+const Campaign = require('../models/campaignModel');
+const Donation = require('../models/donationModel');
+const ActivityLog = require('../models/activityLogModel');
 
 async function createNgoProfile(req, res, next) {
 	try {
@@ -126,6 +130,76 @@ async function deleteNgoProfile(req, res, next) {
 	}
 }
 
+async function getMyDonations(req, res, next) {
+	try {
+		const { status, paymentMethod, limit = 100, offset = 0 } = req.query;
+
+		const ngoProfile = await NGO.findByUserId(req.session.userId);
+		if (!ngoProfile) return res.status(404).json({ message: 'NGO profile not found.' });
+
+		const campaigns = await Campaign.findByNgoId(ngoProfile.id, 200, 0);
+		const campaignIds = campaigns.map((c) => Number(c.id));
+
+		if (!campaignIds.length) return res.json({ donations: [], total: 0, count: 0 });
+
+		const donations = await Donation.findByCampaignIds(campaignIds, {
+			status: status || null,
+			paymentMethod: paymentMethod || null,
+			limit: Number(limit),
+			offset: Number(offset)
+		});
+
+		return res.json({ donations, total: donations.length, count: donations.length });
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function reviewDonation(req, res, next) {
+	try {
+		const { id } = req.params;
+		const { status } = req.body || {};
+
+		if (!['completed', 'failed'].includes(status)) {
+			return res.status(400).json({ message: 'Status must be "completed" or "failed".' });
+		}
+
+		const donation = await Donation.findById(id);
+		if (!donation) return res.status(404).json({ message: 'Donation not found.' });
+		if (donation.status !== 'pending') {
+			return res.status(400).json({ message: 'Only pending donations can be reviewed.' });
+		}
+
+		const ngoProfile = await NGO.findByUserId(req.session.userId);
+		if (!ngoProfile) return res.status(403).json({ message: 'NGO profile not found.' });
+
+		const campaigns = await Campaign.findByNgoId(ngoProfile.id, 200, 0);
+		const ownsCampaign = campaigns.some((c) => String(c.id) === String(donation.campaignId));
+		if (!ownsCampaign) {
+			return res.status(403).json({ message: 'You can only review donations for your own campaigns.' });
+		}
+
+		const updated = await Donation.updateStatus(id, status);
+
+		if (status === 'completed') {
+			await Campaign.updateAmount(donation.campaignId, donation.amount);
+		}
+
+		ActivityLog.create({
+			adminId: req.session.userId,
+			action: status === 'completed' ? 'APPROVE' : 'REJECT',
+			entityType: 'DONATION',
+			entityId: String(id),
+			description: `NGO ${status === 'completed' ? 'approved' : 'rejected'} bank transfer donation #${id} of ₱${donation.amount.toLocaleString()}`,
+			ipAddress: req.ip || req.connection?.remoteAddress
+		}).catch(() => {});
+
+		return res.json({ message: `Donation marked as ${status}.`, donation: updated });
+	} catch (error) {
+		next(error);
+	}
+}
+
 module.exports = {
 	createNgoProfile,
 	getNgoProfile,
@@ -137,5 +211,7 @@ module.exports = {
 	verifyNgoProfile,
 	rejectNgoProfile,
 	getNgoAnalytics,
-	deleteNgoProfile
+	deleteNgoProfile,
+	getMyDonations,
+	reviewDonation
 };

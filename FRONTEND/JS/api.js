@@ -154,7 +154,19 @@ const NGOAPI = {
 		http.post(`/ngos/${id}/verify`),
 
 	reject: (id) =>
-		http.post(`/ngos/${id}/reject`)
+		http.post(`/ngos/${id}/reject`),
+
+	getMyDonations: (filters = {}) => {
+		const params = new URLSearchParams();
+		if (filters.status)        params.append('status',        filters.status);
+		if (filters.paymentMethod) params.append('paymentMethod', filters.paymentMethod);
+		if (filters.limit)         params.append('limit',         filters.limit);
+		if (filters.offset)        params.append('offset',        filters.offset);
+		return http.get(`/ngos/my-donations?${params}`);
+	},
+
+	reviewDonation: (id, status) =>
+		http.put(`/ngos/donations/${id}/status`, { status })
 };
 
 /* ── ADMIN API ── */
@@ -194,7 +206,19 @@ const AdminAPI = {
 		http.get(`/admin/my-activity-logs?limit=${limit}&offset=${offset}`),
 
 	getActivityLog: (id) =>
-		http.get(`/admin/activity-logs/${id}`)
+		http.get(`/admin/activity-logs/${id}`),
+
+	getDonations: (filters = {}) => {
+		const params = new URLSearchParams();
+		if (filters.status)        params.append('status',        filters.status);
+		if (filters.paymentMethod) params.append('paymentMethod', filters.paymentMethod);
+		if (filters.limit)         params.append('limit',         filters.limit);
+		if (filters.offset)        params.append('offset',        filters.offset);
+		return http.get(`/admin/donations?${params}`);
+	},
+
+	updateDonationStatus: (id, status, notes) =>
+		http.put(`/admin/donations/${id}/status`, { status, notes })
 };
 
 /* ── AUTH STATE MANAGEMENT ── */

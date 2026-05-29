@@ -136,7 +136,7 @@ const UserProfileHelper = {
 	async logout() {
 		try {
 			await AuthState.logout();
-			window.location.href = 'Landingpage.html';
+			window.location.href = 'index.html';
 		} catch (error) {
 			console.error('Logout failed:', error);
 			alert('Logout failed. Please try again.');

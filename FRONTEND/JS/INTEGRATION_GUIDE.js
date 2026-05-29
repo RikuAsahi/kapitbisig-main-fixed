@@ -207,7 +207,7 @@
  * □ UserProfile.js - Display user profile and donation history
  * □ AdminDashboard.js - Load real data from admin endpoints
  * □ Campaign.html - Add script references to api.js and helpers.js
- * □ Landingpage.html - Add script references to api.js and helpers.js
+ * □ index.html - Add script references to api.js and helpers.js
  * □ UserProfile.html - Add script references to api.js and helpers.js
  * □ AdminDashboard.html - Add script references to api.js and helpers.js
  *
@@ -234,7 +234,7 @@
  * async function loadCampaignDetails() {
  *   const campaignId = sessionStorage.getItem('kb.selected.campaign.id');
  *   if (!campaignId) {
- *     window.location.href = 'Landingpage.html';
+ *     window.location.href = 'index.html';
  *     return;
  *   }
  *

@@ -13,6 +13,8 @@ function mapDonation(row) {
 		status: row.status,
 		transactionRef: row.transaction_ref,
 		message: row.message,
+		proofImage: row.proof_image || null,
+		proofNotes: row.proof_notes || null,
 		createdAt: row.created_at
 	};
 }
@@ -28,6 +30,8 @@ async function createDonationsTable() {
 			status ENUM('pending', 'completed', 'failed', 'refunded') NOT NULL DEFAULT 'pending',
 			transaction_ref VARCHAR(100),
 			message TEXT,
+			proof_image MEDIUMTEXT,
+			proof_notes TEXT,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (donation_id),
 			FOREIGN KEY (campaign_id) REFERENCES campaigns(campaign_id) ON DELETE CASCADE,
@@ -37,6 +41,18 @@ async function createDonationsTable() {
 			INDEX idx_status (status)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 	`);
+	
+	const [piCols] = await db.query(
+		`SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+		 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'donations' AND COLUMN_NAME = 'proof_image'`
+	);
+	if (!piCols.length) await db.query(`ALTER TABLE donations ADD COLUMN proof_image MEDIUMTEXT`);
+
+	const [pnCols] = await db.query(
+		`SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+		 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'donations' AND COLUMN_NAME = 'proof_notes'`
+	);
+	if (!pnCols.length) await db.query(`ALTER TABLE donations ADD COLUMN proof_notes TEXT`);
 }
 
 async function findById(id) {
@@ -71,14 +87,16 @@ async function findByDonorId(donorId, limit = 50, offset = 0) {
 
 async function create(data) {
 	const [result] = await db.query(
-		`INSERT INTO donations (campaign_id, donor_id, amount, payment_method, status, message)
-		 VALUES (?, ?, ?, ?, 'pending', ?)`,
+		`INSERT INTO donations (campaign_id, donor_id, amount, payment_method, status, message, proof_image, proof_notes)
+		 VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)`,
 		[
 			Number(data.campaignId),
 			Number(data.donorId),
 			data.amount,
 			data.paymentMethod,
-			data.message || null
+			data.message || null,
+			data.proofImage || null,
+			data.proofNotes || null
 		]
 	);
 	return findById(result.insertId);
@@ -97,6 +115,88 @@ async function updateStatus(id, status, transactionRef = null) {
 	const sql = `UPDATE donations SET ${updates.join(', ')} WHERE donation_id = ?`;
 	await db.query(sql, values);
 	return findById(id);
+}
+
+async function findByCampaignIds(campaignIds, { status, paymentMethod, limit = 50, offset = 0 } = {}) {
+	if (!campaignIds || !campaignIds.length) return [];
+
+	const placeholders = campaignIds.map(() => '?').join(',');
+	const conditions = [`d.campaign_id IN (${placeholders})`];
+	const values = [...campaignIds.map(Number)];
+
+	if (status) { conditions.push(`d.status = ?`); values.push(status); }
+	if (paymentMethod) { conditions.push(`d.payment_method = ?`); values.push(paymentMethod); }
+
+	values.push(limit, offset);
+
+	const [rows] = await db.query(
+		`SELECT d.*,
+		        CONCAT(u.first_name, ' ', u.last_name) AS donor_name,
+		        u.email AS donor_email,
+		        c.title AS campaign_title
+		 FROM donations d
+		 LEFT JOIN users u ON u.user_id = d.donor_id
+		 LEFT JOIN campaigns c ON c.campaign_id = d.campaign_id
+		 WHERE ${conditions.join(' AND ')}
+		 ORDER BY d.created_at DESC
+		 LIMIT ? OFFSET ?`,
+		values
+	);
+
+	return rows.map((row) => ({
+		...mapDonation(row),
+		donorName: row.donor_name || 'Unknown',
+		donorEmail: row.donor_email || '',
+		campaignTitle: row.campaign_title || 'Unknown Campaign'
+	}));
+}
+
+async function findAllWithDetails({ status, paymentMethod, limit = 50, offset = 0 } = {}) {
+	const conditions = [];
+	const values = [];
+
+	if (status) {
+		conditions.push(`d.status = ?`);
+		values.push(status);
+	}
+	if (paymentMethod) {
+		conditions.push(`d.payment_method = ?`);
+		values.push(paymentMethod);
+	}
+
+	const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+	values.push(limit, offset);
+
+	const [rows] = await db.query(
+		`SELECT d.*,
+		        CONCAT(u.first_name, ' ', u.last_name) AS donor_name,
+		        u.email AS donor_email,
+		        c.title AS campaign_title
+		 FROM donations d
+		 LEFT JOIN users u ON u.user_id = d.donor_id
+		 LEFT JOIN campaigns c ON c.campaign_id = d.campaign_id
+		 ${where}
+		 ORDER BY d.created_at DESC
+		 LIMIT ? OFFSET ?`,
+		values
+	);
+
+	return rows.map((row) => ({
+		...mapDonation(row),
+		donorName: row.donor_name || 'Unknown',
+		donorEmail: row.donor_email || '',
+		campaignTitle: row.campaign_title || 'Unknown Campaign'
+	}));
+}
+
+async function countAll({ status, paymentMethod } = {}) {
+	const conditions = [];
+	const values = [];
+	if (status) { conditions.push(`status = ?`); values.push(status); }
+	if (paymentMethod) { conditions.push(`payment_method = ?`); values.push(paymentMethod); }
+	const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+	const [[row]] = await db.query(`SELECT COUNT(*) AS cnt FROM donations ${where}`, values);
+	return row.cnt || 0;
 }
 
 async function getCampaignStats(campaignId) {
@@ -122,7 +222,10 @@ module.exports = {
 	createDonationsTable,
 	findById,
 	findByCampaignId,
+	findByCampaignIds,
 	findByDonorId,
+	findAllWithDetails,
+	countAll,
 	create,
 	updateStatus,
 	getCampaignStats,

@@ -12,27 +12,27 @@
 
 <!-- ══════════ NAV ══════════ -->
 <nav>
-  <a href="Landingpage.html" class="nav-logo">
+  <a href="index.html" class="nav-logo">
     <div class="nav-logo-img-wrap">
       <img src="../Assets/KBLOGOonly.png" alt="KapitBisig Logo" onerror="this.style.display='none';"/>
     </div>
     <span class="nav-logo-text">KAPIT<span>BISIG</span></span>
   </a>
   <ul class="nav-links">
-    <li><a href="Landingpage.html#hero">Home</a></li>
-    <li><a href="Landingpage.html#campaigns">Campaigns</a></li>
-    <li><a href="Landingpage.html#organizations">Organizations</a></li>
-    <li><a href="Landingpage.html#FAQs">FAQs</a></li>
+    <li><a href="index.html#hero">Home</a></li>
+    <li><a href="index.html#campaigns">Campaigns</a></li>
+    <li><a href="index.html#organizations">Organizations</a></li>
+    <li><a href="index.html#FAQs">FAQs</a></li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
 </nav>
 <div class="nav-drawer" id="navDrawer">
-  <a href="Landingpage.html#hero">Home</a>
-  <a href="Landingpage.html#campaigns">Campaigns</a>
-  <a href="Landingpage.html#organizations">Organizations</a>
-  <a href="Landingpage.html#FAQs">FAQs</a>
+  <a href="index.html#hero">Home</a>
+  <a href="index.html#campaigns">Campaigns</a>
+  <a href="index.html#organizations">Organizations</a>
+  <a href="index.html#FAQs">FAQs</a>
 </div>
 
 <!-- Loading Spinner -->
@@ -70,13 +70,19 @@
       <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       Donation History
     </a>
+     <div class="sidebar-spacer"></div>
+    <button class="sidebar-logout" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
   </aside>
 
   <!-- MAIN CONTENT -->
   <main class="main-content">
 
-    <!-- ══ PROFILE HERO ══ -->
-    <div id="sec-profile" class="profile-hero">
+    <!-- ══ MY PROFILE ══ -->
+    <div id="sec-profile" class="profile-page active-page">
+      <div class="profile-hero">
       <div class="cover-strip" id="coverStrip" onclick="triggerFile('coverInput')" role="button" tabindex="0" aria-label="Change cover image">
         <div class="cover-dot cover-dot-a"></div>
         <div class="cover-dot cover-dot-b"></div>
@@ -131,19 +137,16 @@
           </button>
         </div>
       </div>
-    </div>
+     </div><!-- /profile-hero -->
+    </div><!-- /sec-profile -->
 
     <!-- ══ EDIT PROFILE ══ -->
-    <div id="sec-edit" class="settings-card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-          <div>
-            <div class="card-title">Edit Profile</div>
-            <div class="card-subtitle">Control your public presence on KapitBisig</div>
-          </div>
-        </div>
+    <div id="sec-edit" class="profile-page">
+      <div class="page-header-bar">
+        <div class="page-header-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <div><div class="page-header-title">Edit Profile</div><div class="page-header-sub">Control your public presence on KapitBisig</div></div>
       </div>
+    <div class="settings-card"></div>
 
       <!-- Visibility -->
       <div class="s-row">
@@ -209,19 +212,16 @@
             oninput="syncUrl(this.value)" aria-label="Profile URL slug" placeholder="yourusername"/>
         </div>
       </div>
-    </div>
+    </div><!-- /settings-card -->
+    </div><!-- /sec-edit -->
 
     <!-- ══ ACCOUNT INFORMATION ══ -->
-    <div id="sec-account" class="settings-card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-          <div>
-            <div class="card-title">Account Information</div>
-            <div class="card-subtitle">Manage your personal details and security</div>
-          </div>
-        </div>
+    <div id="sec-account" class="profile-page">
+      <div class="page-header-bar">
+        <div class="page-header-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div><div class="page-header-title">Account Information</div><div class="page-header-sub">Manage your personal details and security</div></div>
       </div>
+    <div class="settings-card"></div>
 
       <!-- Phone -->
       <div class="s-row">
@@ -331,30 +331,32 @@
           Deactivate
         </button>
       </div>
-    </div>
+    </div><!-- /settings-card -->
+    </div><!-- /sec-account -->
 
     <!-- ══ NOTIFICATIONS ══ -->
-    <div id="sec-notifs" class="settings-card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-          <div>
-            <div class="card-title">Notification Settings</div>
-            <div class="card-subtitle">Choose exactly what you'd like to hear about</div>
-          </div>
-        </div>
+      <div id="sec-notifs" class="profile-page">
+      <div class="page-header-bar">
+        <div class="page-header-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        <div style="flex:1;"><div class="page-header-title">Notification Settings</div><div class="page-header-sub">All notifications are sent to your email address</div></div>
         <button class="btn-xs" onclick="enableAll()">Enable All</button>
       </div>
 
-      <!-- Message -->
+       <div class="settings-card">
+      <div class="notif-channel-badge">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email notifications only
+      </div>
+
+       <!-- Donation Confirmed -->
       <div class="s-row notif-row">
         <div class="s-left">
-          <div class="s-label">Message Notifications</div>
-          <div class="s-desc">Alerts when someone sends you a direct message</div>
+          <div class="s-label">Donation Confirmed</div>
+          <div class="s-desc">Email when the NGO or admin approves your payment and your donation is officially recorded</div>
         </div>
         <div class="s-right">
-          <label class="tog" aria-label="Message notifications toggle">
-            <input type="checkbox" class="ntog" data-pref="messages" checked onchange="relabel(this)"/>
+           <label class="tog" aria-label="Donation confirmed toggle">
+            <input type="checkbox" class="ntog" data-pref="donationConfirmed" checked onchange="relabel(this)"/>
             <div class="tog-track"></div>
             <div class="tog-thumb"></div>
           </label>
@@ -362,15 +364,15 @@
         </div>
       </div>
 
-      <!-- Fundraisers -->
+      <!-- Campaign Updates -->
       <div class="s-row notif-row">
         <div class="s-left">
-          <div class="s-label">Fundraiser Notifications</div>
-          <div class="s-desc">Tips, updates, and coaching to help you share your cause and reach your goals</div>
+          <div class="s-label">Campaign Updates</div>
+          <div class="s-desc">Email when a campaign you've donated to posts a progress update or milestone</div>
         </div>
         <div class="s-right">
-          <label class="tog" aria-label="Fundraiser notifications toggle">
-            <input type="checkbox" class="ntog" data-pref="fundraisers" checked onchange="relabel(this)"/>
+          <label class="tog" aria-label="Campaign updates toggle">
+            <input type="checkbox" class="ntog" data-pref="campaignUpdates" checked onchange="relabel(this)"/>
             <div class="tog-track"></div>
             <div class="tog-thumb"></div>
           </label>
@@ -378,31 +380,31 @@
         </div>
       </div>
 
-      <!-- Donations -->
+      <!-- Goal Reached -->
       <div class="s-row notif-row">
         <div class="s-left">
-          <div class="s-label">Donation Notifications</div>
-          <div class="s-desc">Urgent causes and ways to support critical campaigns in your community</div>
+          <div class="s-label">Goal Reached</div>
+          <div class="s-desc">Email when a campaign you supported successfully hits its fundraising target</div>
         </div>
         <div class="s-right">
-          <label class="tog" aria-label="Donation notifications toggle">
-            <input type="checkbox" class="ntog" data-pref="donations" checked onchange="relabel(this)"/>
+          <label class="tog" aria-label="Goal reached toggle">
+            <input type="checkbox" class="ntog" data-pref="goalReached" checked onchange="relabel(this)"/>
             <div class="tog-track"></div>
             <div class="tog-thumb"></div>
           </label>
-          <span class="tog-txt">ON</span>
+           <span class="tog-txt">ON</span>
         </div>
       </div>
 
-      <!-- More ways to donate -->
+       <!-- New Campaigns -->
       <div class="s-row notif-row">
         <div class="s-left">
-          <div class="s-label">More Ways to Donate</div>
-          <div class="s-desc">Personalised suggestions for causes you might want to support based on your history</div>
+          <div class="s-label">New Campaigns</div>
+          <div class="s-desc">Be the first to know about new campaigns that match your interests</div>
         </div>
         <div class="s-right">
-          <label class="tog" aria-label="More ways to donate toggle">
-            <input type="checkbox" class="ntog" data-pref="moreWays" onchange="relabel(this)"/>
+          <label class="tog" aria-label="New campaigns toggle">
+            <input type="checkbox" class="ntog" data-pref="newCampaigns" checked onchange="relabel(this)"/>
             <div class="tog-track"></div>
             <div class="tog-thumb"></div>
           </label>
@@ -410,31 +412,15 @@
         </div>
       </div>
 
-      <!-- General Updates -->
+     <!-- Platform News -->
       <div class="s-row notif-row">
         <div class="s-left">
-          <div class="s-label">General Updates</div>
-          <div class="s-desc">Platform announcements, new features, and news from KapitBisig</div>
+          <div class="s-label">Platform News</div>
+          <div class="s-desc">Occasional emails about new features and announcements from KapitBisig</div>
         </div>
         <div class="s-right">
-          <label class="tog" aria-label="General updates toggle">
-            <input type="checkbox" class="ntog" data-pref="generalUpdates" checked onchange="relabel(this)"/>
-            <div class="tog-track"></div>
-            <div class="tog-thumb"></div>
-          </label>
-          <span class="tog-txt">ON</span>
-        </div>
-      </div>
-
-      <!-- Research -->
-      <div class="s-row notif-row">
-        <div class="s-left">
-          <div class="s-label">Research Participation Opportunities</div>
-          <div class="s-desc">Invitations to share opinions and help improve the KapitBisig platform</div>
-        </div>
-        <div class="s-right">
-          <label class="tog" aria-label="Research participation toggle">
-            <input type="checkbox" class="ntog" data-pref="research" onchange="relabel(this)"/>
+          <label class="tog" aria-label="Platform news toggle">
+            <input type="checkbox" class="ntog" data-pref="platformNews" onchange="relabel(this)"/>
             <div class="tog-track"></div>
             <div class="tog-thumb"></div>
           </label>
@@ -442,21 +428,19 @@
         </div>
       </div>
 
-    </div><!-- /notifs card -->
+    </div><!-- /settings-card -->
+    </div><!-- /sec-notifs -->
 
     <!-- ══ DONATION HISTORY ══ -->
-    <div id="sec-donations" class="settings-card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-          <div>
-            <div class="card-title">Donation History</div>
-            <div class="card-subtitle">All your past contributions to campaigns</div>
-          </div>
-        </div>
+     <div id="sec-donations" class="profile-page">
+      <div class="page-header-bar">
+        <div class="page-header-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <div><div class="page-header-title">Donation History</div><div class="page-header-sub">All your past contributions to campaigns</div></div>
       </div>
+     <div class="settings-card"></div>
       <div id="donationsContainer" style="padding:4px 0;"></div>
-    </div>
+    </div><!-- /settings-card -->
+    </div><!-- /sec-donations -->
 
   </main>
 </div><!-- /page-shell -->
@@ -517,12 +501,12 @@
     <div>
       <p class="footer-col-title">Quick Links</p>
       <ul class="footer-links-list">
-        <li><a href="Landingpage.html#hero">Home</a></li>
-        <li><a href="Landingpage.html#campaigns">Campaigns</a></li>
-        <li><a href="Landingpage.html#organizations">Organizations</a></li>
-        <li><a href="Landingpage.html#FAQs">FAQs</a></li>
+        <li><a href="index.html#hero">Home</a></li>
+        <li><a href="index.html#campaigns">Campaigns</a></li>
+        <li><a href="index.html#organizations">Organizations</a></li>
+        <li><a href="index.html#FAQs">FAQs</a></li>
         <li><a href="profile.html">My Profile & Settings</a></li>
-        <li><a href="Landingpage.html#donate">Donate Now</a></li>
+        <li><a href="index.html#donate">Donate Now</a></li>
       </ul>
     </div>
   </div>

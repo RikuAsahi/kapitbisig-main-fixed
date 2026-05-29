@@ -17,7 +17,7 @@
   --nav-h:     64px;
 }
     html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text-dark); overflow-x: hidden; }
+    body { font-family: 'DM Sans', sans-serif; background: #f5f7fa; color: var(--text-dark); overflow-x: hidden; }
     img { max-width: 100%; display: block; }
 
     /* ══ NAV ══ */
@@ -81,6 +81,7 @@
     @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
 
     /* ══ LAYOUT ══ */
+    .page-body-wrap { background: linear-gradient(180deg, #eaf1f8 0%, #f0f4f8 60%, #f5f7fa 100%); border-top: 1px solid rgba(91,164,207,0.12); min-height: 400px; }
     .page-body { max-width:1100px; margin:0 auto; padding:clamp(24px,4vw,44px) clamp(16px,5vw,48px); display:grid; grid-template-columns:1fr 340px; gap:28px; align-items:start; }
 
     /* ══ PROGRESS / TRANSPARENCY SECTION ══ */

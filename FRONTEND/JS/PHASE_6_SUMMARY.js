@@ -74,7 +74,7 @@
  *   <script src="helpers.js"></script>
  *   <script src="UserProfile.js"></script>
  *
- * □ Landingpage.html - Add:
+ * □ index.html - Add:
  *   <script src="api.js"></script>
  *   <script src="helpers.js"></script>
  *   <script src="Landingpage.js"></script> (update to load campaigns from API)
@@ -211,7 +211,7 @@
  *    - Add containers: donationsContainer, ngoProfileSection
  *    - Add logout button with onclick="handleLogout()"
  *
- * 3. Landingpage.html
+ * 3. index.html
  *    - Add script references
  *    - Add container for campaigns (id="campaigns-grid" or similar)
  *    - Update Landingpage.js to call: CampaignAPI.list() and render

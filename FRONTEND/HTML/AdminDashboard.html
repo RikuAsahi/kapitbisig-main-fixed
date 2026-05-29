@@ -192,7 +192,7 @@
     <div class="page-header"><div><div class="page-eyebrow">Audit Trail</div><h1 class="page-title">Activity <strong>Logs</strong></h1></div><div class="page-actions"><button class="btn btn-ghost btn-sm" onclick="exportReport()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Logs</button></div></div>
     <div class="filter-bar">
       <div class="search-box"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search logs…"/></div>
-      <select class="filter-select" onchange="filterLogs()">
+     <select class="filter-select" onchange="filterLogs()">
         <option value="all">All Actions</option>
         <option value="LOGIN">Login</option>
         <option value="DONATE">Donated</option>
@@ -207,6 +207,29 @@
       <input type="date" class="filter-select" style="min-width:140px" onchange="filterLogs()"/>
     </div>
     <div class="card"><div class="card-body" style="padding:0"><div class="table-wrap"><table id="logsTable"></table></div></div></div>
+  </div>
+
+  <!-- ── DONATIONS PAGE (Admin & NGO) ── -->
+  <div class="page" id="page-donations">
+    <div class="page-header">
+      <div><div class="page-eyebrow">Payment Review</div><h1 class="page-title">Donation <strong>Approvals</strong></h1></div>
+    </div>
+    <div class="filter-bar">
+      <select class="filter-select" id="donStatusFilter" onchange="filterDonations()">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="completed">Completed</option>
+        <option value="failed">Failed</option>
+      </select>
+      <select class="filter-select" id="donMethodFilter" onchange="filterDonations()">
+        <option value="">All Methods</option>
+        <option value="bank_transfer">Bank Transfer</option>
+        <option value="gcash">GCash</option>
+        <option value="paymaya">PayMaya</option>
+        <option value="card">Card</option>
+      </select>
+    </div>
+    <div class="card"><div class="card-body" style="padding:0"><div class="table-wrap"><table id="donationsTable"></table></div></div></div>
   </div>
 
   <!-- ── SETTINGS PAGE ── -->
@@ -337,6 +360,24 @@
     </div>
   </div>
   <div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="closeModal('editNGOModal')">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveEditNGO()">Save Changes</button></div>
+</div>
+</div>
+
+<!-- Proof Image Modal -->
+<div class="modal-overlay" id="proofModal" onclick="handleOverlay(event,'proofModal')">
+<div class="modal-box" style="max-width:560px">
+  <div class="modal-header">
+    <div class="card-header-icon" style="background:linear-gradient(135deg,#27ae60,#1a7a42)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+    <div class="modal-title">Payment Proof</div>
+    <button class="modal-close" onclick="closeModal('proofModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <div id="proofModalMeta" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;font-size:0.85rem;color:var(--text-muted)"></div>
+    <img id="proofModalImg" src="" alt="Payment proof" style="width:100%;border-radius:10px;border:1px solid var(--border);max-height:420px;object-fit:contain"/>
+    <p id="proofModalNotes" style="margin-top:10px;font-size:0.83rem;color:var(--text-muted)"></p>
+    <p id="proofModalNoImg" style="display:none;color:#c0392b;font-size:0.85rem">No proof image was uploaded for this donation.</p>
+  </div>
+  <div class="modal-footer" id="proofModalActions"></div>
 </div>
 </div>
 
