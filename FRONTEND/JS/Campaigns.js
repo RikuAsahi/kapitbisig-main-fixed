@@ -120,7 +120,7 @@
 		if (!state.campaign) return;
 		try {
 			const response = await DonationAPI.getCampaignStats(state.campaign.id);
-			console.log(response);
+			
 			const stats = response.stats;
 			const count = Number(stats.totalDonations || 0);
 			const raised = Number(stats.totalAmount || 0);
@@ -128,6 +128,7 @@
 
 			setText('heroDonorCount', count);
 			setText('statDonors', count);
+			setText('statDonors2', count);
 			setText('statAvg', fmtMoney(avg));
 			updateProgressUI(raised, state.campaign.targetAmount || 0);
 		} catch (error) {
@@ -375,7 +376,6 @@
 			description: `${campaign.title} (${campaign.ngoName}) - Donation` 
 		});
 
-		console.log(state.paymentIntent);
 	}
 
 	async function createPaymentMethod(type){
@@ -390,10 +390,23 @@
 		console.log(state.paymentMethod);
 	}
 
-	async function attachPaymentMethod(){
-		const user = JSON.parse(localStorage.getItem('kb.auth.user'));
+	async function verifyPayment(){
+		const params = new URLSearchParams(window.location.search);
 
-		const attachRes = await DonationAPI.attachPaymentMethod({});
+		const campaignId = params.get('id');
+		const paymentIntentId = params.get('payment_intent_id');
+		
+		if (paymentIntentId) {
+			try {
+				const result = await DonationAPI.paymentCallback({
+					campaignId : campaignId,
+					paymentIntentId: paymentIntentId,
+				});
+
+			} catch (error) {
+				console.log(error);
+			}
+		}
 	}
 
 	async function processPayment() {
@@ -403,9 +416,6 @@
 
 		const btn = qs('payBtn');
 		if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
-
-		
-
 
 		try {
 			const donation = await DonationAPI.create({
@@ -419,33 +429,8 @@
 				message: null,
 			});
 			
-
-			
-			// const attch = await attachPaymentMethod();
-
-			console.log(donation);
 			window.location.href = donation.checkout.attributes.next_action.redirect.url
-			// alert('test');
 
-			
-
-
-
-
-
-
-
-
-			// await CampaignAPI.update({
-			// 	campaignId: state.campaign.id,
-			// 	amount: state.donationAmount,
-			// 	paymentMethod: state.payMethod,
-			// 	message: null,
-			// 	proofImage: state.proofImageBase64 || null,
-			// 	proofNotes: (state.payMethod === 'gcash'
-			// 		? (qs('gcashProofNotes') && qs('gcashProofNotes').value)
-			// 		: (qs('proofNotes') && qs('proofNotes').value)) || null
-			// });
 
 			setText('successDon', fmtMoney(state.donationAmount));
 			setText('successTip', fmtMoney(tipAmount(state.donationAmount, state.tipPercent)));
@@ -626,7 +611,7 @@
 		try {
 			const res = await SettingsAPI.getPayment();
 			state.paymentSettings = res.settings;
-			console.log(state.paymentSettings);
+			
 		} catch (error) {
 			state.paymentSettings = { bankTransferEnabled: true, gcashEnabled: false, paymayaEnabled: false, cardEnabled: false };
 			console.error('Error loading payment settings:', error.message);
@@ -691,6 +676,7 @@
 		initCommentCharCount();
 		await loadPaymentSettings();
 		loadCampaign();
+		verifyPayment();
 	}
 
 	window.openModal = openModal;

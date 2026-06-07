@@ -899,6 +899,10 @@
 		return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 	}
 
+	async function saveGeneralSettings(){
+
+	}
+
 	async function savePaymentSettings() {
 		try {
 			await SettingsAPI.updatePayment({
@@ -947,11 +951,11 @@
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Public Contact Number</label>
-					<input class="form-input" value="+63 900 000 0000" />
+					<input class="form-input" value="${state.myProfile.profile.phoneNumber || '+63 900 000 0000'}" />
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Address</label>
-					<input class="form-input" value="Barangay 105, Tondo, Manila" />
+					<input class="form-input" value="${state.myProfile.profile.address || ''}" />
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Campaign Notification Emails</label>
@@ -1750,12 +1754,11 @@
 		const bankPayee = String(qs('campaignBankPayeeInput')?.value || '').trim();
 		const gcashNumber = String(qs('campaignGCashInput')?.value || '').trim();
 		const paymayaNumber = String(qs('campaignPayMayaInput')?.value || '').trim();
-		alert(startDate);
-		return;
+		
 		if (!title) { showToast('Campaign title is required.', 'error'); return; }
 		if (!category) { showToast('Campaign category is required.', 'error'); return; }
 		if (!(goal > 0)) { showToast('Goal amount must be greater than zero.', 'error'); return; }
-		console.log({ title, category, goal, description, bankName, bankAccount, bankPayee, gcashNumber, paymayaNumber });
+
 		try {
 			await CampaignAPI.create({
 				title,
@@ -1891,7 +1894,7 @@
 
 	function openEditCampaign(id) {
 		const campaign = data.campaigns.find((c) => String(c.id) === String(id));
-		console.log(campaign);
+		
 		if (!campaign) return;
 		if (qs('editCampaignId'))          qs('editCampaignId').value          = campaign.id;
 		if (qs('editCampaignTitleInput'))        qs('editCampaignTitleInput').value        = campaign.title || '';
@@ -2193,8 +2196,10 @@
 
 		if (state.role === 'ngo') {
 			try {
-				const profileRes = await NGOAPI.getMyProfile();
+				const profileRes = await NGOAPI.getMyProfile();	
 				state.ngoId = profileRes.profile && profileRes.profile.id ? profileRes.profile.id : null;
+				
+				state.myProfile = profileRes;
 			} catch (_err) {
 				// ngoId stays null
 			}
@@ -2268,6 +2273,7 @@
 	window.changeUserRole = changeUserRole;
 	window.filterLogs = filterLogs;
 	window.savePaymentSettings = savePaymentSettings;
+	window.saveGeneralSettings = saveGeneralSettings;
 	window.filterDonations = filterDonations;
 	window.viewProof = viewProof;
 	window.approveDonation = approveDonation;

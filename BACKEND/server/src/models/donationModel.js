@@ -74,6 +74,14 @@ async function findByCampaignId(campaignId, limit = 100, offset = 0) {
 	return rows.map(mapDonation);
 }
 
+async function findByTransactionRef(transactionRef) {
+	const [rows] = await db.query(
+		`SELECT * FROM donations WHERE transaction_ref = ? LIMIT 1`,
+		[transactionRef]
+	);
+	return mapDonation(rows[0]);
+}
+
 async function findByDonorId(donorId, limit = 50, offset = 0) {
 	const [rows] = await db.query(
 		`SELECT * FROM donations
@@ -223,6 +231,7 @@ module.exports = {
 	findById,
 	findByCampaignId,
 	findByCampaignIds,
+	findByTransactionRef,
 	findByDonorId,
 	findAllWithDetails,
 	countAll,

@@ -116,9 +116,6 @@ const DonationAPI = {
 	getCampaignStats: (campaignId) =>
 		http.get(`/donations/campaign/${campaignId}/stats`),
 
-	paymentCallback: () =>
-		http.get('/donations/payment/callback'),
-
 	checkout: (data) =>
 		http.post('/donations/checkout', data),
 
@@ -128,8 +125,8 @@ const DonationAPI = {
 	createPaymentMethod: (data) =>
 		http.post('/donations/createPaymentMethod', data),
 
-	attachPaymentMethod: (data) =>
-		http.post('/donations/attachPaymentMethod', data),
+	paymentCallback: (data) =>
+		http.post('/donations/payment/callback', data),
 
 	
 };

@@ -75,27 +75,33 @@ async function getDonationsByCampaign(campaignId, limit = 100, offset = 0) {
 	return donations;
 }
 
+async function getDonationsByTransactionRef(transactionRef, limit = 100, offset = 0) {
+	const donations = await Donation.findByTransactionRef(transactionRef, limit, offset);
+	return donations;
+}
+
 async function getDonationsByDonor(donorId, limit = 50, offset = 0) {
 	const donations = await Donation.findByDonorId(donorId, limit, offset);
 	return donations;
 }
 
-async function processDonation(id, paymentResult) {
-	const donation = await Donation.findById(id);
+async function processDonation(paymentResult) {
+	const donation = await Donation.findByTransactionRef(paymentResult.tempTransactionRef);
+
 	if (!donation) {
 		throw {
 			statusCode: 404,
 			message: 'Donation not found.'
 		};
 	}
-
-	if (paymentResult.success) {
-		const updated = await Donation.updateStatus(id, 'completed', paymentResult.transactionRef);
+	console.log(paymentResult.status);
+	if (paymentResult.status == 'completed') {
+		const updated = await Donation.updateStatus(donation.id, paymentResult.status, paymentResult.transactionRef);
 		await Campaign.updateAmount(donation.campaignId, donation.amount);
 		return updated;
 	}
 
-	const updated = await Donation.updateStatus(id, 'failed');
+	const updated = await Donation.updateStatus(donation.id, 'failed');
 	return updated;
 }
 
@@ -129,6 +135,7 @@ module.exports = {
 	createDonation,
 	getDonationDetail,
 	getDonationsByCampaign,
+	getDonationsByTransactionRef,
 	getDonationsByDonor,
 	processDonation,
 	refundDonation,

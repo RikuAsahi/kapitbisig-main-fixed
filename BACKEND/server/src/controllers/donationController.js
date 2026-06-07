@@ -12,12 +12,7 @@ async function createDonation(req, res, next) {
 
 
 		const attchRes = await attachPaymentMethod({paymentIntentId, clientKey, paymentMethodId, returnUrl});
-		console.log(attchRes.attributes.next_action);
-		// await donationService.processDonation(donation.id, {
-		// 	success: true,
-		// 	transactionRef: 'sample-transaction-ref-123'
-		// });
-		// await donationService.processDonation(donation.id);
+		
 
 		return res.status(201).json({ message: 'Donation created.', donation, checkout: attchRes });
 	} catch (error) {
@@ -55,24 +50,29 @@ async function createPaymentIntent(req, res, next) {
 async function createPaymentMethod(req, res, next) {
 
 	const { type, name, email  } = req.body || {};
+	console.log(type);
+	try {
+		 const paymentMethod = await axios.post(
+			'https://api.paymongo.com/v1/payment_methods',
+			{
+				data: {
+					attributes: {
+						type: type,
+						billing: {
+							name: name,
+							email: email,
+						}	
+					}
+				}
+			},
+			authHeader()
+		);
 
-    const paymentMethod = await axios.post(
-        'https://api.paymongo.com/v1/payment_methods',
-        {
-            data: {
-                attributes: {
-                    type: type,
-                    billing: {
-                        name: name,
-                        email: email
-                    }
-                }
-            }
-        },
-        authHeader()
-    );
-
-    return res.json(paymentMethod.data.data);
+		return res.json(paymentMethod.data.data);
+	} catch (error) {
+		next(error.response?.data);
+	}
+   
 }
 
 async function attachPaymentMethod(data) {
@@ -117,32 +117,50 @@ async function verifyPaymentIntentStatus(paymentIntentId){
 	return  response.data.data;
 }
 
-async function paymentCallback(req, res, nex) {
+async function paymentCallback(req, res, next) {
 	try {
-        const { id, payment_intent_id } = req.query;
+        const { campaignId, paymentIntentId } = req.body;
 		console.log('Payment Callback');
-        console.log(req.query);
-
-        if (!payment_intent_id || !id) {
+		
+        if (!paymentIntentId) {
             return res.status(400).send('Missing query parameters');
         }
-
+		
+		const donation = await donationService.getDonationsByTransactionRef(paymentIntentId);
+		if (!donation){
+			return;
+		}
+		
         // Verify payment with PayMongo
-        const payment = await verifyPaymentIntentStatus(payment_intent_id);
+        const payment = await verifyPaymentIntentStatus(paymentIntentId);
 		console.log('Verify payment');
-		console.log(payment);
-        const status = payment?.data?.attributes?.status;
+
+		const tempTransactionRef = paymentIntentId;
+		const transactionRef = payment.attributes.payments[0].id;
+        const status = payment?.attributes?.status;
+		
 
         // TODO: update database only if succeeded
         if (status === 'succeeded') {
-            // update donation record here
+            await donationService.processDonation({
+				status: 'completed',
+				transactionRef: transactionRef,
+				tempTransactionRef: tempTransactionRef
+			});
             console.log('Payment successful');
+
         } else {
+			await donationService.processDonation({
+				status: 'failed',
+				transactionRef: transactionRef,
+				tempTransactionRef: tempTransactionRef
+			});
             console.log('Payment not successful:', status);
+
         }
 
-        // redirect back to campaign page
-        return res.redirect(`/Campaign.html?id=${id}`);
+      
+        return res.json({status: status});
 
     } catch (error) {
         console.error('Payment callback error:', error);
