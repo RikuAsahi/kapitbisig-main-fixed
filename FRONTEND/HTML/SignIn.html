@@ -121,8 +121,8 @@
       <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
     <p class="auth-modal-tag">Password Reset</p>
-    <h2 class="auth-modal-title" id="forgotPasswordTitle">Send Reset Link</h2>
-    <p class="auth-modal-copy">Enter your account email and KapitBisig will send a password reset link.</p>
+    <h2 class="auth-modal-title" id="forgotPasswordTitle">Reset Password</h2>
+    <p class="auth-modal-copy">Enter your account email and KapitBisig will send a temporary password.</p>
     <form class="auth-form" id="forgotPasswordForm" novalidate>
       <div class="field-group">
         <label class="field-label" for="forgotEmail">Email Address</label>
@@ -133,13 +133,11 @@
           </svg>
           <input class="auth-input" type="email" id="forgotEmail" name="forgotEmail" placeholder="you@gmail.com" autocomplete="email"/>
         </div>
-        <div class="error-msg" id="forgotEmailErr">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Please enter a valid email address.
+        <div class="error-msg" style="margin-top:12px" id="forgotEmailErr">
         </div>
       </div>
-      <div class="auth-status" id="forgotStatus" aria-live="polite"></div>
-      <button type="submit" class="auth-submit">Send Reset Link</button>
+      <div class="" id="forgotStatus" aria-live="polite">test</div>
+      <button type="submit" class="auth-submit">Send Reset Request</button>
     </form>
   </div>
 </div>
@@ -194,6 +192,7 @@
 </div>
 
 <script src="../JS/SignIn.js"></script>
+<script src="../JS/api.js"></script>
 <script src="../JS/Common.js"></script>
 </body>
 </html>

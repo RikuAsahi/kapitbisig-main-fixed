@@ -23,8 +23,8 @@
   <div class="sidebar-role-badge" id="roleBadge">
     <div class="role-dot superadmin" id="roleDot"></div>
     <div class="role-info">
-      <div class="role-name" id="roleUserName">Maria Santos</div>
-      <div class="role-label" id="roleLabel">Super Admin</div>
+      <div class="role-name" id="roleUserName"></div>
+      <div class="role-label" id="roleLabel"></div>
     </div>
   </div>
 
@@ -129,7 +129,7 @@
     <div class="filter-bar">
       <div class="search-box"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search campaigns…" oninput="filterCampaigns(this.value)"/></div>
       <select class="filter-select" id="catFilter" onchange="filterCampaigns()"><option value="">All Categories</option><option>Education</option><option>Health</option><option>Natural Disasters</option><option>Community</option></select>
-      <select class="filter-select" id="statusFilter" onchange="filterCampaigns()"><option value="">All Statuses</option><option>Draft</option><option>Pending</option><option>Approved</option><option>Ongoing</option><option>Completed</option><option>Flagged</option></select>
+      <select class="filter-select" id="statusFilter" onchange="filterCampaigns()"><option value="">All Statuses</option><option>Draft</option><option>Pending</option><option value="active">Ongoing</option><option>Completed</option><option>Flagged</option></select>
       <select class="filter-select" id="perfFilter" onchange="filterCampaigns()"><option value="">All Performance</option><option value="high">High (>75%)</option><option value="mid">Mid (25–75%)</option><option value="low">Low (&lt;25%)</option></select>
     </div>
     <div class="camp-grid" id="campaignGrid"></div>
@@ -239,12 +239,17 @@
       <div class="card">
         <div class="card-header"><div class="card-header-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83"/></svg></div><div class="card-title">General Settings</div></div>
         <div class="card-body" id="settingsGeneral"></div>
-        <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="showToast('Settings saved successfully!','success')">Save Changes</button></div>
+        <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveGeneralSettings()">Save Changes</button></div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-header-icon" style="background:linear-gradient(135deg,var(--red),#8a2020)"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="card-title">Security Settings</div></div>
         <div class="card-body" id="settingsSecurity"></div>
-        <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="showToast('Security settings updated!','success')">Save Changes</button></div>
+        <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="changePassword()">Save Changes</button></div>
+      </div>
+       <div class="card">
+        <div class="card-header"><div class="card-header-icon" style="background:linear-gradient(135deg,var(--red),#8a2020)"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div class="card-title">Payment Settings</div></div>
+        <div class="card-body" id="settingsPayment"></div>
+        <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="savePaymentSettings()">Save Changes</button></div>
       </div>
     </div>
   </div>
@@ -272,6 +277,8 @@
       <div class="form-group"><label class="form-label">Category</label><select id="campaignCategoryInput" class="form-input"><option>Education</option><option>Health</option><option>Natural Disasters</option><option>Community</option></select></div>
       <div class="form-group"><label class="form-label">Goal Amount (₱)</label><input id="campaignGoalInput" class="form-input" type="number" placeholder="50000"/></div>
       <div class="form-group form-full"><label class="form-label">Description</label><textarea id="campaignDescriptionInput" class="form-input" placeholder="Describe your campaign…"></textarea></div>
+      <div class="form-group"><label class="form-label">Start Date</label><input id="campaignStartDateInput" class="form-input" type="date" disabled/></div>
+      <div class="form-group"><label class="form-label">End Date</label><input id="campaignEndDateInput" class="form-input" type="date"/></div>
       <div class="form-group"><label class="form-label">Bank Name</label><input id="campaignBankNameInput" class="form-input" type="text" placeholder="BPI / BDO / LandBank"/></div>
       <div class="form-group"><label class="form-label">Bank Account Number</label><input id="campaignBankAccountInput" class="form-input" type="text" placeholder="1234 5678 9012"/></div>
       <div class="form-group form-full"><label class="form-label">Bank Account Name</label><input id="campaignBankPayeeInput" class="form-input" type="text" placeholder="Account holder name"/></div>
@@ -287,10 +294,62 @@
 
 <!-- Campaign Detail Modal -->
 <div class="modal-overlay" id="campaignDetailModal" onclick="handleOverlay(event,'campaignDetailModal')">
-<div class="modal-box" style="max-width:660px">
-  <div class="modal-header"><div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="modal-title" id="cdTitle">Campaign Details</div><button class="modal-close" onclick="closeModal('campaignDetailModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="modal-box" style="max-width:680px">
+  <div class="modal-header">
+    <div class="card-header-icon"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.5-8-11V5l8-3 8 3v5c0 6.5-8 11-8 11z"/></svg></div>
+    <div class="modal-title" id="cdTitle">Campaign Details</div>
+    <button class="modal-close" onclick="closeModal('campaignDetailModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
   <div class="modal-body" id="cdBody"></div>
   <div class="modal-footer" id="cdFooter"></div>
+</div>
+</div>
+
+<!-- Edit Campaign Modal -->
+<div class="modal-overlay" id="editCampaignModal" onclick="handleOverlay(event,'editCampaignModal')">
+<div class="modal-box" style="max-width:680px">
+  <div class="modal-header">
+    <div class="card-header-icon" style="background:linear-gradient(135deg,var(--gold),#8a6820)"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+    <div class="modal-title">Edit Campaign</div>
+    <button class="modal-close" onclick="closeModal('editCampaignModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" id="editCampaignId"/>
+    <!-- <div class="form-grid">
+      <div class="form-group form-full"><label class="form-label">Campaign Title</label><input id="editCampaignTitle" class="form-input" type="text" placeholder="Campaign title"/></div>
+      <div class="form-group"><label class="form-label">Category</label><select id="editCampaignCategory" class="form-input"><option>Education</option><option>Health</option><option>Natural Disasters</option><option>Community</option></select></div>
+      <div class="form-group"><label class="form-label">Goal Amount (₱)</label><input id="editCampaignGoal" class="form-input" type="number" placeholder="50000"/></div>
+      <div class="form-group form-full"><label class="form-label">Description</label><textarea id="editCampaignDescription" class="form-input" rows="4" placeholder="Campaign description…"></textarea></div>
+    </div> -->
+
+    <div class="form-grid">
+      <!-- <div class="form-group form-full"><label class="form-label">Choose a Campaign Template</label><select id="campaignTemplate" class="form-input" onchange="applyCampaignTemplate()">
+          <option value="">Select a template</option>
+          <option value="scholarship">Education Scholarship Campaign</option>
+          <option value="healthMission">Health &amp; Medical Mission</option>
+          <option value="disasterRelief">Natural Disaster Relief Drive</option>
+          <option value="communitySupport">Community Livelihood Project</option>
+        </select>
+      </div> -->
+      <div class="form-group form-full"><label class="form-label">Campaign Title</label><input id="editCampaignTitleInput" class="form-input" type="text" placeholder="Enter campaign title"/></div>
+      <div class="form-group"><label class="form-label">Category</label><select id="editCampaignCategoryInput" class="form-input"><option>Education</option><option>Health</option><option>Natural Disasters</option><option>Community</option></select></div>
+      <div class="form-group"><label class="form-label">Goal Amount (₱)</label><input id="editCampaignGoalInput" class="form-input" type="number" placeholder="50000"/></div>
+      <div class="form-group form-full"><label class="form-label">Description</label><textarea id="editCampaignDescriptionInput" class="form-input" placeholder="Describe your campaign…"></textarea></div>
+      <div class="form-group"><label class="form-label">Bank Name</label><input id="editCampaignBankNameInput" class="form-input" type="text" placeholder="BPI / BDO / LandBank"/></div>
+      <div class="form-group"><label class="form-label">Bank Account Number</label><input id="editCampaignBankAccountInput" class="form-input" type="text" placeholder="1234 5678 9012"/></div>
+      <div class="form-group form-full"><label class="form-label">Bank Account Name</label><input id="editCampaignBankPayeeInput" class="form-input" type="text" placeholder="Account holder name"/></div>
+      <div class="form-group"><label class="form-label">GCash Number</label><input id="editCampaignGCashInput" class="form-input" type="text" placeholder="09XX XXX XXXX"/></div>
+      <div class="form-group"><label class="form-label">PayMaya Number</label><input id="editCampaignPayMayaInput" class="form-input" type="text" placeholder="09XX XXX XXXX"/></div>
+      <div class="form-group form-full"><label class="form-label">Media Upload</label><input class="form-input" type="file" accept="image/*,video/*"/></div>
+    </div>
+    <p style="font-size:12px;color:var(--text-soft);margin-top:12px">Provide at least one receiving method (bank or e-wallet) so donors can see where to send money on the Donate flow.</p>
+  
+  
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('editCampaignModal')">Cancel</button>
+    <button class="btn btn-primary btn-sm" onclick="saveEditCampaign()">Save Changes</button>
+  </div>
 </div>
 </div>
 
@@ -313,9 +372,9 @@
   <div class="modal-body">
     <div class="form-grid">
       <div class="form-group"><label class="form-label">Full Name</label><input id="newUserFullName" class="form-input" type="text" placeholder="Juan dela Cruz"/></div>
-      <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="newUserRole" onchange="updateUserForm()"><option value="admin">Admin</option><option value="ngo_admin">NGO User</option><option value="superadmin">Super Admin</option></select></div>
+      <div class="form-group"><label class="form-label">Role</label><select class="form-input" id="newUserRole" onchange="updateUserForm()"><option value="admin">Admin</option><option value="ngo_admin">NGO User</option></select></div>
        <div class="form-group form-full"><label class="form-label">Email Address</label><input id="newUserEmail" class="form-input" type="email" placeholder="user@kapitbisig.ph"/></div>
-      <div class="form-group" id="orgField"><label class="form-label">Organization Name</label><input class="form-input" type="text" placeholder="NGO Organization Name"/></div>
+      <div class="form-group" id="orgField"><label class="form-label">Organization</label><select class="form-input" id="orgSelect"><option value="">Select an organization…</option></select></div>
       <div class="form-group"><label class="form-label">Generated ID</label><input class="form-input" type="text" id="generatedId" readonly style="background:var(--surface2);cursor:default"/></div>
     </div>
     <div style="margin-top:16px;padding:13px 16px;border-radius:10px;background:rgba(74,156,199,0.08);border:1px solid var(--border)">

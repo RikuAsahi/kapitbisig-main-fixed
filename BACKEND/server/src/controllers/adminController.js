@@ -1,7 +1,9 @@
+const bcrypt = require('bcryptjs');
 const adminService = require('../services/adminService');
 const ngoService = require('../services/ngoService');
 const Donation = require('../models/donationModel');
 const Campaign = require('../models/campaignModel');
+const User = require('../models/userModel');
 const ActivityLog = require('../models/activityLogModel');
 
 async function createUser(req, res, next) {
@@ -45,6 +47,25 @@ async function updateUserRole(req, res, next) {
 		const user = await adminService.updateUserRole(userId, role, req.session.userId, ipAddress);
 
 		return res.json({ message: 'User role updated.', user });
+	} catch (error) {
+		next(error);
+	}
+}
+
+async function changeUserPassword(req, res, next) {
+	try {
+		const { userId } = req.params;
+		const { newPassword } = req.body || {};
+
+		if (!newPassword) {
+			return res.status(400).json({ message: 'New password is required.' });
+		}
+
+		const ipAddress = req.ip || req.connection.remoteAddress;
+		const newPasswordHash = await bcrypt.hash(String(newPassword), 10);
+		const user = await User.updatePassword(userId, newPasswordHash, req.session.userId, ipAddress);
+
+		return res.json({ message: 'User password updated.', user });
 	} catch (error) {
 		next(error);
 	}
@@ -188,6 +209,7 @@ module.exports = {
 	createNGOProfile,
 	getAllUsers,
 	updateUserRole,
+	changeUserPassword,
 	deleteUser,
 	deleteNGOAccount,
 	getActivityLogs,

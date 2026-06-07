@@ -4,7 +4,7 @@ const commentsModel = require('../models/commentsModel');
 
 async function createCampaign(req, res, next) {
 	try {
-		const { title, description, category, targetAmount, ngoId, imageUrl } = req.body || {};
+		const { title, description, category, targetAmount, startDate, endDate, bankName, bankAccountName, bankAccountNumber, gcashNumber, paymayaNumber, ngoId, imageUrl } = req.body || {};
 
 		if (!title || !description || !category || !targetAmount) {
 			return res.status(400).json({ message: 'Missing required fields.' });
@@ -15,7 +15,7 @@ async function createCampaign(req, res, next) {
 		}
 
 		const campaign = await campaignService.createCampaign(
-			{ title, description, category, targetAmount, ngoId, imageUrl },
+			{ title, description, category, targetAmount, startDate, endDate, bankName, bankAccountName, bankAccountNumber, gcashNumber, paymayaNumber, ngoId, imageUrl },
 			req.session.userId
 		);
 
@@ -36,7 +36,7 @@ async function listCampaigns(req, res, next) {
 		if (ngoId) filters.ngoId = ngoId;
 
 		const campaigns = await campaignService.listCampaigns(filters, Number(limit), Number(offset));
-		return res.json({ campaigns, count: campaigns.length });
+		return res.json({ campaigns, count: campaigns.length, filters: filters });
 	} catch (error) {
 		next(error);
 	}
@@ -55,12 +55,12 @@ async function getCampaign(req, res, next) {
 async function updateCampaign(req, res, next) {
 	try {
 		const { id } = req.params;
-		const { title, description, category, targetAmount, status, imageUrl, startDate, endDate } =
+		const { title, description, category, targetAmount, status, imageUrl, bankName, bankAccountName, bankAccountNumber, gcashNumber, paymayaNumber, startDate, endDate } =
 			req.body || {};
 
 		const campaign = await campaignService.updateCampaign(
 			id,
-			{ title, description, category, targetAmount, status, imageUrl, startDate, endDate },
+			{ title, description, category, targetAmount, status, imageUrl, bankName, bankAccountName, bankAccountNumber, gcashNumber, paymayaNumber, startDate, endDate },
 			req.session.userId,
 			req.user?.role
 		);

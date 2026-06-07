@@ -129,6 +129,22 @@
 		revealEls.forEach((el) => observer.observe(el));
 	}
 
+	function populateModalNGOs(ngos) {
+		const container = document.getElementById('modalNgoCards');
+		if (!container || !ngos.length) return;
+		container.innerHTML = ngos.map(function (n) {
+			const id = 'ngo-' + escHtml(String(n.id));
+			return '<div class="ngo-card" id="' + id + '" onclick="selectNGO(\'' + id + '\')">' +
+				'<div class="ngo-avatar"><img src="../Assets/UpSkillsLOGO.png" alt="UpSkills+ Logo"/></div>' +
+				'<div class="ngo-info">' +
+				'<p class="ngo-name">' + escHtml(n.name) + '</p>' +
+				'<p class="ngo-type">' + escHtml(n.address || 'Barangay 105') + '</p>' +
+				'</div>' +
+				'<div class="ngo-radio"><div class="ngo-radio-dot"></div></div>' +
+				'</div>';
+		}).join('');
+	}
+
 	async function renderStats() {
 		const nums = document.querySelectorAll('.stats-strip .stat-num');
 		const labels = document.querySelectorAll('.stats-strip .stat-label');
@@ -142,7 +158,7 @@
 
 			const campaigns = campaignsRes.campaigns || [];
 			const ngos = ngosRes.profiles || ngosRes.ngos || [];
-
+			
 			const totalRaised = campaigns.reduce((sum, c) => sum + Number(c.currentAmount || 0), 0);
 			const fmt = new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
 
@@ -150,6 +166,8 @@
 			labels[0].textContent = 'Total Raised';
 			nums[1].textContent = ngos.length || '2';
 			labels[1].textContent = 'Partner NGOs';
+
+			populateModalNGOs(ngos);
 		} catch (_err) {
 			nums[0].textContent = '--';
 			labels[0].textContent = 'Total Raised';
@@ -162,7 +180,7 @@
 		if (!modalOverlay) return;
 		selectedCategory = categoryName;
 		selectedNGOId = null;
-
+		
 		if (modalCategory) {
 			modalCategory.textContent = categoryName;
 		}

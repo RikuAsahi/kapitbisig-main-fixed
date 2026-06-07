@@ -124,7 +124,7 @@ async function findById(id) {
 	return mapUser(rows[0]);
 }
 
-async function createUser({ firstName, lastName, email, passwordHash }) {
+async function createUser({ firstName, lastName, email, passwordHash, role = constants.ROLES.DONOR }) {
 	const [result] = await db.query(
 		`INSERT INTO users (first_name, last_name, email, password_hash, role)
 		 VALUES (?, ?, ?, ?, 'donor')`,

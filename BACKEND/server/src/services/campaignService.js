@@ -22,6 +22,13 @@ async function createCampaign(data, userId) {
 		description: sanitizeString(data.description),
 		category: data.category,
 		targetAmount: Number(data.targetAmount),
+		startDate: data.startDate ? new Date(data.startDate) : null,
+		endDate: data.endDate ? new Date(data.endDate) : null,
+		bankName: data.bankName ? sanitizeString(data.bankName) : null,
+		bankAccountName: data.bankAccountName ? sanitizeString(data.bankAccountName) : null,
+		bankAccountNumber: data.bankAccountNumber ? sanitizeString(data.bankAccountNumber) : null,
+		gcashNumber: data.gcashNumber ? sanitizeString(data.gcashNumber) : null,
+		paymayaNumber: data.paymayaNumber ? sanitizeString(data.paymayaNumber) : null,
 		ngoId,
 		createdBy: userId,
 		status: CAMPAIGN_STATUS.DRAFT
@@ -68,6 +75,11 @@ async function updateCampaign(id, data, userId, userRole) {
 	if (data.title) updates.title = sanitizeString(data.title);
 	if (data.description) updates.description = sanitizeString(data.description);
 	if (data.targetAmount) updates.targetAmount = Number(data.targetAmount);
+	if (data.bankName) updates.bankName = sanitizeString(data.bankName);
+	if (data.bankAccountName) updates.bankAccountName = sanitizeString(data.bankAccountName);
+	if (data.bankAccountNumber) updates.bankAccountNumber = sanitizeString(data.bankAccountNumber);
+	if (data.gcashNumber) updates.gcashNumber = sanitizeString(data.gcashNumber);
+	if (data.paymayaNumber) updates.paymayaNumber = sanitizeString(data.paymayaNumber);
 	if (data.status) updates.status = data.status;
 	if (data.imageUrl) updates.imageUrl = data.imageUrl;
 	if (data.startDate) updates.startDate = data.startDate;

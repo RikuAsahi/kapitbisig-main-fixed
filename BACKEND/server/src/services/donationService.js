@@ -30,23 +30,22 @@ async function createDonation(data, donorId) {
 	}
 
 	
-	if ((data.paymentMethod === 'bank_transfer' || data.paymentMethod === 'gcash') && !data.proofImage) {
-		throw { statusCode: 400, message: 'A screenshot proof of payment is required.' };
-	}
+	// if ((data.paymentMethod === 'bank_transfer' || data.paymentMethod === 'gcash') && !data.proofImage) {
+	// 	throw { statusCode: 400, message: 'A screenshot proof of payment is required.' };
+	// }
 
 	const campaign = await Campaign.findById(data.campaignId);
 	if (!campaign) {
 		throw { statusCode: 404, message: 'Campaign not found.' };
 	}
-
+	
 	const donation = await Donation.create({
 		campaignId: data.campaignId,
 		donorId,
 		amount: Number(data.amount),
 		paymentMethod: data.paymentMethod,
 		message: data.message || null,
-		proofImage: data.proofImage || null,
-		proofNotes: data.proofNotes || null
+		transactionRef: data.paymentIntentId
 	});
 
 	return donation;

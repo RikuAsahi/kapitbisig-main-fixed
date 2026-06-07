@@ -50,7 +50,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;di
 .login-input::placeholder{color:rgba(255,255,255,0.3)}
 .login-input:focus{border-color:var(--sky);background:rgba(255,255,255,0.1);box-shadow:0 0 0 4px rgba(74,156,199,0.15)}
 .login-input.has-toggle{padding-right:44px}
-.pwd-toggle{position:absolute;right:12px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.35);padding:4px;border-radius:6px;transition:color .2s;display:flex}
+.pwd-toggle{position:absolute;left:14px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.35);padding:4px;border-radius:6px;transition:color .2s;display:flex}
 .pwd-toggle:hover{color:var(--sky-light)}
 .pwd-toggle svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
 

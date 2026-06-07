@@ -120,6 +120,7 @@
 		if (!state.campaign) return;
 		try {
 			const response = await DonationAPI.getCampaignStats(state.campaign.id);
+			console.log(response);
 			const stats = response.stats;
 			const count = Number(stats.totalDonations || 0);
 			const raised = Number(stats.totalAmount || 0);
@@ -148,36 +149,107 @@
 		}
 	}
 
+	const COMMENTS_PER_PAGE = 5;
+	let allComments = [];
+	let commentPage = 1;
+
 	async function loadComments() {
 		if (!state.campaign) return;
 		try {
-			const result = await CampaignAPI.getComments(state.campaign.id);
-			renderComments(result.comments || []);
+			const result = await CampaignAPI.getComments(state.campaign.id, 200, 0);
+			allComments = result.comments || [];
+			commentPage = 1;
+			renderComments();
 		} catch (error) {
 			console.log('Failed to load comments:', error.message);
 		}
 	}
 
-	function renderComments(comments) {
-		const list = qs('commentsList');
-		const empty = qs('commentsEmpty');
-		if (!list) return;
-		if (!comments.length) {
-			list.innerHTML = '';
-			if (empty) empty.style.display = '';
+	function renderComments() {
+		const card = qs('commentsCard');
+		if (!card) return;
+
+		let list = qs('commentsList');
+		if (!list) {
+			list = document.createElement('div');
+			list.id = 'commentsList';
+			const placeholder = card.querySelector('.comments-placeholder');
+			if (placeholder) placeholder.replaceWith(list);
+			else card.appendChild(list);
+		}
+
+		if (!allComments.length) {
+			list.innerHTML = '<p style="font-size:13px;color:var(--text-soft);padding:8px 0;">No comments yet. Be the first to comment!</p>';
+			_removePagination();
 			return;
 		}
-		if (empty) empty.style.display = 'none';
-		list.innerHTML = comments.map(function (c) {
-			return '<div class="comment-item" style="padding:10px 0;border-bottom:1px solid #f0f0f0;">'
-				+ '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
-				+ '<span style="font-weight:600;font-size:13px;">' + escapeHtml(c.authorName) + '</span>'
-				+ '<span style="font-size:12px;color:#888;">' + formatDate(c.createdAt) + '</span>'
+
+		const totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+		const start = (commentPage - 1) * COMMENTS_PER_PAGE;
+		const page  = allComments.slice(start, start + COMMENTS_PER_PAGE);
+
+		list.innerHTML = page.map(function (c) {
+			const initials = String(c.authorName || 'A').split(' ').map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+			return '<div class="comment-item">'
+				+ '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+				+ '<div style="display:flex;align-items:center;gap:8px;">'
+				+ '<div class="donor-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0;">' + initials + '</div>'
+				+ '<strong>' + escapeHtml(c.authorName) + '</strong>'
 				+ '</div>'
-				+ '<p style="margin:0;font-size:14px;color:#333;">' + escapeHtml(c.text) + '</p>'
+				+ '<span style="font-size:11px;color:var(--text-soft);">' + formatDate(c.createdAt) + '</span>'
+				+ '</div>'
+				+ '<p>' + escapeHtml(c.text) + '</p>'
 				+ '</div>';
 		}).join('');
+
+		_renderPagination(totalPages, card, list);
 	}
+
+	function _renderPagination(totalPages, card, list) {
+		let pager = qs('commentsPager');
+		if (!pager) {
+			pager = document.createElement('div');
+			pager.id = 'commentsPager';
+			pager.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:8px;';
+			card.appendChild(pager);
+		}
+
+		if (totalPages <= 1) { pager.style.display = 'none'; return; }
+		pager.style.display = 'flex';
+
+		const prevDisabled = commentPage <= 1;
+		const nextDisabled = commentPage >= totalPages;
+
+		pager.innerHTML = '<button onclick="window._commentPagePrev()" '
+			+ 'style="padding:7px 16px;border-radius:8px;border:1.5px solid rgba(91,164,207,0.25);background:var(--off-white);'
+			+ 'font-size:12px;font-weight:600;color:var(--sky);cursor:pointer;transition:background .2s,border-color .2s;'
+			+ (prevDisabled ? 'opacity:0.4;pointer-events:none;' : '') + '">← Prev</button>'
+			+ '<span style="font-size:12px;color:var(--text-soft);">Page ' + commentPage + ' of ' + totalPages
+			+ ' <span style="color:var(--text-soft);font-size:11px;">(' + allComments.length + ' comments)</span></span>'
+			+ '<button onclick="window._commentPageNext()" '
+			+ 'style="padding:7px 16px;border-radius:8px;border:1.5px solid rgba(91,164,207,0.25);background:var(--off-white);'
+			+ 'font-size:12px;font-weight:600;color:var(--sky);cursor:pointer;transition:background .2s,border-color .2s;'
+			+ (nextDisabled ? 'opacity:0.4;pointer-events:none;' : '') + '">Next →</button>';
+	}
+
+	function _removePagination() {
+		const pager = qs('commentsPager');
+		if (pager) pager.style.display = 'none';
+	}
+
+	window._commentPagePrev = function () {
+		if (commentPage <= 1) return;
+		commentPage--;
+		renderComments();
+		qs('commentsCard') && qs('commentsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	};
+
+	window._commentPageNext = function () {
+		if (commentPage >= Math.ceil(allComments.length / COMMENTS_PER_PAGE)) return;
+		commentPage++;
+		renderComments();
+		qs('commentsCard') && qs('commentsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	};
 
 	async function submitComment(event) {
 		if (event) event.preventDefault();
@@ -193,10 +265,11 @@
 			await CampaignAPI.addComment(state.campaign.id, text);
 			if (input) input.value = '';
 			setText('commentCharCount', '0/1000');
+			commentPage = 1;
 			await loadComments();
-			ToastHelper.success && ToastHelper.success('Comment posted!');
+			showToast('Comment posted!');
 		} catch (error) {
-			ToastHelper.error('Failed to post comment: ' + error.message);
+			showToast('Failed to post comment: ' + error.message, 'error');
 		}
 	}
 
@@ -222,9 +295,9 @@
 		const valid = amt >= 50;
 		qs('donAmtErr') && qs('donAmtErr').classList.toggle('show', !valid);
 
-		const tip = tipAmount(amt, state.tipPercent);
-		const tax = taxAmount(amt);
-		const total = amt + tip + tax;
+		const tip = state.tipAmount = tipAmount(amt, state.tipPercent);
+		const tax = state.taxAmount = taxAmount(amt);
+		const total = state.totalAmount = amt + tip + tax;
 
 		setText('sumDon', fmtMoney(amt));
 		setText('sumTip', fmtMoney(tip));
@@ -284,32 +357,95 @@
 		}
 		closeModal('donationModal');
 		openModal('paymentModal');
+
+		createPaymentIntent();
+	}
+
+	async function createPaymentIntent(){
+		let campaign = state.campaign;
+
+		let donation = state.donationAmount;
+		let tip = state.tipAmount;
+		let tax = state.taxAmount;
+		let total = state.totalAmount;
+
+
+		state.paymentIntent = await DonationAPI.createPaymentIntent({
+			amount: total * 100,
+			description: `${campaign.title} (${campaign.ngoName}) - Donation` 
+		});
+
+		console.log(state.paymentIntent);
+	}
+
+	async function createPaymentMethod(type){
+		const user = JSON.parse(localStorage.getItem('kb.auth.user'));
+
+		state.paymentMethod = await DonationAPI.createPaymentMethod({
+			type: type,
+			name: user.fullName,
+			email: user.email
+		});
+
+		console.log(state.paymentMethod);
+	}
+
+	async function attachPaymentMethod(){
+		const user = JSON.parse(localStorage.getItem('kb.auth.user'));
+
+		const attachRes = await DonationAPI.attachPaymentMethod({});
 	}
 
 	async function processPayment() {
-		if (!state.campaign || !state.payMethod) return;
+		const returnUrl = window.location.href;
 
-		
-		if ((state.payMethod === 'bank_transfer' || state.payMethod === 'gcash') && !state.proofImageBase64) {
-			const errId = state.payMethod === 'gcash' ? 'gcashProofErr' : 'proofImageErr';
-			if (qs(errId)) qs(errId).classList.add('show');
-			return;
-		}
+		if (!state.campaign || !state.payMethod) return;
 
 		const btn = qs('payBtn');
 		if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
 
+		
+
+
 		try {
-			await DonationAPI.create({
+			const donation = await DonationAPI.create({
 				campaignId: state.campaign.id,
 				amount: state.donationAmount,
 				paymentMethod: state.payMethod,
+				paymentIntentId: state.paymentIntent.Id,
+				paymentMethodId: state.paymentMethod.id,
+				clientKey: state.paymentIntent.clientKey,
+				returnUrl: returnUrl,
 				message: null,
-				proofImage: state.proofImageBase64 || null,
-				proofNotes: (state.payMethod === 'gcash'
-					? (qs('gcashProofNotes') && qs('gcashProofNotes').value)
-					: (qs('proofNotes') && qs('proofNotes').value)) || null
 			});
+			
+
+			
+			// const attch = await attachPaymentMethod();
+
+			console.log(donation);
+			window.location.href = donation.checkout.attributes.next_action.redirect.url
+			// alert('test');
+
+			
+
+
+
+
+
+
+
+
+			// await CampaignAPI.update({
+			// 	campaignId: state.campaign.id,
+			// 	amount: state.donationAmount,
+			// 	paymentMethod: state.payMethod,
+			// 	message: null,
+			// 	proofImage: state.proofImageBase64 || null,
+			// 	proofNotes: (state.payMethod === 'gcash'
+			// 		? (qs('gcashProofNotes') && qs('gcashProofNotes').value)
+			// 		: (qs('proofNotes') && qs('proofNotes').value)) || null
+			// });
 
 			setText('successDon', fmtMoney(state.donationAmount));
 			setText('successTip', fmtMoney(tipAmount(state.donationAmount, state.tipPercent)));
@@ -329,6 +465,7 @@
 
 			setTimeout(loadDonationStats, 1000);
 		} catch (error) {
+			console.log(error);
 			ToastHelper.error('Payment failed: ' + error.message);
 		} finally {
 			if (btn) { btn.disabled = false; btn.style.opacity = ''; }
@@ -341,16 +478,27 @@
 			const btn = qs('pm-' + m);
 			if (btn) btn.classList.toggle('active', m === method);
 		});
+
 		var fields = { card: 'cardFields', gcash: 'gcashFields', paymaya: 'paymayaFields', bank_transfer: 'bankFields' };
 		Object.keys(fields).forEach(function (m) {
 			var el = qs(fields[m]);
 			if (el) el.style.display = m === method ? '' : 'none';
 		});
-		const isOffline = method === 'bank_transfer' || method === 'gcash';
+
 		const label = qs('payBtnLabel');
-		if (label) label.textContent = isOffline ? 'Submit Donation' : 'Pay Securely';
 		const badge = qs('sslBadge');
-		if (badge) badge.style.display = isOffline ? 'none' : '';
+
+		label.textContent = 'Pay Securely';
+		if (badge) badge.style.display = '';
+
+
+		// const isOffline = method === 'bank_transfer' || method === 'gcash';
+		// const label = qs('payBtnLabel');
+		// if (label) label.textContent = isOffline ? 'Submit Donation' : 'Pay Securely';
+		// const badge = qs('sslBadge');
+		// if (badge) badge.style.display = isOffline ? 'none' : '';
+
+		
 	}
 
 	async function toggleLike() {
@@ -478,8 +626,10 @@
 		try {
 			const res = await SettingsAPI.getPayment();
 			state.paymentSettings = res.settings;
-		} catch (_) {
+			console.log(state.paymentSettings);
+		} catch (error) {
 			state.paymentSettings = { bankTransferEnabled: true, gcashEnabled: false, paymayaEnabled: false, cardEnabled: false };
+			console.error('Error loading payment settings:', error.message);
 		}
 		applyPaymentSettings();
 	}
@@ -553,6 +703,7 @@
 	window.goToPayment = goToPayment;
 	window.processPayment = processPayment;
 	window.selectPayMethod = selectPayMethod;
+	window.createPaymentMethod = createPaymentMethod;
 	window.toggleLike = toggleLike;
 	window.shareTo = shareTo;
 	window.copyLink = copyLink;

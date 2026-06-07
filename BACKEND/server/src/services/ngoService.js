@@ -64,19 +64,19 @@ async function updateNgoProfile(id, data, userId) {
 		};
 	}
 
-	if (profile.userId !== userId) {
-		throw {
-			statusCode: 403,
-			message: 'Cannot update other NGO profiles.'
-		};
-	}
+	// if (profile.userId !== userId) {
+	// 	throw {
+	// 		statusCode: 403,
+	// 		message: 'Cannot update other NGO profiles.'
+	// 	};
+	// }
 
-	if (profile.verificationStatus === NGO_VERIFICATION_STATUS.VERIFIED) {
-		throw {
-			statusCode: 400,
-			message: 'Cannot update verified NGO profiles.'
-		};
-	}
+	// if (profile.verificationStatus === NGO_VERIFICATION_STATUS.VERIFIED) {
+	// 	throw {
+	// 		statusCode: 400,
+	// 		message: 'Cannot update verified NGO profiles.'
+	// 	};
+	// }
 
 	if (data.phoneNumber && !validatePhoneNumber(data.phoneNumber)) {
 		throw {

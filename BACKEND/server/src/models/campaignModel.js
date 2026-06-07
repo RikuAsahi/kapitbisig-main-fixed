@@ -13,6 +13,11 @@ function mapCampaign(row) {
 		currentAmount: Number(row.current_amount) || 0,
 		status: row.status,
 		imageUrl: row.image_url,
+		bankName: row.bank_name || null,
+		bankAccountName: row.bank_account_name || null,
+		bankAccountNumber: row.bank_account_number || null,
+		gcashNumber: row.gcash_number || null,
+		paymayaNumber: row.paymaya_number || null,
 		ngoId: String(row.ngo_id),
 		ngoName: row.ngo_name || null,
 		createdBy: String(row.created_by),
@@ -132,13 +137,21 @@ async function findAll(filters = {}, limit = 50, offset = 0) {
 
 async function create(data) {
 	const [result] = await db.query(
-		`INSERT INTO campaigns (title, description, category, target_amount, ngo_id, created_by, status)
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO campaigns (title, description, category, target_amount, start_date, end_date, bank_name, bank_account_name, bank_account_number, gcash_number, 
+			paymaya_number, ngo_id, created_by, status)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		[
 			data.title,
 			data.description,
 			data.category,
 			data.targetAmount,
+			data.startDate,
+			data.endDate,
+			data.bankName,
+			data.bankAccountName,
+			data.bankAccountNumber,
+			data.gcashNumber,
+			data.paymayaNumber,
 			Number(data.ngoId),
 			Number(data.createdBy),
 			data.status || CAMPAIGN_STATUS.DRAFT
@@ -162,6 +175,26 @@ async function update(id, data) {
 	if (data.targetAmount !== undefined) {
 		updates.push(`target_amount = ?`);
 		values.push(data.targetAmount);
+	}
+	if(data.bankName !== undefined) {
+		updates.push(`bank_name = ?`);
+		values.push(data.bankName);
+	}
+	if(data.bankAccountName !== undefined) {
+		updates.push(`bank_account_name = ?`);
+		values.push(data.bankAccountName);
+	}
+	if(data.bankAccountNumber !== undefined) {
+		updates.push(`bank_account_number = ?`);
+		values.push(data.bankAccountNumber);
+	}
+	if(data.gcashNumber !== undefined) {
+		updates.push(`gcash_number = ?`);
+		values.push(data.gcashNumber);
+	}
+	if(data.paymayaNumber !== undefined) {
+		updates.push(`paymaya_number = ?`);
+		values.push(data.paymayaNumber);
 	}
 	if (data.status !== undefined) {
 		updates.push(`status = ?`);

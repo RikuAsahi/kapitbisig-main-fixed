@@ -26,11 +26,15 @@ CREATE TABLE users (
 	first_name VARCHAR(150) NOT NULL,
 	last_name VARCHAR(150) NOT NULL,
 	email VARCHAR(190) NOT NULL,
+	ngo_id BIGINT UNSIGNED NULL,
 	password_hash VARCHAR(255) NULL,
-	role ENUM('donor', 'ngo_admin', 'admin', 'superadmin') NOT NULL DEFAULT 'donor',
+	role ENUM('donor', 'ngo_admin', 'admin') NOT NULL DEFAULT 'donor',
 	date_registered DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (user_id),
-	UNIQUE KEY uq_users_email (email)
+	UNIQUE KEY uq_users_email (email),
+	CONSTRAINT fk_users_ngo
+		FOREIGN KEY (ngo_id) REFERENCES ngos(ngo_id)
+		ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- NGO (ERD: NGO)
@@ -54,18 +58,29 @@ CREATE TABLE campaigns (
 	campaign_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 	title VARCHAR(200) NOT NULL,
 	description TEXT NULL,
+	category VARCHAR(200) NOT NULL,
 	target_amount DECIMAL(14,2) NOT NULL,
 	current_amount DECIMAL(14,2) NOT NULL DEFAULT 0.00,
 	start_date DATE NOT NULL,
 	end_date DATE NOT NULL,
 	status ENUM('draft', 'pending', 'active', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+	image_url VARCHAR(255) NULL,
+	bank_name VARCHAR(100) NULL,
+	bank_account_name VARCHAR(200) NULL,
+	bank_account_number VARCHAR(100) NULL,	
+	gcash_number VARCHAR(20) NULL,
+	paymaya_number VARCHAR(20) NULL,
 	ngo_id BIGINT UNSIGNED NOT NULL,
+	created_by BIGINT UNSIGNED NOT NULL,
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (campaign_id),
 	KEY idx_campaigns_ngo_id (ngo_id),
 	KEY idx_campaigns_status (status),
 	CONSTRAINT fk_campaigns_ngo
-		FOREIGN KEY (ngo_id) REFERENCES ngos(ngo_id)
+		FOREIGN KEY (ngo_id) REFERENCES ngo_profiles(ngo_id)
+		ON UPDATE CASCADE ON DELETE RESTRICT,
+	CONSTRAINT fk_campaigns_created_by
+		FOREIGN KEY (created_by) REFERENCES users(user_id)
 		ON UPDATE CASCADE ON DELETE RESTRICT,
 	CONSTRAINT chk_campaign_amount CHECK (target_amount > 0),
 	CONSTRAINT chk_campaign_dates CHECK (end_date >= start_date)

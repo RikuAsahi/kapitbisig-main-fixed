@@ -6,6 +6,6 @@ const settingsController = require('../controllers/settingsController');
 const router = express.Router();
 
 router.get('/payment', settingsController.getPaymentSettings);
-router.put('/payment', auth, authorize.authorizeRoles(['admin', 'superadmin']), settingsController.updatePaymentSettings);
+router.put('/payment', auth, authorize.authorizeRoles(['admin']), settingsController.updatePaymentSettings);
 
 module.exports = router;

@@ -35,6 +35,9 @@
 	}
 
 	function isValidEmail(value) {
+		// console.log('email validation');
+		// console.log(value);
+		// console.log(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim()));
 		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
 	}
 
@@ -215,52 +218,65 @@
 		openAuthModal('resetPasswordModal');
 	}
 
+	function showMsg(area, type, text) {
+	const icons = { error:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', warn:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>', success:'<polyline points="20 6 9 17 4 12"/>' };
+	document.getElementById(area).innerHTML = `<div class="msg-box msg-${type}"><svg viewBox="0 0 24 24">${icons[type]||''}</svg>${text}</div>`;
+	}
+
 	const forgotForm = document.getElementById('forgotPasswordForm');
 	if (forgotForm) {
 		forgotForm.addEventListener('submit', async function (event) {
 			event.preventDefault();
-			const emailEl = document.getElementById('forgotEmail');
+			let emailEl = document.getElementById('forgotEmail');
 			const errEl = document.getElementById('forgotEmailErr');
 			const statusEl = document.getElementById('forgotStatus');
 			const submitBtn = forgotForm.querySelector('.auth-submit');
+			
+			
 			if (errEl) errEl.classList.remove('show');
 			clearStatus(statusEl);
 
 			if (!emailEl || !isValidEmail(emailEl.value)) {
-				if (errEl) errEl.classList.add('show');
+				if (errEl) errEl.classList.add('show'); 
+					showMsg('forgotEmailErr','error','Please enter your registered email.'); 
 				return;
 			}
 
+			emailEl = emailEl.value.trim();
+
 			try {
 				setButtonBusy(submitBtn, true, 'Sending...');
-				const response = await fetch(`${API_BASE}/auth/forgot-password`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					credentials: 'include',
-					body: JSON.stringify({ email: emailEl.value.trim() })
-				});
-				const data = await response.json().catch(function () { return {}; });
-				if (!response.ok) {
-					setStatus(statusEl, data.message || 'Unable to send reset link right now.', 'error');
-					return;
-				}
-
-				setStatus(
-					statusEl,
-					data.devResetUrl
-						? 'SMTP is not configured, so use this development reset link:'
-						: (data.message || 'If that email is registered, a reset link has been sent.'),
-					'info',
-					data.devResetUrl
-				);
-				showToast('Password reset request submitted.', 'info');
-			} catch (_error) {
-				setStatus(statusEl, 'Backend is unreachable. Start the auth server first.', 'error');
+				let result = await AuthAPI.forgotPassword(emailEl);
+				statusEl.classList.add('show'); 
+				showMsg('forgotStatus','success','Reset request submitted. Check your email for a temporary password. If you do not see it in your inbox within a few minutes, please check your spam or junk folder.'); return; 
+				
+			} catch (err) {
+				console.log(2);
+				console.log(err.message);
+				statusEl.classList.add('show'); 
+				showMsg('forgotStatus','error', err.message || 'Unable to submit reset request. Please try again.');
 			} finally {
 				setButtonBusy(submitBtn, false);
 			}
 		});
 	}
+
+	async function forgotPassword() {
+  const emailInput = document.getElementById('email');
+  let email = '';
+
+  if (!emailInput) { showMsg('forgotMsg','error','Please enter your registered email.'); return; }
+  email = emailInput.value.trim();
+
+  try {
+    let result = await AuthAPI.forgotPassword(email);
+    console.log(result);
+    showMsg('forgotMsg','success','Reset request submitted. Check your email for a temporary password. If you do not see it in your inbox within a few minutes, please check your spam or junk folder.');
+  } catch (err) {
+    console.log(err);
+    showMsg('forgotMsg','error',err.message || 'Unable to submit reset request. Please try again.');
+  }
+}
 
 	const resetForm = document.getElementById('resetPasswordForm');
 	if (resetForm) {

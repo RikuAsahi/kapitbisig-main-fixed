@@ -13,7 +13,8 @@ const http = {
 			options.body = JSON.stringify(body);
 		}
 		const res = await fetch(API_BASE + endpoint, options);
-		const data = await res.json().catch(() => ({}));
+		let data;
+		try { data = await res.json(); } catch { data = { message: await res.text().catch(() => '') }; }
 		if (!res.ok) {
 			const error = new Error(data.message || `API error ${res.status}`);
 			error.status = res.status;
@@ -45,7 +46,10 @@ const AuthAPI = {
 		http.post('/auth/logout'),
 
 	updateMe: (data) =>
-		http.put('/auth/me', data)
+		http.put('/auth/me', data),
+
+	forgotPassword: (email) =>
+		http.post('/auth/forgot-password', { email }),
 };
 
 /* ── CAMPAIGNS API ── */
@@ -110,7 +114,24 @@ const DonationAPI = {
 		http.get(`/donations/campaign/${campaignId}/donations?limit=${limit}&offset=${offset}`),
 
 	getCampaignStats: (campaignId) =>
-		http.get(`/donations/campaign/${campaignId}/stats`)
+		http.get(`/donations/campaign/${campaignId}/stats`),
+
+	paymentCallback: () =>
+		http.get('/donations/payment/callback'),
+
+	checkout: (data) =>
+		http.post('/donations/checkout', data),
+
+	createPaymentIntent: (data) =>
+		http.post('/donations/createPaymentIntent', data),
+	
+	createPaymentMethod: (data) =>
+		http.post('/donations/createPaymentMethod', data),
+
+	attachPaymentMethod: (data) =>
+		http.post('/donations/attachPaymentMethod', data),
+
+	
 };
 
 /* ── NGO API ── */
@@ -190,6 +211,9 @@ const AdminAPI = {
 	updateUserRole: (userId, role) =>
 		http.put(`/admin/users/${userId}/role`, { role }),
 
+	changePassword: (userId, newPassword) =>
+		http.put(`/admin/users/${userId}/change-password`, { newPassword }),
+
 	deleteUser: (userId) =>
 		http.delete(`/admin/users/${userId}`),
 
@@ -222,6 +246,15 @@ const AdminAPI = {
 
 	updateDonationStatus: (id, status, notes) =>
 		http.put(`/admin/donations/${id}/status`, { status, notes })
+};
+
+/* ── SETTINGS API ── */
+const SettingsAPI = {
+	getPayment: () =>
+		http.get('/settings/payment'),
+
+	updatePayment: (data) =>
+		http.put('/settings/payment', data)
 };
 
 /* ── AUTH STATE MANAGEMENT ── */
