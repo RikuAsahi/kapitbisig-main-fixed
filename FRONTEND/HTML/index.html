@@ -178,28 +178,7 @@
     <h3 class="modal-title">Choose an Organization</h3>
     <p class="modal-subtitle">Select the NGO you'd like to direct your donation to. Both are verified Kapitbisig partners.</p>
     <div class="modal-divider"></div>
-    <div class="ngo-cards">
-      <div class="ngo-card" id="ngo1" onclick="selectNGO('ngo1')">
-        <div class="ngo-avatar">
-          <img src="../Assets/UpSkillsLOGO.png" alt="UpSkills+ Logo"/>
-        </div>
-        <div class="ngo-info">
-          <p class="ngo-name">UpSkills+ Inc.</p>
-          <p class="ngo-type">Skills Training &amp; Education NGO · Barangay 105</p>
-        </div>
-        <div class="ngo-radio"><div class="ngo-radio-dot"></div></div>
-      </div>
-      <div class="ngo-card" id="ngo2" onclick="selectNGO('ngo2')">
-        <div class="ngo-avatar">
-          <img src="../Assets/BYSMPLOGO.png" alt="BYSMP Logo"/>
-        </div>
-        <div class="ngo-info">
-          <p class="ngo-name">BYSMP Bless the Children Foundation Inc.</p>
-          <p class="ngo-type">Child Welfare &amp; Community Dev. · Barangay 105</p>
-        </div>
-        <div class="ngo-radio"><div class="ngo-radio-dot"></div></div>
-      </div>
-    </div>
+    <div class="ngo-cards" id="modalNgoCards"></div>
     <div class="modal-footer">
       <button class="btn-outline" onclick="closeModal()">Cancel</button>
       <button class="btn btn-sky" id="donateBtn" onclick="proceedDonate()" style="padding:11px 26px;font-size:12px;" disabled>Select</button>

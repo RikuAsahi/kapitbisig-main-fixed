@@ -7,7 +7,7 @@
 	const PLACEHOLDER_MODE = false;
 
 	const state = {
-		role: 'superadmin',
+		role: 'admin',
 		accountName: '',
 		accountEmail: '',
 		theme: 'light',
@@ -21,7 +21,7 @@
 	};
 
 	const pagesByRole = {
-		superadmin: [
+		admin: [
 			'dashboard',
 			'analytics',
 			'ngo-management',
@@ -38,16 +38,16 @@
 	};
 
 	const roleProfiles = {
-		superadmin: {
-			label: 'Super Admin',
-			dotClass: 'superadmin',
-			name: 'Super Admin Account',
-			avatar: 'SA'
+		admin: {
+			label: 'Admin',
+			dotClass: 'admin',
+			name: 'Admin Account',
+			avatar: 'AD'
 		},
-		ngo: {
-			label: 'NGO User',
+		ngo_admin: {
+			label: 'NGO Admin',
 			dotClass: 'ngo',
-			name: 'NGO Account',
+			name: 'NGO Admin Account',
 			avatar: 'NG'
 		}
 	};
@@ -59,7 +59,7 @@
 		'ngo-management': { label: 'NGO Management', icon: 'M4 21h16M7 21V8h10v13M9 8V5h6v3' },
 		'user-management': { label: 'User Management', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87' },
 		approvals: { label: 'Approval Queue', icon: 'M20 6L9 17l-5-5' },
-		donations: { label: 'Donation Approvals', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z' },
+		donations: { label: 'Donation', icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z' },
 		moderation: { label: 'Moderation', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' },
 		support: { label: 'Support Center', icon: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' },
 		notifications: { label: 'Notifications', icon: 'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0' },
@@ -68,47 +68,14 @@
 	};
 
 	const data = {
-		campaigns: [
-			{ id: 1, title: 'Tondo Learning Kits', category: 'Education', status: 'Approved', raised: 72000, goal: 100000, donors: 214 },
-			{ id: 2, title: 'Barangay Health Caravan', category: 'Health', status: 'Ongoing', raised: 51000, goal: 65000, donors: 143 },
-			{ id: 3, title: 'Flood Relief Operations', category: 'Natural Disasters', status: 'Pending', raised: 15000, goal: 120000, donors: 67 },
-			{ id: 4, title: 'Mothers Livelihood Tools', category: 'Community', status: 'Draft', raised: 5000, goal: 40000, donors: 19 },
-			{ id: 5, title: 'Scholarship 2026 Batch', category: 'Education', status: 'Approved', raised: 93000, goal: 100000, donors: 289 },
-			{ id: 6, title: 'Mobile Clinic Upgrades', category: 'Health', status: 'Flagged', raised: 14000, goal: 75000, donors: 42 }
-		],
-		ngos: [
-			{ name: 'Bayanihan Foundation', contact: 'Joana Reyes', status: 'Verified', campaigns: 7, raised: 385000 },
-			{ name: 'Hope in Tondo', contact: 'Carlo Dizon', status: 'Pending', campaigns: 3, raised: 92000 },
-			{ name: 'Kalinga Youth', contact: 'Mia Tan', status: 'Inactive', campaigns: 2, raised: 41000 },
-			{ name: 'Sulong Kabataan', contact: 'Luis Ramos', status: 'Verified', campaigns: 4, raised: 168000 }
-		],
-		users: [
-			{ name: 'Maria Santos', email: 'maria@kapitbisig.ph', role: 'superadmin', status: 'Active' },
-			{ name: 'Paolo Cruz', email: 'paolo@kapitbisig.ph', role: 'admin', status: 'Active' },
-			{ name: 'Nadine Flores', email: 'nadine@ngo.ph', role: 'ngo', status: 'Pending Setup' }
-		],
-		approvals: [
-			{ campaign: 'Emergency Food Packs', ngo: 'Hope in Tondo', requested: '2026-05-06', amount: 80000 },
-			{ campaign: 'School Bag Drive', ngo: 'Sulong Kabataan', requested: '2026-05-05', amount: 45000 }
-		],
-		moderation: [
-			{ campaign: 'Mobile Clinic Upgrades', reason: 'Missing liquidation report', severity: 'High' },
-			{ campaign: 'Flood Relief Operations', reason: 'Pending document verification', severity: 'Medium' }
-		],
-		support: [
-			{ org: 'Hope in Tondo', ticket: 'SUP-1012', concern: 'Campaign photo upload fails', status: 'Open' },
-			{ org: 'Kalinga Youth', ticket: 'SUP-1011', concern: 'Cannot export donations report', status: 'In Progress' }
-		],
-		notifications: [
-			{ text: '2 campaigns are waiting for approval.', time: '5 min ago', read: false },
-			{ text: 'Monthly report is ready for export.', time: '20 min ago', read: false },
-			{ text: 'New NGO account registered.', time: '1 hour ago', read: true }
-		],
-		logs: [
-			{ date: '2026-05-08 09:10', action: 'login', actor: 'Maria Santos', detail: 'Successful login from 192.168.1.11' },
-			{ date: '2026-05-08 08:58', action: 'approve', actor: 'Maria Santos', detail: 'Approved campaign Tondo Learning Kits' },
-			{ date: '2026-05-08 08:40', action: 'create', actor: 'Paolo Cruz', detail: 'Created user account nadine@ngo.ph' }
-		],
+		campaigns: [],
+		ngos: [],
+		users: [],
+		approvals: [],
+		moderation: [],
+		support: [],
+		notifications: [],
+		logs: [],
 		ngoAnalytics: null
 	};
 
@@ -128,12 +95,12 @@
 
 	function getRoleFromURL() {
 		const role = new URLSearchParams(window.location.search).get('role');
-		return role === 'ngo' || role === 'superadmin' ? role : null;
+		return role === 'ngo' || role === 'admin' ? role : null;
 	}
 
 	function mapRole(inputRole) {
 		const raw = String(inputRole || '').trim().toLowerCase();
-		if (raw === 'admin' || raw === 'superadmin' || raw === 'super_admin') return 'superadmin';
+		if (raw === 'admin' ) return 'admin';
 		if (raw === 'ngo' || raw === 'ngo_admin' || raw === 'ngo-user') return 'ngo';
 		return null;
 	}
@@ -141,7 +108,6 @@
 	function readAccountContext() {
 		const params = new URLSearchParams(window.location.search);
 		const roleFromQuery = mapRole(params.get('accountRole') || params.get('userRole') || params.get('role'));
-
 		let parsedUser = null;
 		const rawUser = localStorage.getItem('kb.auth.user') || localStorage.getItem('kb.user') || '';
 		if (rawUser) {
@@ -172,11 +138,22 @@
 	}
 
 	function getAllowedPages() {
-		return pagesByRole[state.role] || pagesByRole.superadmin;
+		return pagesByRole[state.role] || pagesByRole.admin;
 	}
 
 	function badgeClass(status) {
 		return `badge-${String(status || '').toLowerCase().replace(/\s+/g, '-')}`;
+	}
+
+	// ── PASSWORD TOGGLE ──
+	function togglePwd(inputId, iconId) {
+		const input = document.getElementById(inputId);
+		const icon  = document.getElementById(iconId);
+		const isHidden = input.type === 'password';
+		input.type = isHidden ? 'text' : 'password';
+		icon.innerHTML = isHidden
+			? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+			: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 	}
 
 	function renderSidebarNav() {
@@ -199,18 +176,18 @@
 	}
 
 	function applyRoleProfile() {
-		const profile = roleProfiles[state.role] || roleProfiles.superadmin;
+		const profile = roleProfiles[state.role] || roleProfiles.admin;
 		const roleDot = qs('roleDot');
 		const roleName = qs('roleUserName');
 		const roleLabel = qs('roleLabel');
 		const avatarBtn = qs('avatarBtn');
-
+		console.log(state);
 		if (roleDot) {
-			roleDot.classList.remove('superadmin', 'admin', 'ngo');
+			roleDot.classList.remove('admin', 'ngo');
 			roleDot.classList.add(profile.dotClass);
 		}
 		if (roleName) roleName.textContent = state.accountName || profile.name;
-		if (roleLabel) roleLabel.textContent = profile.label;
+		if (roleLabel) roleLabel.textContent = state.role ||profile.label;
 		if (avatarBtn) {
 			const fallbackAvatar = profile.avatar;
 			const source = state.accountName || profile.name;
@@ -270,7 +247,7 @@
 			title.childNodes[0].textContent = item.label;
 		}
 		if (sub) {
-			sub.textContent = state.role === 'ngo' ? 'NGO Portal' : 'Super Admin Portal';
+			sub.textContent = state.role === 'ngo' ? 'NGO Portal' : 'Admin Portal';
 		}
 	}
 
@@ -456,7 +433,7 @@
 		const table = qs('ngoTable');
 		if (!table) return;
 
-		const canAct = state.role === 'admin' || state.role === 'superadmin';
+		const canAct = state.role === 'admin';
 		const rows = data.ngos
 			.filter((ngo) => !state.ngoSearch || ngo.name.toLowerCase().includes(state.ngoSearch))
 			.map((ngo) => `
@@ -474,7 +451,7 @@
 					<td>${fmtMoney(ngo.raised)}</td>
 					${canAct ? `<td class="td-actions">
 						${ngo.status !== 'Verified' ? `<button class="btn btn-success btn-sm" onclick="verifyNGO('${ngo.id}')">Verify</button>` : ''}
-						${ngo.status !== 'Rejected' ? `<button class="btn btn-danger btn-sm" onclick="rejectNGO('${ngo.id}')">Reject</button>` : ''}
+						${ngo.status == 'Pending' ? `<button class="btn btn-danger btn-sm" onclick="rejectNGO('${ngo.id}')">Reject</button>` : ''}
 						<button class="btn btn-ghost btn-sm" onclick="editNGO('${ngo.id}')">Edit</button>
 						<button class="btn btn-danger btn-sm" onclick="deleteNGO('${ngo.id}')">Delete</button>
 					</td>` : ''}
@@ -491,8 +468,7 @@
 	function renderUserTable() {
 		const table = qs('userTable');
 		if (!table) return;
-
-		const isSuperAdmin = state.role === 'superadmin';
+		const isAdmin = state.role === 'admin';
 		const rows = data.users.map((user) => `
 			<tr>
 				<td>
@@ -503,23 +479,22 @@
 				<td><span class="badge badge-${user.role}">${user.role}</span></td>
 				<td><span class="badge badge-approved">Active</span></td>
 				<td style="font-size:12px;color:var(--text-soft)">${user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
-				${isSuperAdmin ? `<td class="td-actions">
+				${isAdmin ? `<td class="td-actions">
 					<select class="filter-select" style="font-size:11px;padding:4px 8px;height:auto"
 					        onchange="changeUserRole('${user.id}', this.value)" title="Change role">
 						<option value="donor"      ${user.role==='donor'      ? 'selected':''}>Donor</option>
-						<option value="ngo"        ${user.role==='ngo'        ? 'selected':''}>NGO</option>
+						<option value="ngo"        ${user.role==='ngo' || user.role==='ngo_admin' ? 'selected':''}>NGO</option>
 						<option value="admin"      ${user.role==='admin'      ? 'selected':''}>Admin</option>
-						<option value="superadmin" ${user.role==='superadmin' ? 'selected':''}>Super Admin</option>
 					</select>
 					<button class="btn btn-danger btn-sm" onclick="deleteUserAccount('${user.id}')">Delete</button>
 				</td>` : ''}
 			</tr>
 		`).join('');
 
-		const actionsHeader = isSuperAdmin ? '<th>Actions</th>' : '';
+		const actionsHeader = isAdmin ? '<th>Actions</th>' : '';
 		table.innerHTML = `
 			<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th>${actionsHeader}</tr></thead>
-			<tbody>${rows || `<tr><td colspan="${isSuperAdmin ? 6 : 5}" style="text-align:center;padding:24px;color:var(--text-soft)">No users found.</td></tr>`}</tbody>
+			<tbody>${rows || `<tr><td colspan="${isAdmin ? 6 : 5}" style="text-align:center;padding:24px;color:var(--text-soft)">No users found.</td></tr>`}</tbody>
 		`;
 	}
 
@@ -924,6 +899,10 @@
 		return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 	}
 
+	async function saveGeneralSettings(){
+
+	}
+
 	async function savePaymentSettings() {
 		try {
 			await SettingsAPI.updatePayment({
@@ -948,21 +927,23 @@
 	async function renderSettings() {
 		const general = qs('settingsGeneral');
 		const security = qs('settingsSecurity');
+		
 		if (!general || !security) return;
+		
+		const isAdmin = state.role === 'admin';
 
-		const isSuperAdmin = state.role === 'superadmin';
-
-		if (isSuperAdmin) {
+		if (isAdmin) {
 			const payCard = qs('paymentSettingsCard');
+		
 			if (payCard) payCard.style.display = '';
 			await loadPaymentSettingsPanel();
 		}
-
-		if (!isSuperAdmin) {
+		
+		if (!isAdmin) {
 			general.innerHTML = `
 				<div class="form-group">
 					<label class="form-label">Organization Display Name</label>
-					<input class="form-input" value="${state.accountName || 'NGO Account'}" />
+					<input class="form-input" value="${state.accountEmail || 'NGO Account'}" />
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Public Contact Email</label>
@@ -970,11 +951,11 @@
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Public Contact Number</label>
-					<input class="form-input" value="+63 900 000 0000" />
+					<input class="form-input" value="${state.myProfile.profile.phoneNumber || '+63 900 000 0000'}" />
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Address</label>
-					<input class="form-input" value="Barangay 105, Tondo, Manila" />
+					<input class="form-input" value="${state.myProfile.profile.address || ''}" />
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Campaign Notification Emails</label>
@@ -983,28 +964,37 @@
 			`;
 
 			security.innerHTML = `
+			
 				<div class="form-group">
 					<label class="form-label">Change Password</label>
-					<input class="form-input" type="password" placeholder="Enter new password" />
+					<div class="field-wrap">					
+						<input class="form-input" type="password" id="newPassword" placeholder="Enter New Password" />
+						<button class="pwd-toggle" type="button" onclick="togglePwd('newPassword','eye1')"><svg id="eye1" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+					</div>
+										
 				</div>
 				<div class="form-group" style="margin-top:12px">
 					<label class="form-label">Confirm New Password</label>
-					<input class="form-input" type="password" placeholder="Confirm new password" />
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Two-Factor Authentication</label>
-					<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Login Alerts</label>
-					<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
-				</div>
-				<div class="form-group" style="margin-top:12px">
-					<label class="form-label">Session Timeout</label>
-					<select class="form-input"><option>60 minutes</option><option>30 minutes</option><option>15 minutes</option></select>
-				</div>
+					<div class="field-wrap">
+						<input class="form-input" id="confirmPassword" type="password" placeholder="Confirm new password" />
+						<button class="pwd-toggle" type="button" onclick="togglePwd('confirmPassword','eye2')"><svg id="eye2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+					</div>	
+					
+				</div>				
 			`;
 			return;
+			// <div class="form-group" style="margin-top:12px">
+			// 		<label class="form-label">Two-Factor Authentication</label>
+			// 		<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+			// 	</div>
+			// 	<div class="form-group" style="margin-top:12px">
+			// 		<label class="form-label">Login Alerts</label>
+			// 		<label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
+			// 	</div>
+			// 	<div class="form-group" style="margin-top:12px">
+			// 		<label class="form-label">Session Timeout</label>
+			// 		<select class="form-input"><option>60 minutes</option><option>30 minutes</option><option>15 minutes</option></select>
+			// 	</div>
 		}
 
 		general.innerHTML = `
@@ -1068,6 +1058,23 @@
 				<label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
 			</div>
 		`;
+	}
+
+	async function changePassword(){
+		const newPassword = String(qs('newPassword')?.value || '').trim();
+		const confirmPassword = String(qs('confirmPassword')?.value || '').trim();
+		
+		if (!newPassword) { showToast('New password is required.', 'error'); return; }
+		if (newPassword !== confirmPassword) { showToast('Passwords do not match.', 'error'); return; }
+		try {
+			await AdminAPI.changePassword(state.userId, newPassword);
+			showToast('Password changed successfully.', 'success');
+		} catch (_err) {
+			showToast('Failed to change password.', 'error');
+		}
+		
+
+		
 	}
 
 	function chartPalette() {
@@ -1335,8 +1342,8 @@
 		try {
 			const campaignFilters = { limit: 100 };
 			if (state.role === 'ngo' && state.ngoId) campaignFilters.ngoId = state.ngoId;
-
-			const isAdmin = state.role === 'admin' || state.role === 'superadmin';
+			
+			const isAdmin = state.role === 'admin';
 
 			const promises = [
 				CampaignAPI.list(campaignFilters),
@@ -1346,21 +1353,26 @@
 			];
 
 			const [campaignsRes, usersRes, ngosRes, logsRes] = await Promise.all(promises);
-
 			const campaigns = campaignsRes.campaigns || [];
 			const users = usersRes.users || [];
 			const ngos = ngosRes.profiles || ngosRes.ngos || [];
 			const logs = logsRes.logs || [];
-
 			data.campaigns = campaigns.map((c) => ({
 				id: c.id,
 				title: c.title,
 				category: c.category,
+				description: c.description || 'No campaign description yet.',
+				createdAt: c.createdAt,
 				status: c.status.charAt(0).toUpperCase() + c.status.slice(1),
 				raised: Number(c.currentAmount || 0),
 				goal: Number(c.targetAmount || 0),
 				donors: 0,
-				rejectionReason: c.rejectionReason || null
+				rejectionReason: c.rejectionReason || null,
+				bankName: c.bankName || null,
+				bankAccount: c.bankAccountNumber || null,
+				bankPayee: c.bankAccountName || null,
+				gcashNumber: c.gcashNumber || null,
+				paymayaNumber: c.paymayaNumber || null
 			}));
 
 			data.users = users.map((u) => ({
@@ -1387,6 +1399,12 @@
 				address: n.address || '',
 				description: n.description || ''
 			}));
+
+			const orgSelect = qs('orgSelect');
+			if (orgSelect) {
+				orgSelect.innerHTML = '<option value="">Select an organization…</option>' +
+					data.ngos.map((n) => `<option value="${n.id}">${escHtml(n.name)}</option>`).join('');
+			}
 
 			const ngoMap = {};
 			ngos.forEach((n) => { ngoMap[String(n.id)] = n.name; });
@@ -1437,9 +1455,9 @@
 		const description = String(qs('campaignDescriptionInput')?.value || '').trim();
 
 		const bankName = String(qs('campaignBankNameInput')?.value || '').trim();
-		const bankAccount = String(qs('campaignBankAccountInput')?.value || '').trim();
-		const bankPayee = String(qs('campaignBankPayeeInput')?.value || '').trim();
-		const gcashNumber = String(qs('campaignGCashInput')?.value || '').trim();
+		const bankAccount = String(qs('campaignBankAccountNumberInput')?.value || '').trim();
+		const bankPayee = String(qs('campaignBankAccountNameInput')?.value || '').trim();
+		const gcashNumber = String(qs('campaignGCashNumberInput')?.value || '').trim();
 		const paymayaNumber = String(qs('campaignPayMayaInput')?.value || '').trim();
 
 		if (!title) {
@@ -1655,6 +1673,7 @@
 		if (state.role === 'ngo') {
 			openModal('createCampaignModal');
 		} else {
+			updateUserForm();
 			openModal('createUserModal');
 		}
 	}
@@ -1705,11 +1724,18 @@
 				id: c.id,
 				title: c.title,
 				category: c.category,
+				description: c.description || 'No campaign description yet.',
+				createdAt: c.createdAt,
 				status: c.status.charAt(0).toUpperCase() + c.status.slice(1),
 				raised: Number(c.currentAmount || 0),
 				goal: Number(c.targetAmount || 0),
 				donors: 0,
-				rejectionReason: c.rejectionReason || null
+				rejectionReason: c.rejectionReason || null,
+				bankName: c.bankName || null,
+				bankAccount: c.bankAccountNumber || null,
+				bankPayee: c.bankAccountName || null,
+				gcashNumber: c.gcashNumber || null,
+				paymayaNumber: c.paymayaNumber || null
 			}));
 			renderCampaignGrid();
 		} catch (_err) {
@@ -1722,7 +1748,13 @@
 		const category = String(qs('campaignCategoryInput')?.value || '').trim();
 		const goal = Number(qs('campaignGoalInput')?.value || 0);
 		const description = String(qs('campaignDescriptionInput')?.value || '').trim();
-
+		const startDate = String(qs('campaignStartDateInput')?.value || '').trim();
+		const bankName = String(qs('campaignBankNameInput')?.value || '').trim();
+		const bankAccount = String(qs('campaignBankAccountInput')?.value || '').trim();
+		const bankPayee = String(qs('campaignBankPayeeInput')?.value || '').trim();
+		const gcashNumber = String(qs('campaignGCashInput')?.value || '').trim();
+		const paymayaNumber = String(qs('campaignPayMayaInput')?.value || '').trim();
+		
 		if (!title) { showToast('Campaign title is required.', 'error'); return; }
 		if (!category) { showToast('Campaign category is required.', 'error'); return; }
 		if (!(goal > 0)) { showToast('Goal amount must be greater than zero.', 'error'); return; }
@@ -1733,6 +1765,11 @@
 				category,
 				description: description || 'No description provided.',
 				targetAmount: goal,
+				bankName: bankName || null,
+				bankAccountNumber: bankAccount || null,
+				bankAccountName: bankPayee || null,
+				gcashNumber: gcashNumber || null,
+				paymayaNumber: paymayaNumber || null,
 				ngoId: state.ngoId
 			});
 			showToast('Campaign saved as draft.', 'success');
@@ -1748,13 +1785,14 @@
 		const category = String(qs('campaignCategoryInput')?.value || '').trim();
 		const goal = Number(qs('campaignGoalInput')?.value || 0);
 		const description = String(qs('campaignDescriptionInput')?.value || '').trim();
-
+		const startDate = String(qs('campaignStartDateInput')?.value || '').trim();
+		const endDate = String(qs('campaignEndDateInput')?.value || '').trim();
 		const bankName = String(qs('campaignBankNameInput')?.value || '').trim();
 		const bankAccount = String(qs('campaignBankAccountInput')?.value || '').trim();
 		const bankPayee = String(qs('campaignBankPayeeInput')?.value || '').trim();
 		const gcashNumber = String(qs('campaignGCashInput')?.value || '').trim();
 		const paymayaNumber = String(qs('campaignPayMayaInput')?.value || '').trim();
-
+		
 		if (!title) { showToast('Campaign title is required.', 'error'); return; }
 		if (!category) { showToast('Campaign category is required.', 'error'); return; }
 		if (!(goal > 0)) { showToast('Goal amount must be greater than zero.', 'error'); return; }
@@ -1768,7 +1806,14 @@
 				title,
 				category,
 				description: description || 'No description provided.',
+				startDate: startDate,
+				endDate: endDate,
 				targetAmount: goal,
+				bankName: bankName || null,
+				bankAccountNumber: bankAccount || null,
+				bankAccountName: bankPayee || null,
+				gcashNumber: gcashNumber || null,
+				paymayaNumber: paymayaNumber || null,
 				ngoId: state.ngoId
 			});
 			const newId = createRes.campaign && createRes.campaign.id;
@@ -1787,25 +1832,109 @@
 		const campaign = data.campaigns.find((c) => String(c.id) === String(id));
 		if (!campaign) return;
 
+		const progress = campaign.goal > 0
+			? Math.min(100, Math.round((campaign.raised / campaign.goal) * 100))
+			: 0;
+
 		if (qs('cdTitle')) qs('cdTitle').textContent = campaign.title;
-		if (qs('cdBody')) {
-			const progress = campaign.goal > 0
-				? Math.min(100, Math.round((campaign.raised / campaign.goal) * 100))
-				: 0;
-			const rejectionBlock = campaign.rejectionReason
-				? `<p style="background:#fff0f0;border-left:4px solid #d94f4f;padding:10px 14px;border-radius:4px;margin-top:12px;font-size:13px"><strong>Rejection reason:</strong> ${campaign.rejectionReason}</p>`
-				: '';
-			qs('cdBody').innerHTML = `
-				<p style="color:var(--text-mid);margin-bottom:10px">Category: <strong>${campaign.category}</strong></p>
-				<p style="color:var(--text-mid);margin-bottom:8px">Raised: ${fmtMoney(campaign.raised)} of ${fmtMoney(campaign.goal)} (${progress}%)</p>
-				<p style="color:var(--text-mid);margin-bottom:4px">Status: <span class="badge ${badgeClass(campaign.status)}">${campaign.status}</span></p>
-				${rejectionBlock}
-			`;
-		}
-		if (qs('cdFooter')) {
-			qs('cdFooter').innerHTML = '<button class="btn btn-ghost btn-sm" onclick="closeModal(\'campaignDetailModal\')">Close</button>';
-		}
+
+		if (qs('cdBody')) qs('cdBody').innerHTML = `
+			<!-- Status + Category row -->
+			<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+				<span class="badge ${badgeClass(campaign.status)}">${campaign.status}</span>
+				<span class="badge" style="background:rgba(74,156,199,0.1);color:var(--sky);">${campaign.category}</span>
+			</div>
+
+			<!-- Progress block -->
+			<div style="background:var(--surface2);border-radius:14px;padding:18px 20px;margin-bottom:16px;border:1px solid var(--border);">
+				<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+					<span style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--sky);line-height:1;">${fmtMoney(campaign.raised)}</span>
+					<span style="font-size:13px;font-weight:700;color:var(--text-soft);">${progress}%</span>
+				</div>
+				<div class="progress-bar" style="margin-bottom:8px;"><div class="progress-fill sky" style="width:${progress}%"></div></div>
+				<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-soft);">
+					<span>Raised</span>
+					<span>Goal: <strong style="color:var(--text);">${fmtMoney(campaign.goal)}</strong></span>
+				</div>
+			</div>
+
+			<!-- Stats row -->
+			<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+				<div style="text-align:center;background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);">
+					<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);">${campaign.donors}</div>
+					<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-soft);margin-top:2px;">Donors</div>
+				</div>
+				<div style="text-align:center;background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);">
+					<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);">${fmtMoney(campaign.goal - campaign.raised)}</div>
+					<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-soft);margin-top:2px;">Remaining</div>
+				</div>
+				<div style="text-align:center;background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border);">
+					<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);">${progress}%</div>
+					<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-soft);margin-top:2px;">Funded</div>
+				</div>
+			</div>
+
+			${campaign.rejectionReason ? `
+			<div style="background:rgba(217,79,79,0.08);border-left:4px solid var(--red);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;">
+				<p style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--red);margin-bottom:4px;">Rejection Reason</p>
+				<p style="font-size:13px;color:var(--text-mid);">${escHtml(campaign.rejectionReason)}</p>
+			</div>` : ''}
+		`;
+
+		if (qs('cdFooter')) qs('cdFooter').innerHTML = `
+			<button class="btn btn-ghost btn-sm" onclick="closeModal('campaignDetailModal')">Close</button>
+			<button class="btn btn-primary btn-sm" onclick="closeModal('campaignDetailModal');openEditCampaign('${campaign.id}')">
+				<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+				Edit Campaign
+			</button>
+		`;
+
 		openModal('campaignDetailModal');
+	}
+
+	function openEditCampaign(id) {
+		const campaign = data.campaigns.find((c) => String(c.id) === String(id));
+		
+		if (!campaign) return;
+		if (qs('editCampaignId'))          qs('editCampaignId').value          = campaign.id;
+		if (qs('editCampaignTitleInput'))        qs('editCampaignTitleInput').value        = campaign.title || '';
+		if (qs('editCampaignCategoryInput'))     qs('editCampaignCategoryInput').value     = campaign.category || '';
+		if (qs('editCampaignGoalInput'))         qs('editCampaignGoalInput').value         = campaign.goal || '';
+		if (qs('editCampaignDescriptionInput'))  qs('editCampaignDescriptionInput').value  = campaign.description || '';
+		if (qs('editCampaignBankNameInput'))     qs('editCampaignBankNameInput').value     = campaign.bankName || '';
+		if (qs('editCampaignBankAccountInput'))  qs('editCampaignBankAccountInput').value  = campaign.bankAccount || '';
+		if (qs('editCampaignBankPayeeInput'))    qs('editCampaignBankPayeeInput').value    = campaign.bankPayee || '';
+		if (qs('editCampaignGCashInput'))        qs('editCampaignGCashInput').value        = campaign.gcashNumber || '';
+		if (qs('editCampaignPayMayaInput'))      qs('editCampaignPayMayaInput').value      = campaign.paymayaNumber || '';
+		openModal('editCampaignModal');
+	}
+
+	async function saveEditCampaign() {
+		const id          = qs('editCampaignId')?.value;
+		const title       = (qs('editCampaignTitleInput')?.value || '').trim();
+		const category    = qs('editCampaignCategoryInput')?.value || '';
+		const goal        = Number(qs('editCampaignGoalInput')?.value || 0);
+		const description = (qs('editCampaignDescriptionInput')?.value || '').trim();
+		const startDate 	= String(qs('campaignStartDateInput')?.value || '').trim();
+		const endDate 		= String(qs('campaignEndDateInput')?.value || '').trim();
+		const bankName = (qs('editCampaignBankNameInput')?.value || '').trim();
+		const bankAccountNumber = (qs('editCampaignBankAccountInput')?.value || '').trim();
+		const bankAccountName = (qs('editCampaignBankPayeeInput')?.value || '').trim();
+		const gcashNumber = (qs('editCampaignGCashInput')?.value || '').trim();
+		const paymayaNumber = (qs('editCampaignPayMayaInput')?.value || '').trim();
+
+		if (!title)    { showToast('Campaign title is required.', 'error'); return; }
+		if (!(goal>0)) { showToast('Goal amount must be greater than zero.', 'error'); return; }
+		
+		try {
+			await CampaignAPI.update(id, { title, category, targetAmount: goal, description, startDate, endDate, bankName, bankAccountNumber, bankAccountName, gcashNumber, paymayaNumber });
+			showToast('Campaign updated successfully.', 'success');
+			closeModal('editCampaignModal');
+			await loadDashboardData();
+			renderCampaignGrid();
+		} catch (err) {
+			showToast(err.message || 'Failed to update campaign.', 'error');
+		}
 	}
 
 	function openApprovalModal(mode, index) {
@@ -1867,7 +1996,8 @@
 		const email = (qs('newUserEmail')?.value || '').trim();
 		const role = qs('newUserRole')?.value || 'admin';
 		const password = (qs('genPassword')?.textContent || '').trim();
-
+		const organizationId = (qs('orgSelect')?.value || '').trim();
+		
 		if (!fullName) { showToast('Full name is required.', 'error'); return; }
 		if (!email) { showToast('Email is required.', 'error'); return; }
 
@@ -1876,7 +2006,7 @@
 		const lastName = parts.slice(1).join(' ') || parts[0];
 
 		try {
-			await AdminAPI.createUser({ firstName, lastName, email, password, role });
+			await AdminAPI.createUser({ firstName, lastName, email, password, role, organizationId });
 			showToast(`${role.charAt(0).toUpperCase() + role.slice(1)} account created for ${email}.`, 'success');
 			closeModal('createUserModal');
 			if (qs('newUserFullName')) qs('newUserFullName').value = '';
@@ -1903,11 +2033,13 @@
 		const parts = contactPerson.split(/\s+/);
 		const firstName = parts[0] || orgName.split(/\s+/)[0];
 		const lastName = parts.slice(1).join(' ') || 'NGO';
-		const tempPassword = `Kb@Ngo${Math.floor(1000 + Math.random() * 9000)}!`;
+		const tempPassword = `Kb@Tmp8017!`;
+		// const tempPassword = `Kb@Ngo${Math.floor(1000 + Math.random() * 9000)}!`;
 
 		try {
-			const userRes = await AdminAPI.createUser({ firstName, lastName, email, password: tempPassword, role: 'ngo' });
+			const userRes = await AdminAPI.createUser({ firstName, lastName, email, password: tempPassword, role: 'ngo'});
 			const userId = userRes.user && userRes.user.id;
+			alert(`User creation`);
 			if (!userId) throw new Error('User creation failed.');
 
 			await AdminAPI.createNGOProfile({
@@ -2000,9 +2132,11 @@
 
 	function updateUserForm() {
 		const role = qs('newUserRole')?.value || 'admin';
-		const prefix = role === 'superadmin' ? 'SUP' : role === 'ngo' ? 'NGO' : 'ADM';
+		const prefix = role === 'superadmin' ? 'SUP' : role === 'ngo_admin' ? 'NGO' : 'ADM';
+		
 		if (qs('generatedId')) qs('generatedId').value = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
 		if (qs('genPassword')) qs('genPassword').textContent = `Kb@Tmp${Math.floor(1000 + Math.random() * 9000)}!`;
+
 	}
 
 	async function logout() {
@@ -2036,15 +2170,16 @@
 			serverUser = null;
 		}
 
-		const allowedRoles = ['admin', 'superadmin', 'ngo', 'ngo_admin', 'ngo_user'];
+		const allowedRoles = ['admin', 'ngo', 'ngo_admin', 'ngo_user'];
 		if (!serverUser || !allowedRoles.includes(serverUser.role)) {
 			window.location.href = 'AdminLogIn.html';
 			return;
 		}
-
+		
 		const account = readAccountContext();
 		const roleFromURL = getRoleFromURL();
-		state.role = mapRole(serverUser.role) || account.role || roleFromURL || localStorage.getItem(ROLE_KEY) || 'superadmin';
+		state.userId = serverUser.id;
+		state.role = mapRole(serverUser.role) || account.role || roleFromURL || localStorage.getItem(ROLE_KEY);
 		state.accountName = account.name || `${serverUser.firstName || ''} ${serverUser.lastName || ''}`.trim();
 		state.accountEmail = account.email || serverUser.email || '';
 		state.theme = localStorage.getItem(THEME_KEY) || 'light';
@@ -2055,12 +2190,17 @@
 		renderRoleSwitcher();
 		renderSidebarNav();
 
+		const today = new Date().toLocaleDateString('en-CA');
+		document.getElementById('campaignStartDateInput').value = today;
+
 		// Resolve ngoId BEFORE loadDashboardData so the ngoId filter is applied on first load
 
 		if (state.role === 'ngo') {
 			try {
-				const profileRes = await NGOAPI.getMyProfile();
+				const profileRes = await NGOAPI.getMyProfile();	
 				state.ngoId = profileRes.profile && profileRes.profile.id ? profileRes.profile.id : null;
+				
+				state.myProfile = profileRes;
 			} catch (_err) {
 				// ngoId stays null
 			}
@@ -2116,6 +2256,8 @@
 	window.saveCampaign = saveCampaign;
 	window.submitCampaign = submitCampaign;
 	window.openCampaignDetail = openCampaignDetail;
+	window.openEditCampaign = openEditCampaign;
+	window.saveEditCampaign = saveEditCampaign;
 	window.openApprovalModal = openApprovalModal;
 	window.submitApproval = submitApproval;
 	window.createUser = createUser;
@@ -2132,10 +2274,12 @@
 	window.changeUserRole = changeUserRole;
 	window.filterLogs = filterLogs;
 	window.savePaymentSettings = savePaymentSettings;
+	window.saveGeneralSettings = saveGeneralSettings;
 	window.filterDonations = filterDonations;
 	window.viewProof = viewProof;
 	window.approveDonation = approveDonation;
 	window.rejectDonation = rejectDonation;
-
+	window.changePassword = changePassword;
+	window.togglePwd = togglePwd;
 	init();
 })();

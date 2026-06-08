@@ -25,3 +25,6 @@ build/
 # Misc
 *.pem
 .npm
+
+.history/
+*.history/

@@ -35,11 +35,11 @@
 
     <!-- Step 1: Login -->
     <div id="stepLogin">
-      <div class="step-indicator">
+      <!-- <div class="step-indicator">
         <div class="step-dot active" id="sd1"></div>
         <div class="step-dot" id="sd2"></div>
         <div class="step-dot" id="sd3"></div>
-      </div>
+      </div> -->
 
       <div id="msgArea"></div>
 
@@ -170,17 +170,17 @@
         <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       </div>
       <h3 style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;margin-bottom:8px">Reset Password</h3>
-      <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.6">Enter your registered email. An admin approval request will be sent, or a verification link will be emailed to you.</p>
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;line-height:1.6">Forgot your password? Enter your registered email address, and we'll send a temporary password to help you sign in.</p>
       <div class="field-group">
         <label class="form-label">Registered Email</label>
         <div class="field-wrap">
           <svg class="field-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <input class="login-input" type="email" placeholder="admin@kapitbisig.ph"/>
+          <input class="login-input" type="email" id="email" placeholder="admin@kapitbisig.ph"/>
         </div>
       </div>
-      <button class="btn-login" onclick="showMsg('forgotMsg','success','Reset request submitted. Check your email or wait for admin approval.')">Send Reset Request</button>
+      <button class="btn-login" onclick="forgotPassword()">Send Reset Request</button>
       <div id="forgotMsg" style="margin-top:12px"></div>
-      <p style="font-size:11.5px;color:rgba(255,255,255,0.25);text-align:center;margin-top:16px">Password resets require Super Admin approval for security.</p>
+      <!-- <p style="font-size:11.5px;color:rgba(255,255,255,0.25);text-align:center;margin-top:16px">Password resets require Super Admin approval for security.</p> -->
     </div>
 
   </div><!-- /login-card -->

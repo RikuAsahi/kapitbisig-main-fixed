@@ -3,6 +3,35 @@ const NGO = require('../models/ngoModel');
 const Campaign = require('../models/campaignModel');
 const ActivityLog = require('../models/activityLogModel');
 const constants = require('../utils/constants');
+const bcrypt = require('bcryptjs');
+
+async function createAdminUser({ firstName, lastName, email, password, role = constants.ROLES.ADMIN }, adminId, ipAddress) {
+	const existing = await User.findByEmail(email, { includeArchived: false });
+	if (existing) {
+		throw { statusCode: 409, message: constants.ERROR_MESSAGES.EMAIL_ALREADY_EXISTS };
+	}
+
+	const normalizedRole = constants.normalizeRole(role);
+	// if (![constants.ROLES.ADMIN, constants.ROLES.SUPERADMIN].includes(normalizedRole)) {
+	// 	throw { statusCode: 400, message: 'Role must be admin or superadmin.' };
+	// }
+
+	const passwordHash = await bcrypt.hash(password, 12);
+	const user = await User.createUser({ firstName, lastName, email, passwordHash });
+	await User.updateRole(user.id, normalizedRole);
+
+	await ActivityLog.create({
+		adminId,
+		action: 'CREATE_USER',
+		entityType: 'USER',
+		entityId: user.id,
+		description: `Created ${normalizedRole} account: ${user.fullName} (${user.email})`,
+		changes: { role: normalizedRole },
+		ipAddress
+	});
+
+	return await User.findById(user.id);
+}
 
 async function getAllUsers(limit = 50, offset = 0) {
 	const users = await User.findAll(limit, offset);
@@ -32,6 +61,29 @@ async function updateUserRole(userId, newRole, adminId, ipAddress) {
 	});
 
 	return updated;
+}
+
+async function changeUserPassword(userId, newPassword, adminId, ipAddress) {
+	return User.findById(userId).then(async user => {
+		if (!user) {
+			throw {
+				statusCode: 404,
+				message: 'User not found.'
+			};
+		}
+		
+		const updated = User.updatePassword(userId, newPassword);
+		
+		await ActivityLog.create({
+			adminId,
+			action: 'CHANGE_PASSWORD',
+			entityType: 'USER',
+			entityId: userId,
+			description: `Changed user password for ${user.fullName} (${user.email})`,
+			changes: { oldRole, newRole },
+			ipAddress
+		});
+	});
 }
 
 function normalizeRole(role) {
@@ -190,6 +242,7 @@ async function getActivityLog(id) {
 }
 
 module.exports = {
+	createAdminUser,
 	getAllUsers,
 	updateUserRole,
 	deleteUserAccount,

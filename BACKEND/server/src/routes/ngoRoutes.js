@@ -12,7 +12,7 @@ router.get('/', ngoController.listNgos);
 router.get('/verified', ngoController.getVerifiedNgos);
 router.get('/my-profile', auth, ngoController.getMyNgoProfile);
 router.get('/my-donations', auth, authorize.authorizeRoles(['ngo']), ngoController.getMyDonations);
-router.get('/verification/pending', auth, authorize.authorizeRoles(['admin', 'superadmin']), ngoController.getPendingVerifications);
+router.get('/verification/pending', auth, authorize.authorizeRoles(['admin']), ngoController.getPendingVerifications);
 router.put('/donations/:id/status', auth, authorize.authorizeRoles(['ngo']), ngoController.reviewDonation);
 
 // parameterized routes
@@ -21,7 +21,7 @@ router.get('/:id', ngoController.getNgoProfile);
 router.put('/:id', auth, ngoController.updateNgoProfile);
 router.delete('/:id', auth, ngoController.deleteNgoProfile);
 
-router.post('/:id/verify', auth, authorize.authorizeRoles(['admin', 'superadmin']), ngoController.verifyNgoProfile);
-router.post('/:id/reject', auth, authorize.authorizeRoles(['admin', 'superadmin']), ngoController.rejectNgoProfile);
+router.post('/:id/verify', auth, authorize.authorizeRoles(['admin']), ngoController.verifyNgoProfile);
+router.post('/:id/reject', auth, authorize.authorizeRoles(['admin']), ngoController.rejectNgoProfile);
 
 module.exports = router;

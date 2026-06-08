@@ -1,5 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
+const path = require('path');
+const dotenv =  require('dotenv').config({
+  path: path.resolve(__dirname, '../../../.env')
+
+});
 const helmet = require('helmet');
 const session = require('express-session');
 const config = require('./config');
@@ -27,15 +33,18 @@ const supportTicketRoutes = require('./routes/supportTicketRoutes');
 const app = express();
 
 app.use(helmet());
-app.use(limiter);
 
 app.use(
 	cors({
 		origin: true,
-		credentials: true
+		credentials: true,
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  		allowedHeaders: ['Content-Type', 'Authorization'],
 	})
 );
 
+app.options('*', cors());
+app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(
 	session({

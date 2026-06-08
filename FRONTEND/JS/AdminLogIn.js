@@ -70,7 +70,7 @@ async function attemptLogin() {
       email: user.email
     };
     goToDashboard(role, res.redirectUrl);
-  } catch (err) {
+  } catch (err) { 
     setLoading(false);
     attempts++;
     renderAttemptBar();
@@ -80,9 +80,14 @@ async function attemptLogin() {
       return;
     }
     const left = MAX_ATTEMPTS - attempts;
-    const message = err && err.status === 401
+    const message = err && err.status === 429
+      ? 'Too many requests from this IP, please try again later.'
+      : err && err.status === 401
       ? `Invalid credentials. ${left} attempt${left!==1?'s':''} remaining.`
       : (err && err.message) || 'Unable to sign in. Please try again.';
+
+      
+     
     showMsg('msgArea','error', message);
   }
 }
@@ -114,6 +119,23 @@ function submitNewPassword() {
     return;
   }
   showStep('stepSecurityQ');
+}
+
+// ── RESET PASSWORD ──
+async function forgotPassword() {
+  const emailInput = document.getElementById('email');
+  let email = '';
+
+  if (!emailInput) { showMsg('forgotMsg','error','Please enter your registered email.'); return; }
+  email = emailInput.value.trim();
+
+  try {
+    let result = await AuthAPI.forgotPassword(email);
+    showMsg('forgotMsg','success','Reset request submitted. Check your email for a temporary password. If you do not see it in your inbox within a few minutes, please check your spam or junk folder.');
+  } catch (err) {
+    console.log(err);
+    showMsg('forgotMsg','error',err.message || 'Unable to submit reset request. Please try again.');
+  }
 }
 
 // ── SECURITY SETUP DONE ──

@@ -84,7 +84,7 @@
           <span>raised of <strong>₱250,000</strong> goal</span>
         </div>
         <div class="goal-amount">
-          <strong>0%</strong>
+          <strong id="progressPct">0%</strong>
           funded
         </div>
       </div>
@@ -109,7 +109,7 @@
     </div>
 
     <!-- Transparency Report -->
-    <div class="card  reveal-d1">
+    <!-- <div class="card  reveal-d1">
       <p class="card-label"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Transparency Report</p>
       <div class="transparency-grid">
         <div class="trans-item">
@@ -151,7 +151,7 @@
         </div>
       </div>
       <div class="transparency-note">Placeholder transparency metrics will update when the campaign is connected to real donation data.</div>
-    </div>
+    </div> -->
 
     <!-- Campaign Updates -->
      <div class="card  reveal-d1">
@@ -174,10 +174,9 @@
         <div class="donor-placeholder">Donor activity is not available yet. This area will show supporter names and contributions once the campaign is active.</div>
       </div>
     </div>
-     <div class="card  reveal-d2">
-      <p class="card-label"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</p>
+     <div class="card  reveal-d2" id="commentsCard">
       <form class="comment-form" id="commentForm" onsubmit="submitComment(event)">
-        <textarea class="form-input" id="commentBody" rows="3" placeholder="Write a comment for this campaign"></textarea>
+        <textarea class="form-input" id="commentInput" rows="3" placeholder="Write a comment for this campaign"></textarea>
         <p class="form-error" id="commentErr">Please write a comment with at least 2 characters.</p>
         <div class="comment-actions">
           <button type="submit" class="btn-primary-modal">Post Comment</button>
@@ -224,7 +223,7 @@
       <div class="donate-card-divider"></div>
       <div class="donate-mini-stats">
         <div class="mini-stat">
-          <div class="mini-stat-num">0</div>
+          <div class="mini-stat-num" id="statDonors2">0</div>
           <div class="mini-stat-label">Donors</div>
         </div>
         <div class="mini-stat">
@@ -373,27 +372,27 @@
     </div>
 
     <div class="payment-methods">
-      <div class="pay-method-btn active" id="pm-card" onclick="selectPayMethod('card')">
+      <div class="pay-method-btn active" id="pm-card" onclick="selectPayMethod('card'); createPaymentMethod('card');">
         <div class="pay-method-icon">💳</div>
         <div class="pay-method-name">Card</div>
       </div>
-      <div class="pay-method-btn" id="pm-gcash" onclick="selectPayMethod('gcash')">
+      <div class="pay-method-btn" id="pm-gcash" onclick="selectPayMethod('gcash'); createPaymentMethod('gcash');">
         <div class="pay-method-icon">📱</div>
         <div class="pay-method-name">GCash</div>
       </div>
-      <div class="pay-method-btn" id="pm-paymaya" onclick="selectPayMethod('paymaya')">
+      <div class="pay-method-btn" id="pm-paymaya" onclick="selectPayMethod('paymaya'); createPaymentMethod('paymaya');">
         <div class="pay-method-icon">🔵</div>
         <div class="pay-method-name">PayMaya</div>
       </div>
     </div>
 
-    <div class="bank-details" id="bankDetails">
+    <!-- <div class="bank-details" id="bankDetails">
       <div class="bank-details-header">Bank Transfer Details</div>
       <div class="bank-details-row"><span>Bank</span><strong id="bankName">BPI</strong></div>
       <div class="bank-details-row"><span>Account No.</span><strong id="bankAccount">1234 5678 9012</strong></div>
       <div class="bank-details-row"><span>Account Name</span><strong id="bankPayee">UpSkills+ Foundation Inc.</strong></div>
       <div class="bank-details-note">Use the bank details above for secure direct transfers. The same NGO details load automatically for this campaign.</div>
-    </div>
+    </div> -->
 
     <!-- Card Fields -->
     <div id="cardFields" class="card-fields">
@@ -423,7 +422,7 @@
 
     <!-- GCash Fields -->
     <div id="gcashFields" style="display:none;">
-     <div class="bank-details">
+     <!-- <div class="bank-details">
         <div class="bank-details-header">GCash Details</div>
         <div class="bank-details-row"><span>GCash Number</span><strong id="gcashNumber">—</strong></div>
         <div class="bank-details-row"><span>Account Name</span><strong id="gcashName">—</strong></div>
@@ -440,12 +439,12 @@
       </div>
       <div id="gcashPreviewWrap" style="display:none;margin-top:8px">
         <img id="gcashPreview" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid #dde3ef;" alt="Proof preview"/>
-      </div>
+      </div> -->
     </div>
 
     <!-- PayMaya Fields -->
     <div id="paymayaFields" style="display:none;">
-      <div class="ewallet-info">
+      <!-- <div class="ewallet-info">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <p>You will be redirected to PayMaya to complete your payment of <strong id="paymayaAmt">₱0.00</strong>. Scan the QR code below or tap "Pay with PayMaya".</p>
       </div>
@@ -455,7 +454,7 @@
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="4" y="4" width="5" height="5"/><rect x="15" y="4" width="5" height="5"/><rect x="4" y="15" width="5" height="5"/><path d="M14 14h1v1h-1z M15 15h1v1h-1z M16 14h1v1h-1z M14 16h1v1h-1z M16 16h3v3h-3z"/></svg>
         </div>
         <p id="paymayaQrLabel">Scan with your PayMaya app</p>
-      </div>
+      </div> -->
     </div>
 
     <div class="secure-badge"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 256-bit SSL Encrypted · PCI-DSS Compliant</div>
@@ -706,8 +705,6 @@
     </ul>
   </div>
 </footer>
-
-<script src="../JS/Campaigns.js"></script>
 
 <!-- ════════════════════════════════════════════════════
      COOKIE BANNER
@@ -1091,16 +1088,13 @@
   });
 </script>
 
-<!-- Coming Soon Modal -->
-<div class="coming-soon-modal">
-  <div class="coming-soon-box">
-    <div class="coming-soon-icon">
-    <h2 class="coming-soon-title">Coming Soon</h2>
-    <p class="coming-soon-text">We're working hard to bring this feature to you soon. Thank you for your patience and support!</p>
-    <button class="coming-soon-close">Got It</button>
-  </div>
-</div>
 
+
+
+  <script src="../JS/api.js"></script>
+  <script src="../JS/helpers.js"></script>
+  <script src="../JS/Campaigns.js"></script>
   <script src="../JS/Common.js"></script>
+  <script src="../JS/FooterSocial.js"></script>
 </body>
 </html>

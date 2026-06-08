@@ -83,7 +83,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .dd-item.danger{color:var(--red)}
 
 /* ── MAIN CONTENT ── */
-.main{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh}
+.main{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;flex: 1; min-width: 0;}
 .page{padding:28px 28px 80px;display:none;animation:pageIn .35s ease both}
 .page.active{display:block}
 @keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -157,18 +157,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.3px;white-space:nowrap}
 .badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.badge-pending{background:rgba(201,168,76,0.15);color:#b8941e}.badge-pending::before{background:#c9a84c}
-.badge-approved{background:rgba(74,156,199,0.15);color:#2d7fa8}.badge-approved::before{background:#4a9cc7}
-.badge-live,.badge-ongoing{background:rgba(46,158,110,0.15);color:#1d7a52}.badge-live::before,.badge-ongoing::before{background:#2e9e6e}
-.badge-completed{background:rgba(124,77,232,0.15);color:#6034c9}.badge-completed::before{background:#7c4de8}
-.badge-flagged{background:rgba(217,79,79,0.15);color:#b83535}.badge-flagged::before{background:#d94f4f}
-.badge-draft{background:rgba(122,139,168,0.15);color:#5a7090}.badge-draft::before{background:#7a8ba8}
-.badge-suspended{background:rgba(217,79,79,0.15);color:#b83535}.badge-suspended::before{background:#d94f4f}
-.badge-verified{background:rgba(46,158,110,0.15);color:#1d7a52}.badge-verified::before{background:#2e9e6e}
-.badge-inactive{background:rgba(122,139,168,0.15);color:#5a7090}.badge-inactive::before{background:#7a8ba8}
-.badge-superadmin{background:rgba(201,168,76,0.15);color:#a07e20}.badge-superadmin::before{background:var(--gold)}
-.badge-admin{background:rgba(74,156,199,0.15);color:#2d7fa8}.badge-admin::before{background:var(--sky)}
-.badge-ngo{background:rgba(46,158,110,0.15);color:#1d7a52}.badge-ngo::before{background:var(--green)}
+.badge-pending{background:#c9a84c;color:#fff}.badge-pending::before{background:rgba(255,255,255,0.6)}
+.badge-approved{background:#4a9cc7;color:#fff}.badge-approved::before{background:rgba(255,255,255,0.6)}
+.badge-live,.badge-ongoing,.badge-active{background:#2e9e6e;color:#fff}.badge-live::before,.badge-ongoing::before,.badge-active::before{background:rgba(255,255,255,0.6)}
+.badge-completed{background:#7c4de8;color:#fff}.badge-completed::before{background:rgba(255,255,255,0.6)}
+.badge-flagged{background:#d94f4f;color:#fff}.badge-flagged::before{background:rgba(255,255,255,0.6)}
+.badge-draft{background:#7a8ba8;color:#fff}.badge-draft::before{background:rgba(255,255,255,0.6)}
+.badge-suspended, .badge-rejected{background:#d94f4f;color:#fff}.badge-suspended::before, .badge-rejected::before{background:rgba(255,255,255,0.6)}
+.badge-verified{background:#2e9e6e;color:#fff}.badge-verified::before{background:rgba(255,255,255,0.6)}
+.badge-inactive{background:#7a8ba8;color:#fff}.badge-inactive::before{background:rgba(255,255,255,0.6)}
+.badge-donor{background:var(--gold);color:#fff}.badge-donor::before{background:rgba(255,255,255,0.6)}
+.badge-admin{background:var(--sky);color:#fff}.badge-admin::before{background:rgba(255,255,255,0.6)}
+.badge-ngo, .badge-ngo_admin{background:var(--green);color:#fff}.badge-ngo::before, .badge-ngo_admin::before{background:rgba(255,255,255,0.6)}
 
 /* ── TABLE ── */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -202,6 +202,18 @@ td strong{color:var(--text);font-weight:600}
 .form-input::placeholder{color:var(--text-soft)}
 textarea.form-input{resize:vertical;min-height:100px}
 select.form-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8ba8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+.field-wrap{position:relative;display:flex;align-items:center}
+.field-icon{position:absolute;left:14px;width:16px;height:16px;stroke:rgba(255,255,255,0.35);fill:none;stroke-width:2;pointer-events:none;flex-shrink:0;transition:stroke .2s}
+.field-wrap:focus-within .field-icon{stroke:var(--sky-light)}
+.password-input{width:100%;padding:13px 14px 13px 42px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.07);font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;outline:none;transition:border-color .25s,background .25s,box-shadow .25s}
+.password-input::placeholder{color:rgba(255,255,255,0.3)}
+.password-input:focus{border-color:var(--sky);background:rgba(255,255,255,0.1);box-shadow:0 0 0 4px rgba(74,156,199,0.15)}
+.password-input.has-toggle{padding-right:44px}
+.pwd-toggle{position:absolute;right:12px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.35);padding:4px;border-radius:6px;transition:color .2s;display:flex}
+.pwd-toggle:hover{color:var(--sky-light)}
+.pwd-toggle svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
 
 /* ── TOGGLE SWITCH ── */
 .toggle{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}

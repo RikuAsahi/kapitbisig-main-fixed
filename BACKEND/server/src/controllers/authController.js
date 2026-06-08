@@ -23,7 +23,7 @@ function toPublicUser(user) {
 function getDashboardRedirect(role) {
 	const normalizedRole = constants.normalizeRole(role);
 	if (normalizedRole === constants.ROLES.ADMIN || normalizedRole === constants.ROLES.SUPERADMIN) {
-		return 'AdminDashboard.html?role=superadmin';
+		return 'AdminDashboard.html?role=admin';
 	}
 	if (normalizedRole === constants.ROLES.NGO_ADMIN) {
 		return 'AdminDashboard.html?role=ngo';
@@ -154,6 +154,7 @@ async function forgotPassword(req, res, next) {
 		}
 
 		if (!validateEmail(email)) {
+			console.log(validateEmail(email));
 			return res.status(400).json({ message: 'Invalid email format.' });
 		}
 
@@ -162,25 +163,30 @@ async function forgotPassword(req, res, next) {
 		// Always return 200 for valid-looking emails; never reveal whether an account exists.
 		const user = await findByEmail(String(email).trim());
 		if (user) {
-			const token = await passwordResetModel.createToken(user.id);
-			const frontendBaseUrl = process.env.FRONTEND_PUBLIC_URL || req.get('origin') || `${req.protocol}://${req.get('host')}`;
-			const resetUrl = `${frontendBaseUrl.replace(/\/$/, '')}/SignIn.html?token=${token}`;
+			
+			// const token = await passwordResetModel.createToken(user.id);
+			// const frontendBaseUrl = process.env.FRONTEND_PUBLIC_URL || req.get('origin') || `${req.protocol}://${req.get('host')}`;
+			// const resetUrl = `${frontendBaseUrl.replace(/\/$/, '')}/SignIn.html?token=${token}`;
+			let password = generateTemporaryPassword();
+			let passwordHash = await bcrypt.hash(String(password), 10);
+			await updatePassword(user.id, passwordHash);
+			
 			const emailSent = await sendPasswordResetEmail({
 				toEmail: user.email,
 				toName: user.fullName || user.firstName,
-				resetUrl
+				tempPassword: password
+				// resetUrl
 			});
-
-			if (!emailSent && process.env.NODE_ENV !== 'production') {
-				devResetUrl = resetUrl;
-			}
-			console.log(`[PASSWORD RESET] Link for ${email}:\n  ${resetUrl}`);
+			// if (!emailSent && process.env.NODE_ENV !== 'production') {
+			// 	devResetUrl = resetUrl;
+			// }
+			// console.log(`[PASSWORD RESET] Link for ${email}:\n  ${resetUrl}`);
+			console.log('successfully sent password reset email to:', email);
+			return res.json({ message: 'A temporary password has been sent to your email address. If you do not see it in your inbox within a few minutes, please check your spam or junk folder.' });
 		}
-
-		const response = { message: 'If that email is registered, a reset link has been sent.' };
-		if (devResetUrl) response.devResetUrl = devResetUrl;
-		return res.json(response);
+		return res.status(400).json({ message: 'The email address you entered is not associated with any account in our system. Please check the email address and try again' });
 	} catch (error) {
+		console.log('[AUTH] ✗ Forgot password error:', error);
 		next(error);
 	}
 }
@@ -235,6 +241,18 @@ async function updateMe(req, res, next) {
 		next(error);
 	}
 }
+
+	function generateTemporaryPassword() {
+		const length = 5;
+		const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+		let password = '';
+		let prefix = 'Kb@Tmp';
+		for (let i = 0; i < length; i++) {
+			const randomIndex = Math.floor(Math.random() * charset.length);
+			password += charset[randomIndex];
+		}
+		return prefix + password;
+	}
 
 module.exports = {
 	signup,

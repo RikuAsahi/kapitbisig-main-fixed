@@ -74,6 +74,14 @@ async function findByCampaignId(campaignId, limit = 100, offset = 0) {
 	return rows.map(mapDonation);
 }
 
+async function findByTransactionRef(transactionRef) {
+	const [rows] = await db.query(
+		`SELECT * FROM donations WHERE transaction_ref = ? LIMIT 1`,
+		[transactionRef]
+	);
+	return mapDonation(rows[0]);
+}
+
 async function findByDonorId(donorId, limit = 50, offset = 0) {
 	const [rows] = await db.query(
 		`SELECT * FROM donations
@@ -86,17 +94,17 @@ async function findByDonorId(donorId, limit = 50, offset = 0) {
 }
 
 async function create(data) {
+
 	const [result] = await db.query(
-		`INSERT INTO donations (campaign_id, donor_id, amount, payment_method, status, message, proof_image, proof_notes)
-		 VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)`,
+		`INSERT INTO donations (campaign_id, donor_id, amount, payment_method, status, message, transaction_ref)
+		 VALUES (?, ?, ?, ?, 'pending', ?, ?)`,
 		[
 			Number(data.campaignId),
 			Number(data.donorId),
 			data.amount,
 			data.paymentMethod,
 			data.message || null,
-			data.proofImage || null,
-			data.proofNotes || null
+			data.transactionRef
 		]
 	);
 	return findById(result.insertId);
@@ -223,6 +231,7 @@ module.exports = {
 	findById,
 	findByCampaignId,
 	findByCampaignIds,
+	findByTransactionRef,
 	findByDonorId,
 	findAllWithDetails,
 	countAll,
