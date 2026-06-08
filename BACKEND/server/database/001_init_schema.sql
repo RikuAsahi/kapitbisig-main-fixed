@@ -26,15 +26,11 @@ CREATE TABLE users (
 	first_name VARCHAR(150) NOT NULL,
 	last_name VARCHAR(150) NOT NULL,
 	email VARCHAR(190) NOT NULL,
-	ngo_id BIGINT UNSIGNED NULL,
 	password_hash VARCHAR(255) NULL,
 	role ENUM('donor', 'ngo_admin', 'admin') NOT NULL DEFAULT 'donor',
 	date_registered DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (user_id),
-	UNIQUE KEY uq_users_email (email),
-	CONSTRAINT fk_users_ngo
-		FOREIGN KEY (ngo_id) REFERENCES ngos(ngo_id)
-		ON UPDATE CASCADE ON DELETE SET NULL
+	UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- NGO (ERD: NGO)
