@@ -2033,7 +2033,8 @@
 		const parts = contactPerson.split(/\s+/);
 		const firstName = parts[0] || orgName.split(/\s+/)[0];
 		const lastName = parts.slice(1).join(' ') || 'NGO';
-		const tempPassword = `Kb@Ngo${Math.floor(1000 + Math.random() * 9000)}!`;
+		const tempPassword = `Kb@Tmp8017!`;
+		// const tempPassword = `Kb@Ngo${Math.floor(1000 + Math.random() * 9000)}!`;
 
 		try {
 			const userRes = await AdminAPI.createUser({ firstName, lastName, email, password: tempPassword, role: 'ngo'});
